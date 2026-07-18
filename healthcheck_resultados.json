@@ -1,0 +1,108 @@
+[
+  {
+    "tipo": "API",
+    "url": "/api/usuarios",
+    "status": 200,
+    "tempo_ms": 251,
+    "resultado": "OK"
+  },
+  {
+    "tipo": "API",
+    "url": "/api/vendas",
+    "status": 200,
+    "tempo_ms": 34,
+    "resultado": "OK"
+  },
+  {
+    "tipo": "API",
+    "url": "/api/faturamento",
+    "status": 200,
+    "tempo_ms": 31,
+    "resultado": "OK"
+  },
+  {
+    "tipo": "API",
+    "url": "/api/db-status",
+    "status": 200,
+    "tempo_ms": 32,
+    "resultado": "OK"
+  },
+  {
+    "tipo": "Página",
+    "url": "https://testepyeduardo.hom.sgmaster.com.br/py/dashboard",
+    "tempo_ms": 1127,
+    "resultado": "Carregada corretamente"
+  },
+  {
+    "tipo": "Página",
+    "url": "https://testepyeduardo.hom.sgmaster.com.br/py/pessoa",
+    "tempo_ms": 845,
+    "resultado": "Carregada corretamente"
+  },
+  {
+    "tipo": "Página",
+    "url": "https://testepyeduardo.hom.sgmaster.com.br/py/producto",
+    "tempo_ms": 844,
+    "resultado": "Carregada corretamente"
+  },
+  {
+    "tipo": "Página",
+    "url": "https://testepyeduardo.hom.sgmaster.com.br/py/usuarios",
+    "tempo_ms": 852,
+    "resultado": "Carregada corretamente"
+  },
+  {
+    "tipo": "Página",
+    "url": "https://testepyeduardo.hom.sgmaster.com.br/py/ventas/facturacion",
+    "tempo_ms": 851,
+    "resultado": "Carregada corretamente"
+  },
+  {
+    "tipo": "Página",
+    "url": "https://testepyeduardo.hom.sgmaster.com.br/py/ventas/dav",
+    "tempo_ms": 855,
+    "resultado": "Carregada corretamente"
+  },
+  {
+    "tipo": "Página",
+    "url": "https://testepyeduardo.hom.sgmaster.com.br/py/usuario/listado",
+    "tempo_ms": 854,
+    "resultado": "Carregada corretamente"
+  },
+  {
+    "tipo": "Página",
+    "url": "https://testepyeduardo.hom.sgmaster.com.br/py/usuario/perfil",
+    "tempo_ms": 924,
+    "resultado": "Carregada corretamente"
+  },
+  {
+    "tipo": "Página",
+    "url": "https://testepyeduardo.hom.sgmaster.com.br/py/registros/especies",
+    "tempo_ms": 853,
+    "resultado": "Carregada corretamente"
+  },
+  {
+    "tipo": "Página",
+    "url": "https://testepyeduardo.hom.sgmaster.com.br/py/registros/grupos",
+    "tempo_ms": 859,
+    "resultado": "Carregada corretamente"
+  },
+  {
+    "tipo": "Página",
+    "url": "https://testepyeduardo.hom.sgmaster.com.br/py/registros/subgrupos",
+    "tempo_ms": 842,
+    "resultado": "Carregada corretamente"
+  },
+  {
+    "tipo": "Página",
+    "url": "https://testepyeduardo.hom.sgmaster.com.br/py/registros/marcas",
+    "tempo_ms": 843,
+    "resultado": "Carregada corretamente"
+  },
+  {
+    "tipo": "Página",
+    "url": "https://testepyeduardo.hom.sgmaster.com.br/py/empleados",
+    "tempo_ms": 849,
+    "resultado": "Carregada corretamente"
+  }
+]

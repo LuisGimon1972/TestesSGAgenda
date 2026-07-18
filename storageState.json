@@ -1,0 +1,118 @@
+{
+  "cookies": [
+    {
+      "name": "AUTH_SESSION_ID",
+      "value": "f76000a5-66da-4249-8c28-884bcc909f89.19f9015b7fde-62123",
+      "domain": "auth.sgbr.com.br",
+      "path": "/realms/sgbr-hom/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "AUTH_SESSION_ID_LEGACY",
+      "value": "f76000a5-66da-4249-8c28-884bcc909f89.19f9015b7fde-62123",
+      "domain": "auth.sgbr.com.br",
+      "path": "/realms/sgbr-hom/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "KEYCLOAK_SESSION",
+      "value": "sgbr-hom/c5053e0c-b4a1-4cf4-a044-700b804b0e0f/f76000a5-66da-4249-8c28-884bcc909f89",
+      "domain": "auth.sgbr.com.br",
+      "path": "/realms/sgbr-hom/",
+      "expires": 1780718603.890738,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "KEYCLOAK_SESSION_LEGACY",
+      "value": "sgbr-hom/c5053e0c-b4a1-4cf4-a044-700b804b0e0f/f76000a5-66da-4249-8c28-884bcc909f89",
+      "domain": "auth.sgbr.com.br",
+      "path": "/realms/sgbr-hom/",
+      "expires": 1780718603.890807,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "KEYCLOAK_IDENTITY",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI5YTA2NmViNS0wYTI3LTQ0YzktOTU2ZS1kMzhmMDlmYTM3NzQifQ.eyJleHAiOjE3ODA3MTg1MzcsImlhdCI6MTc4MDY4MjUzNywianRpIjoiNmZmZjhmYjgtMGVmMS00ZWU5LWEzYzItNjMxZTdmYzZjYjFhIiwiaXNzIjoiaHR0cHM6Ly9hdXRoLnNnYnIuY29tLmJyL3JlYWxtcy9zZ2JyLWhvbSIsInN1YiI6ImM1MDUzZTBjLWI0YTEtNGNmNC1hMDQ0LTcwMGI4MDRiMGUwZiIsInR5cCI6IlNlcmlhbGl6ZWQtSUQiLCJzZXNzaW9uX3N0YXRlIjoiZjc2MDAwYTUtNjZkYS00MjQ5LThjMjgtODg0YmNjOTA5Zjg5Iiwic2lkIjoiZjc2MDAwYTUtNjZkYS00MjQ5LThjMjgtODg0YmNjOTA5Zjg5Iiwic3RhdGVfY2hlY2tlciI6IjF1NmpabmVkWGxUakgzV3ZJRHVJMlBHbkVyX2dpTExobkxfNTU5UmhET28ifQ.P6Pgf2mg7JlPre5Iok9VijtGhaNVIv33ZaBm2f72uko",
+      "domain": "auth.sgbr.com.br",
+      "path": "/realms/sgbr-hom/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "KEYCLOAK_IDENTITY_LEGACY",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI5YTA2NmViNS0wYTI3LTQ0YzktOTU2ZS1kMzhmMDlmYTM3NzQifQ.eyJleHAiOjE3ODA3MTg1MzcsImlhdCI6MTc4MDY4MjUzNywianRpIjoiNmZmZjhmYjgtMGVmMS00ZWU5LWEzYzItNjMxZTdmYzZjYjFhIiwiaXNzIjoiaHR0cHM6Ly9hdXRoLnNnYnIuY29tLmJyL3JlYWxtcy9zZ2JyLWhvbSIsInN1YiI6ImM1MDUzZTBjLWI0YTEtNGNmNC1hMDQ0LTcwMGI4MDRiMGUwZiIsInR5cCI6IlNlcmlhbGl6ZWQtSUQiLCJzZXNzaW9uX3N0YXRlIjoiZjc2MDAwYTUtNjZkYS00MjQ5LThjMjgtODg0YmNjOTA5Zjg5Iiwic2lkIjoiZjc2MDAwYTUtNjZkYS00MjQ5LThjMjgtODg0YmNjOTA5Zjg5Iiwic3RhdGVfY2hlY2tlciI6IjF1NmpabmVkWGxUakgzV3ZJRHVJMlBHbkVyX2dpTExobkxfNTU5UmhET28ifQ.P6Pgf2mg7JlPre5Iok9VijtGhaNVIv33ZaBm2f72uko",
+      "domain": "auth.sgbr.com.br",
+      "path": "/realms/sgbr-hom/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_fbp",
+      "value": "fb.2.1780682601392.15516233347492463",
+      "domain": ".sgmaster.com.br",
+      "path": "/",
+      "expires": 1788458603,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://midiastar.hom.sgmaster.com.br",
+      "localStorage": [
+        {
+          "name": "showPixContractWarning",
+          "value": "true"
+        },
+        {
+          "name": "versionPanel",
+          "value": "v1.1.97(6)-hom"
+        },
+        {
+          "name": "locale",
+          "value": "pt"
+        }
+      ]
+    },
+    {
+      "origin": "https://hom.sgmaster.com.br",
+      "localStorage": [
+        {
+          "name": "lastExternalReferrer",
+          "value": "empty"
+        },
+        {
+          "name": "SGTable_py login",
+          "value": "{\"statusFilters\":{\"status\":\"all\"}}"
+        },
+        {
+          "name": "lastExternalReferrerTime",
+          "value": "1780682602400"
+        },
+        {
+          "name": "locale",
+          "value": "pt"
+        },
+        {
+          "name": "version",
+          "value": "1.1.86-hom"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "name": "testessga genda",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "@types/node": "^25.9.1",
+    "prettier": "^3.8.4"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2"
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LuisGimon1972/TestesSGMWParaguay.git"
+  },
+  "bugs": {
+    "url": "https://github.com/LuisGimon1972/TestesSGMWParaguay/issues"
+  },
+  "homepage": "https://github.com/LuisGimon1972/TestesSGMWParaguay#readme"
+}
