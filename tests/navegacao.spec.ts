@@ -8,53 +8,52 @@ test('Navegação de menus', async ({ page }) => {
     const dashboardBtn = page.getByText(/dashboard/i).first();
     await expect(dashboardBtn).toBeVisible({ timeout: 5000 });
     await dashboardBtn.click();
-    console.log('CLICOU EM DASKBOARD');      
+    console.log('✅ Clicou em Dashboard');      
 
     await page.waitForTimeout(500);
         
     await page.locator('.q-item').filter({ hasText: 'Agenda' }).click();
-    console.log('CLICOU EM AGENDA');      
+    console.log('✅ Clicou em Agenda');      
 
     await page.waitForTimeout(500);
 
     await page.locator('.q-item').filter({ hasText: 'Clientes' }).click();
-    console.log('CLICOU EM CLIENTES');      
+    console.log('✅ Clicou em Clientes');      
 
     await page.waitForTimeout(500);
 
     await page.locator('.q-item').filter({ hasText: 'Atendentes' }).click();
-    console.log('CLICOU EM ATENDENTES');      
+    console.log('✅ Clicou em Atendentes');      
 
     await page.waitForTimeout(500);
 
     await page.locator('.q-item').filter({ hasText: 'Serviços' }).click();
-    console.log('CLICOU EM SERVIÇOS');      
+    console.log('✅ Clicou em Serviços');      
 
     await page.waitForTimeout(500);
 
     await page.locator('.q-item').filter({ hasText: 'Produtos' }).click();
-    console.log('CLICOU EM PRODUTOS');      
+    console.log('✅ Clicou em Produtos');      
 
     await page.waitForTimeout(500);
 
     await page.locator('.q-item').filter({ hasText: 'Categorias' }).click();
-    console.log('CLICOU EM CATEGORIAS');      
+    console.log('✅ Clicou em Categorias');      
 
     await page.waitForTimeout(500);
 
     await page.locator('.q-item').filter({ hasText: 'Comissões' }).click();
-    console.log('CLICOU EM COMISSÕES');      
+    console.log('✅ Clicou em Comissões');      
 
     await page.waitForTimeout(500);
 
     await page.locator('.q-item').filter({ hasText: 'Planos' }).click();
-    console.log('CLICOU EM PLANOS');      
+    console.log('✅ Clicou em Planos');      
 
     await page.waitForTimeout(500);
 
         await page.locator('.q-item').filter({ hasText: 'Configurações' }).click();
-    console.log('CLICOU EM  CONFIGURAÇÕES');           
-
+    console.log('✅ Clicou em Configurações');           
 
     await capturarRequisicoesApi(page);            
     await page.waitForTimeout(2000);

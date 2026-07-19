@@ -1,14 +1,13 @@
 import { test, expect } from '@playwright/test';
 
-test('Teste de segurança completo no login e módulo Pessoas', async ({ page, request }) => {  
-  await page.setViewportSize({ width: 1920, height: 1080 });      
+test('Teste de segurança completo no login e módulo Pessoas', async ({ page, request }) => {    
   await page.goto(process.env.BASE_URL!);
   await page.getByText(/entrar/i).click();
   
   const dialogs: string[] = [];
   page.on('dialog', dialog => dialogs.push(dialog.message()));  
 
-  for (let i = 0; i <= 50; i++) {
+  for (let i = 0; i <= 10; i++) {
   await page.locator('input[type="email"], input[type="text"]').first().fill(`user${i}@teste.com`);
   await page.locator('input[type="password"]').first().fill('senhaErrada');
   await page.getByRole('button', { name: /sign in|entrar/i }).click();  

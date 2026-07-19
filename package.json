@@ -11,7 +11,7 @@
   "description": "",
   "devDependencies": {
     "@playwright/test": "^1.61.1",
-    "@types/node": "^25.9.1",
+    "@types/node": "^25.9.5",
     "prettier": "^3.8.4"
   },
   "dependencies": {
@@ -19,6 +19,11 @@
   },
   "directories": {
     "test": "tests"
+  },
+  "compilerOptions": {
+    "types": [
+      "node"
+    ]
   },
   "repository": {
     "type": "git",
