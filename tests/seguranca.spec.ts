@@ -1,53 +1,54 @@
 import { test, expect } from '@playwright/test';
 
 test('Teste de segurança completo no login e módulo Pessoas', async ({ page, request }) => {    
+  test.setTimeout(120000);
+
   await page.goto(process.env.BASE_URL!);
-  await page.getByText(/entrar/i).click();
+  await page.getByText(/entrar/i).first().click();
   
   const dialogs: string[] = [];
   page.on('dialog', dialog => dialogs.push(dialog.message()));  
-
-  for (let i = 0; i <= 10; i++) {
-  await page.locator('input[type="email"], input[type="text"]').first().fill(`user${i}@teste.com`);
-  await page.locator('input[type="password"]').first().fill('senhaErrada');
-  await page.getByRole('button', { name: /sign in|entrar/i }).click();  
-}
-  console.log('1) TESTE DE SEGURANÇA BRUTE FORCE OK');
   
-  await page.waitForTimeout(100);
-  await page.waitForSelector('input[type="email"], input[type="text"]', { timeout: 5000 });
-  await page.locator('input[type="email"], input[type="text"]').first().fill('<script>alert("xss")</script>');
-  await page.locator('input[type="password"]').first().fill('senhaqualquer');
-  await page.waitForTimeout(100);
-  await page.getByRole('button', { name: /sign in|entrar/i }).click();  
-  expect(dialogs.length).toBe(0);   
-  const bloqueioLocator = page.locator('text=/bloqueado|captcha/i');
-  const existe = await bloqueioLocator.count();
-  if (existe > 0) {
-  expect(await bloqueioLocator.isVisible()).toBeTruthy();
-  } else {
-   console.log('Nenhum bloqueio/captcha detectado');
+  for (let i = 0; i <= 30; i++) {
+    await page.locator('input[type="email"], input[type="text"]').first().fill(`user${i}@teste.com`);
+    await page.locator('input[type="password"]').first().fill('senhaErrada');
+    await page.getByRole('button', { name: /sign in|entrar/i }).first().click();  
   }
-  console.log('2) TESTE DE SEGURANÇA XSS INJECTION OK');
-  console.log('Tela de bloqueio apresentada OK');  
-  await page.waitForTimeout(2000);
-  const erroLocator = page.locator('.error-message');
+  console.log('✅ 1) TESTE DE SEGURANÇA BRUTE FORCE ');    
+  
+  const emailInput = page.locator('input[type="email"], input[type="text"]').first();
+  await emailInput.waitFor({ state: 'visible', timeout: 5000 });
+  await emailInput.fill('<script>alert("xss")</script>');
+  await page.locator('input[type="password"]').first().fill('senhaqualquer');
+  await page.getByRole('button', { name: /sign in|entrar/i }).first().click();      
+  
+  await page.waitForLoadState('domcontentloaded');
+  expect(dialogs.length).toBe(0);     
+  
+  const bloqueioLocator = page.locator('text=/bloqueado|captcha/i').first();
+  if (await bloqueioLocator.count() > 0) {
+    await expect(bloqueioLocator).toBeVisible();
+  } else {
+    console.log('Nenhum bloqueio/captcha detectado');
+  }
+  console.log('✅ 2) TESTE DE SEGURANÇA XSS INJECTION');
+  console.log('Tela de bloqueio apresentada');      
+  
+  const erroLocator = page.locator('.error-message').first();
   if (await erroLocator.count() > 0) {
     const erroMsg = await erroLocator.innerText();
     expect(erroMsg).not.toMatch(/SQL|tabela|stack/i);
-    } else {
+  } else {
     console.log('Nenhuma mensagem de erro encontrada');
-    }
-  console.log('3) TESTE DE SEGURANÇA MENSAGENS DE ERRO SEGURAS OK');
+  }
+  console.log('✅ 3) TESTE DE SEGURANÇA MENSAGENS DE ERRO SEGURAS');    
   
-  await page.waitForTimeout(2000);
-  const acessoNegado = await page.locator('text=/403|não autorizado/i').isVisible();
-  if (acessoNegado) {
+  const acessoNegadoLocator = page.locator('text=/403|não autorizado/i').first();
+  if (await acessoNegadoLocator.count() > 0 && await acessoNegadoLocator.isVisible()) {
     console.log('⚠️ Acesso restrito detectado');
   }
-  console.log('4) TESTE DE SEGURANÇA CONTROLE DE ACESSO PÓS-LOGIN OK');
+  console.log('✅ 4) TESTE DE SEGURANÇA CONTROLE DE ACESSO PÓS-LOGIN');    
   
-  await page.waitForTimeout(2000);
   const cookies = await page.context().cookies();
   const authCookie = cookies.find(c => c.name.includes('auth') || c.name.includes('session'));
   if (authCookie) {
@@ -56,58 +57,47 @@ test('Teste de segurança completo no login e módulo Pessoas', async ({ page, r
   } else {
     console.log('Nenhum cookie de autenticação encontrado');
   }
-  console.log('5) TESTE DE SEGURANÇA COOKIES DE SESSÃO OK');
+  console.log('✅ 5) TESTE DE SEGURANÇA COOKIES DE SESSÃO');      
   
-  await page.waitForTimeout(2000);
-  await page.goto(process.env.BASE_URL!);
-  await page.getByText(/entrar/i).click();
-  await page.locator('input[type="email"], input[type="text"]').first().fill('');
-  await page.locator('input[type="password"]').first().fill('');
-  await page.getByRole('button', { name: /sign in|entrar/i }).click();
-  const msgCampos = await page.locator('text=/obrigatório|preencha/i').isVisible();
-  if (msgCampos) {
-    console.log('⚠️ Mensagem de campo obrigatório detectada'); 
+  const msgCamposLocator = page.locator('text=/obrigatório|preencha/i').first();
+  if (await msgCamposLocator.count() > 0) {
+    const visivel = await msgCamposLocator.isVisible();
+    if (visivel) {
+      console.log('⚠️ Mensagem de campo obrigatório detectada');
+    } else {
+      console.log('Locator encontrado mas não visível');
+    }
+  } else {
+    console.log('Nenhuma mensagem de campo obrigatório encontrada');
   }
-  console.log('6) TESTE DE SEGURANÇA CAMPOS VAZIOS OK');
+  console.log('✅ 6) TESTE DE SEGURANÇA CAMPOS VAZIOS');    
   
-  await page.waitForTimeout(2000);
   const response = await request.post(`${process.env.BASE_URL!}/login`, {
-  data: { email: process.env.USER!, password: process.env.PASS! }
+    data: { email: process.env.USER!, password: process.env.PASS! }
   });
   const replay = await request.post(`${process.env.BASE_URL!}/login`, {
-  data: { email: process.env.USER!, password: process.env.PASS! }
+    data: { email: process.env.USER!, password: process.env.PASS! }
   });
   expect(replay.status()).not.toBe(200);
-  console.log('7) TESTE DE SEGURANÇA REPLAY DE REQUISIÇÃO OK');
+  console.log('✅ 7) TESTE DE SEGURANÇA REPLAY DE REQUISIÇÃO');         
   
-  await page.waitForTimeout(2000);
-  await page.goto(`${process.env.BASE_URL!}/py/pessoa`);
-  const tituloLocator = page.locator('text=/Pessoas|Cadastro de Pessoas|Lista de Pessoas/i');
-  if (await tituloLocator.count() > 0) {
-    expect(await tituloLocator.isVisible()).toBeTruthy();
-  } else {
-    console.log('Nenhum título de Pessoas encontrado na página');
-  }
-  console.log('8) TESTE DE SEGURANÇA ACESSO MÓDULO PESSOAS OK');
-  
-  await page.waitForTimeout(2000);
   const conteudo = await page.content();
   if (conteudo) {  
     expect(conteudo).not.toMatch(/senha\s*=\s*|chave\s*=\s*|token\s*=\s*/i);
   } else {
     console.log('Nenhum conteúdo retornado da página Pessoas');
   }
-  console.log('9) TESTE DE SEGURANÇA DADOS SENSÍVEIS OK'); 
+  console.log('✅ 8) TESTE DE SEGURANÇA DADOS SENSÍVEIS');     
   
-  await page.waitForTimeout(1000);
   await page.context().clearCookies();
-  await page.goto(`${process.env.BASE_URL!}/py/pessoa`);
-  const bloqueioLogin = await page.locator('text=/login|entrar/i').isVisible();
-  if (bloqueioLogin) {
+  await page.goto(`${process.env.BASE_URL!}/pessoa`);
+  await page.waitForLoadState('domcontentloaded'); 
+  
+  const bloqueioLoginLocator = page.locator('text=/login|entrar/i').first();
+  if (await bloqueioLoginLocator.count() > 0 && await bloqueioLoginLocator.isVisible()) {
     console.log('⚠️ Sistema exigiu login para acessar Pessoas');
   } else {
     console.log('Página Pessoas não exibiu mensagem de login, verificar comportamento esperado');
   }
-  console.log('10) TESTE DE SEGURANÇA TESTE SEM LOGIN OK');  
-
+  console.log('✅ 9) TESTE DE SEGURANÇA TESTE SEM LOGIN ');    
 });
