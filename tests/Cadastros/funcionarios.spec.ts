@@ -3,8 +3,7 @@ import { loginCompleto } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
 import { obterNomePessoaAleatorio } from '../../utils/nomescompletos';
 
-test('Cadastro de funcionários', async ({ page }) => {
-  await page.setViewportSize({ width: 1920, height: 1080 });
+test('Cadastro de funcionários', async ({ page }) => {  
 
   await loginCompleto(page);
 

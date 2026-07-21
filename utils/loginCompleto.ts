@@ -34,7 +34,7 @@ export async function loginCompleto(page: Page) {
   });
   console.log('✅ Clicou em Entrar ao Sistema');
 
-  const botao1 = page.locator('button:has-text("Acessar")').nth(0);
+  const botao1 = page.locator('button:has-text("Acessar")').nth(4);
   //const botao = page.locator('button:has-text("ENTRAR")').first();
   await botao1.highlight();
   await botao1.evaluate((el: any) => {
