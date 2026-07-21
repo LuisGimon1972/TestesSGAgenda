@@ -4,7 +4,7 @@ import { capturarRequisicoesApi } from '../../utils/capturaApi';
 import { obterNomePessoaAleatorio } from '../../utils/nomescompletos';
 
 test('Cadastro de Atendentes E2E com Comissões', async ({ page }) => {
-    test.setTimeout(1200000);
+    test.setTimeout(90000);
     
     await loginCompleto(page);    
     await page.waitForTimeout(2000);       
@@ -39,7 +39,7 @@ test('Cadastro de Atendentes E2E com Comissões', async ({ page }) => {
     console.log('--- PREENCHENDO DADOS DO ATENDENTE ---');    
     const timestamp = Date.now();
     const nomeAtendente = obterNomePessoaAleatorio();
-    const emailAtendente = `e2e.atendente.${timestamp}@teste.com`;
+    const emailAtendente = `email_atendente.${timestamp}@sgbr.com`;
     const senha = 'Teste@123456';
     
     // Função auxiliar para preenchimento limpo mantendo os mesmos índices do Cypress
@@ -55,10 +55,10 @@ test('Cadastro de Atendentes E2E com Comissões', async ({ page }) => {
         } catch (e) {
             console.log(`⚠️ Falha ao preencher ${nomeCampo}`);
         }
-    };
+    };    
     
-    await preencherCampo(1, nomeAtendente, 'Nome do Atendente');
     await preencherCampo(0, emailAtendente, 'E-mail do Atendente');
+    await preencherCampo(1, nomeAtendente, 'Nome do Atendente');
     await preencherCampo(2, senha, 'Senha');
     await preencherCampo(3, senha, 'Confirmação de Senha');
     await preencherCampo(4, '3000', 'Comissão Serviços');
