@@ -1,13 +1,16 @@
 import { test, expect } from '@playwright/test';
 import { loginCompleto } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
+import { obterServicoAleatorio, obterNomeServicoAleatorio } from '../../utils/listaservicos';
 
 test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) => {
-    test.setTimeout(90000);
+    test.setTimeout(1200000);
 
     await loginCompleto(page);    
 
     await page.waitForTimeout(2000);       
+
+    const servico = obterServicoAleatorio();  
 
     await page.locator('.q-item, a, button').filter({ hasText: /Servi[çc]os/i }).first().click({ force: true });
     console.log(`✅ Clicou em Serviços`);          
@@ -38,12 +41,12 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
 
     await page.waitForTimeout(1000);    
 
-    console.log('DADOS ENVIADOS PRA API');    
+    console.log('--- DADOS ENVIADOS PRA API ---');    
     const timestamp = Date.now();
-    const nomeServico = `E2E Serviço_Corte ${timestamp}`;
-    const duracao = '30';
-    const valor = (Math.floor(Math.random() * 1000) + 1).toString(); // Valor aleatório de 1 a 1000
-    const comissao = '3000';
+    const nomeServico = servico.nomeServico.toUpperCase();
+    const duracao = servico.duracaoMinutos.toFixed();
+    const valor = servico.precoSugerido.toFixed();
+    const comissao = '30';
     const descricao = `Serviço criado automaticamente pelo Playwright em ${timestamp}`;
     
     try {
@@ -93,33 +96,64 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
       console.log('⚠️ Falha ao preencher Descrição');
     }
     
+    await page.waitForTimeout(2000);       
+    
     try {
-      const secaoAtendentes = page.getByText(/Sele[çc][aã]o de Atendentes/i).first();
-      if (await secaoAtendentes.isVisible({ timeout: 5000 })) {
-        await secaoAtendentes.scrollIntoViewIfNeeded();        
-     
-        const cardsAtendentes = page.locator('.q-card, [class*="card"]').filter({ hasNotText: /Nome do servi|Dura[çc]/i });
-        const totalCards = await cardsAtendentes.count();
+        const secaoAtendentes = page.getByText(/Sele[çc][aã]o de Atendentes/i).first();
+        if (await secaoAtendentes.isVisible({ timeout: 5000 })) {
+            await secaoAtendentes.scrollIntoViewIfNeeded();
+            await page.waitForTimeout(1000);
+            
+            const selecionados = await page.evaluate(() => {                
+                const todosElementos = Array.from(document.querySelectorAll('*'));
+                const tituloAtendentes = todosElementos.find(el => 
+                    /Sele[çc][aã]o de Atendentes/i.test((el.textContent || '').replace(/\s+/g, ' ').trim())
+                );
+                
+                const topoSecao = tituloAtendentes ? tituloAtendentes.getBoundingClientRect().top : 0;                
+                const divs = Array.from(document.querySelectorAll('div'));
+                const cardsAtendentes = divs.filter(el => {
+                    const texto = (el.textContent || '').replace(/\s+/g, ' ').trim();
+                    const rect = el.getBoundingClientRect();
 
-        if (totalCards > 0) {
-          const qtdParaSelecionar = Math.min(totalCards, 2);
-          for (let i = 0; i < qtdParaSelecionar; i++) {
-            await cardsAtendentes.nth(i).click({ force: true });
-            console.log(`✅ Selecionou Atendente ${i + 1}`);
-          }
-        } else {          
-          const fallbackCard = page.locator('div').filter({ has: page.locator('img, input') }).filter({ hasNotText: /Nome do servi/i }).first();
-          if (await fallbackCard.isVisible()) {
-            await fallbackCard.click({ force: true });
-            console.log('✅ Selecionou Atendente (fallback)');
-          }
+                    const temTamanhoDeCard = rect.width >= 150 && rect.width <= 400 && rect.height >= 100 && rect.height <= 260;
+                    const estaNaSecaoDeAtendentes = rect.top >= topoSecao - 20;
+                    const temImagemOuInput = el.querySelector('img') !== null || el.querySelector('input') !== null;
+                    const naoEhFormulario = !/Nome do servi[çc]o|Dura[çc][aã]o|Valor|Comiss[aã]o|Categoria|Descri[çc][aã]o|Gravar|Cadastrar/i.test(texto);
+
+                    return temTamanhoDeCard && estaNaSecaoDeAtendentes && temImagemOuInput && texto.length > 0 && naoEhFormulario;
+                });
+
+                if (cardsAtendentes.length === 0) return 0;                
+                const primeirosSeis = cardsAtendentes.slice(0, 6);
+                const quantidadeParaSelecionar = primeirosSeis.length > 1 ? 2 : 1;               
+                
+                const cardsSelecionados = primeirosSeis.sort(() => 0.5 - Math.random()).slice(0, quantidadeParaSelecionar);
+                
+                cardsSelecionados.forEach((card) => {
+                    const rect = card.getBoundingClientRect();
+                    const clientX = rect.right - 20;
+                    const clientY = rect.top + 20;
+
+                    const eventos = ['pointerdown', 'mousedown', 'mouseup', 'click'];
+                    eventos.forEach((evento) => {
+                        card.dispatchEvent(new MouseEvent(evento, {
+                            bubbles: true, cancelable: true, clientX, clientY, view: window
+                        }));
+                    });
+                });
+
+                return cardsSelecionados.length;
+            });
+
+            console.log(`✅ Total de atendentes selecionados pela injeção JS: ${selecionados}`);
+            await page.waitForTimeout(800); 
         }
-      }
-    } catch (e) {
-      console.log('⚠️ Falha ou aviso ao selecionar atendentes');
+    } catch (err) {
+        console.log('⚠️ Falha ao selecionar atendentes:', err);
     }
 
-    console.log('FIM DE DADOS ENVIADOS');           
+    console.log('--- FIM DE DADOS ENVIADOS ---');           
     
     try {
       await page.evaluate(() => window.scrollTo(0, 0));
