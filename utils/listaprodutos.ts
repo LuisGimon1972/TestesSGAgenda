@@ -7,9 +7,9 @@ export type Produto = {
 
 export const listaProdutos: Produto[] = [
   ...Array.from({ length: 100 }).map((_, i) => {
-    const prefixos = ['Smart', 'Pro', 'Ultra', 'Mini', 'Max', 'Eco', 'Mega'];
-    const itens = ['Monitor 17 polegadas', 'Teclado sem fio ', 'Mouse sem  fio', 'Cadeira de escritorio', 'Headset', 'Webcam Megabites', 'Notebook Lazer', 'Tablet Generic', 'Impressora Toshiba', 'Roteador Intel'];
-    const categorias = ['Hardware', 'Periféricos', 'Móveis', 'Acessórios'];
+    const prefixos = ['Wella Professionals', 'Schwarzkopf Professional', 'Kérastase', 'Alfaparf Milano', 'Forever Liss', 'Joico', 'LOréal Professionnel'];
+    const itens = ['Shampoo', 'Acondicionador', 'Crema de Cabelo', 'Máscara capilar', 'Pomada modeladora', 'Spray fixador', 'Ampolas de tratamento', 'Mousse', 'Tônico capilar', 'Gel fixador'];
+    const categorias = ['Tonalizantes', 'Cuidados com a Pele', 'Manicure e Pedicure', 'Cabelo'];
     
     return {
       id: `PROD-${(2000 + i)}`,

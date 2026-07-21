@@ -23,7 +23,7 @@ function gerarTelefoneAleatorio(): string {
   return `${ddd}${primeiroDigito}${numero}`;
 }
 
-test('Cadastro de Clientes E2E com Endereço Principal', async ({ page }) => {
+test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
    test.setTimeout(120000);
 
     await loginCompleto(page);    
@@ -42,40 +42,31 @@ test('Cadastro de Clientes E2E com Endereço Principal', async ({ page }) => {
     console.log(`✅ Clicou em Cadastrar cliente`);  
     console.log(`✅ Abriu Form de Clientes`);      
 
-    await page.waitForTimeout(2000);       
-    
-    // Promessa para escutar a resposta da API ao salvar
+    await page.waitForTimeout(2000);           
+
     const salvarPessoaPromise = page.waitForResponse((response) =>
       (response.url().includes('/api/') || response.url().includes('/customers') || response.url().includes('/pessoa')) &&
       ['POST', 'PUT'].includes(response.request().method()) &&
       response.status() >= 200 &&
       response.status() < 300
     ).catch(() => null);
-
-    // Fechar cookies se surgir
+    
     try {
       const btnCookie = page.getByText(/Entendi|Aceitar|Fechar/i).first();
       if (await btnCookie.isVisible({ timeout: 3000 })) {
         await btnCookie.click({ force: true });
         console.log('✅ Fechou aviso de cookies');
       }
-    } catch (e) {}
-
+    } catch (e) {}    
     
-
-    
-    
-
     console.log('DADOS ENVIADOS PRA API');
-
-    // Geração de dados dinâmicos
+    
     const timestamp = Date.now();
     const nomeCliente = obterNomePessoaAleatorio();
     const telefone = gerarTelefoneAleatorio();
     const documento = gerarCPFValido();
-    const email = `e2e.cliente.${timestamp}@teste.com`;
-
-    // 1. Nome Completo
+    const email = `cliente_email.${timestamp}@teste.com`;
+    
     try {
       const campoNome = page.locator('input:visible').first();
       await campoNome.scrollIntoViewIfNeeded();
@@ -85,8 +76,7 @@ test('Cadastro de Clientes E2E com Endereço Principal', async ({ page }) => {
     } catch (e) {
       console.log('⚠️ Falha ao preencher Nome Completo');
     }
-
-    // 2. Telefone
+    
     try {
       const campoTelefone = page.locator('input:visible').nth(1);
       await campoTelefone.click({ force: true });
@@ -96,7 +86,6 @@ test('Cadastro de Clientes E2E com Endereço Principal', async ({ page }) => {
       console.log('⚠️ Falha ao preencher Telefone');
     }
 
-    // 3. Documento (CPF)
     try {
       const campoDocumento = page.locator('input:visible').nth(2);
       await campoDocumento.click({ force: true });
@@ -105,8 +94,7 @@ test('Cadastro de Clientes E2E com Endereço Principal', async ({ page }) => {
     } catch (e) {
       console.log('⚠️ Falha ao preencher Documento (CPF)');
     }
-
-    // 4. Email
+    
     try {
       const campoEmail = page.locator('input:visible').nth(3);
       await campoEmail.click({ force: true });
@@ -115,8 +103,7 @@ test('Cadastro de Clientes E2E com Endereço Principal', async ({ page }) => {
     } catch (e) {
       console.log('⚠️ Falha ao preencher Email');
     }
-
-    // 5. Data de Nascimento
+    
     try {
       const campoData = page.locator('input:visible').nth(4);
       await campoData.click({ force: true });
@@ -126,11 +113,10 @@ test('Cadastro de Clientes E2E com Endereço Principal', async ({ page }) => {
       console.log('⚠️ Falha ao preencher Data de Nascimento');
     }
 
-    // 6. Preenchimento do Modal de Endereço (Sequencial Direto)
     try {
       const timestampEndereco = Date.now();
-      const nomeEndereco = `Endereço E2E ${timestampEndereco}`;
-      const cepValido = '89710300';
+      const nomeEndereco = `Endereço ${timestampEndereco}`;
+      const cepValido = '89710150';
       const numero = `${Math.floor(100 + Math.random() * 900)}`;
 
       const btnAdicionar = page.getByText(/Adicionar/i).first();
@@ -148,24 +134,52 @@ test('Cadastro de Clientes E2E com Endereço Principal', async ({ page }) => {
       const indices = totalInputs >= 9
         ? { nomeEndereco: 0, cep: 2, numero: 6 }
         : { nomeEndereco: 0, cep: 1, numero: 3 };
-
-      // Nome do Endereço
+    
       await inputsModal.nth(indices.nomeEndereco).fill(nomeEndereco, { force: true });
       console.log('✅ Preencheu Nome do Endereço:', nomeEndereco);
 
-      // CEP
+      // Escuta a requisição de CEP (API) antes de disparar a busca
+      const cepPromise = page.waitForResponse(
+        (res) => (res.url().includes('viacep') || res.url().includes('cep') || res.url().includes('addresses')) && res.status() === 200,
+        { timeout: 7000 }
+      ).catch(() => null);
+
       const cepInput = inputsModal.nth(indices.cep);
       await cepInput.fill(cepValido, { force: true });
       await cepInput.press('Enter');
       console.log('✅ Preencheu e buscou CEP:', cepValido);
 
-      await page.waitForTimeout(2000);
+      // Exibe os dados retornados pela API do CEP
+      const cepResponse = await cepPromise;
+      if (cepResponse) {
+        try {
+          const dadosCep = await cepResponse.json();
+          const logradouroApi = dadosCep.logradouro || dadosCep.street || dadosCep.endereco;
+          const bairroApi = dadosCep.bairro || dadosCep.district;
+          const cidadeApi = dadosCep.localidade || dadosCep.city || dadosCep.cidade;
+          const ufApi = dadosCep.uf || dadosCep.state;
 
-      // Número
+          if (logradouroApi) {
+            console.log(`✅ Endereço capturado: ${logradouroApi}${bairroApi ? `, ${bairroApi}` : ''} - ${cidadeApi}/${ufApi}`);
+          } else {
+            console.log('🌐 Resposta da API CEP:', JSON.stringify(dadosCep));
+          }
+        } catch (e) {}
+      }
+
+      await page.waitForTimeout(2000);           
+
+      // Lê o campo de Endereço/Logradouro preenchido automaticamente na tela
+      try {
+        const enderecoTela = await dialog.locator('input:visible').nth(indices.cep + 1).inputValue();
+        if (enderecoTela) {
+          console.log('✅ Endereço preenchido na tela:', enderecoTela);
+        }
+      } catch (e) {}
+
       await inputsModal.nth(indices.numero).fill(numero, { force: true });
       console.log('✅ Preencheu Número do Endereço:', numero);
-
-      // Checkbox Endereço Principal
+      
       const checkbox = dialog
         .locator('[role="checkbox"], .q-checkbox, input[type="checkbox"]')
         .locator('visible=true')
@@ -180,10 +194,10 @@ test('Cadastro de Clientes E2E com Endereço Principal', async ({ page }) => {
         }
       } else {
         await page.getByText(/Endere[çc]o principal/i).first().click({ force: true });
-      }
-      console.log('✅ Marcou Endereço Principal');
+      }      
 
-      // Confirmar Modal
+      console.log('✅ Marcou Endereço Principal');
+      
       const btnConfirmar = dialog.getByText(/Confirmar/i).first();
       await btnConfirmar.click({ force: true });
       console.log('✅ Confirmou Adição do Endereço');
@@ -194,21 +208,18 @@ test('Cadastro de Clientes E2E com Endereço Principal', async ({ page }) => {
     }
 
     console.log('FIM DE DADOS ENVIADOS');           
-
-    // Gravar/Salvar formulário
+    
     const btnGravar = page.getByText(/Gravar/i).first();
     await btnGravar.waitFor();
     await btnGravar.click({ force: true });
-    console.log('✅ Clicou em Gravar');      
+    console.log('✅ Clicou em Gravar');          
     
-    // Captura da API se disparada
     const salvarResponse = await salvarPessoaPromise;
     if (salvarResponse) {
-      console.log('✅ A URL capturada do POST é:', salvarResponse.url());
+      console.log('🌐 A URL capturada do POST é:', salvarResponse.url());
       console.log(`✅ Status da resposta API: ${salvarResponse.status()}`);
     }
-
-    // Asserção final no DOM
+    
     try {
       await expect(page.locator('body')).toHaveText(
         /cliente|sucesso|salvo|cadastrado|Listagem de clientes/i,
