@@ -36,7 +36,7 @@ test('Cadastro de Categorias', async ({ page }) => {
 
     await page.waitForTimeout(1000);    
 
-    console.log('--- DADOS ENVIADOS PRA API ---');
+    console.log('📝 DADOS ENVIADOS PRA API');
     const timestamp = Date.now();
     const nomeCategoria = obterServicoAleatorio().categoria + ' ' + timestamp;
     const descricao = `Categoria criada automaticamente pelo Playwright em ${timestamp}`;    
@@ -69,7 +69,7 @@ try {
       console.log('⚠️ Falha ao preencher Descrição');
     }
 
-    console.log('--- FIM DE DADOS ENVIADOS PRA API ---');
+    console.log('📝 FIM DE DADOS ENVIADOS PRA API');
 
     await page.waitForTimeout(2000);       
     

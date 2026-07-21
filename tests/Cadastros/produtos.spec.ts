@@ -39,7 +39,7 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
 
     await page.waitForTimeout(1000);   
 
-    console.log('DADOS ENVIADOS PRA API');    
+    console.log('📝 DADOS ENVIADOS PRA API');    
 
     const nomeProduto = obterProdutoAleatorio().nome;        
     const valor = Math.floor(Math.random() * 1000) + 1;
@@ -83,7 +83,7 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
       console.log('⚠️ Falha ao preencher Comissão');
     }
 
-    console.log('FIM DE DADOS ENVIADOS');           
+    console.log('📝 FIM DE DADOS ENVIADOS');           
     
     const btnGravar = page.getByText(/Gravar/i).first();
     await btnGravar.waitFor();

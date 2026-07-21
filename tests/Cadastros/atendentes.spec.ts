@@ -36,7 +36,7 @@ test('Cadastro de Atendentes E2E com Comissões', async ({ page }) => {
 
     await page.waitForTimeout(1000);    
 
-    console.log('--- PREENCHENDO DADOS DO ATENDENTE ---');    
+    console.log('📝 DADOS ENVIADOS PRA API');
     const timestamp = Date.now();
     const nomeAtendente = obterNomePessoaAleatorio();
     const emailAtendente = `email_atendente.${timestamp}@sgbr.com`;
@@ -51,6 +51,9 @@ test('Cadastro de Atendentes E2E com Comissões', async ({ page }) => {
             await campo.press('Control+A');
             await campo.press('Backspace');
             await campo.type(texto, { delay: 50 });
+            if (index === 4 || index === 5) 
+             console.log(`✅ ${nomeCampo}:`, Number(texto) / 100);
+            else  
             console.log(`✅ ${nomeCampo}:`, texto);
         } catch (e) {
             console.log(`⚠️ Falha ao preencher ${nomeCampo}`);
@@ -70,14 +73,13 @@ test('Cadastro de Atendentes E2E com Comissões', async ({ page }) => {
       await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
       await page.waitForTimeout(1000);
     } catch (e) {}
-
-    // 5. Salvar
+    console.log('📝 FIM DE DADOS ENVIADOS PRA API');
+    
     const btnGravar = page.getByText(/Gravar/i).first();
     await btnGravar.waitFor();
     await btnGravar.click({ force: true });
-    console.log('✅ Clicou em Gravar');          
+    console.log('✅ Clicou em Gravar');              
     
-    // Interceptação e validação da requisição
     const salvarResponse = await salvarAtendentePromise;
     if (salvarResponse) {
       console.log('🌐 A URL capturada do POST é:', salvarResponse.url());

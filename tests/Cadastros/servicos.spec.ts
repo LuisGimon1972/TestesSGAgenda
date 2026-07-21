@@ -41,7 +41,7 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
 
     await page.waitForTimeout(1000);    
 
-    console.log('--- DADOS ENVIADOS PRA API ---');    
+    console.log('📝 DADOS ENVIADOS PRA API');    
     const timestamp = Date.now();
     const nomeServico = servico.nomeServico.toUpperCase();
     const duracao = servico.duracaoMinutos.toFixed();
@@ -153,7 +153,7 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
         console.log('⚠️ Falha ao selecionar atendentes:', err);
     }
 
-    console.log('--- FIM DE DADOS ENVIADOS ---');           
+    console.log('📝 FIM DE DADOS ENVIADOS');           
     
     try {
       await page.evaluate(() => window.scrollTo(0, 0));

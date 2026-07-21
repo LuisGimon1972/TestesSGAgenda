@@ -59,7 +59,7 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
       }
     } catch (e) {}    
     
-    console.log('DADOS ENVIADOS PRA API');
+    console.log('📝 DADOS ENVIADOS PRA API');
     
     const timestamp = Date.now();
     const nomeCliente = obterNomePessoaAleatorio();
@@ -207,7 +207,7 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
       console.log('⚠️ Etapa de inclusão de endereço executada com observações');
     }
 
-    console.log('FIM DE DADOS ENVIADOS');           
+    console.log('📝 FIM DE DADOS ENVIADOS');           
     
     const btnGravar = page.getByText(/Gravar/i).first();
     await btnGravar.waitFor();
