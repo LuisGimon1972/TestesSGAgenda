@@ -4,7 +4,7 @@ import { capturarRequisicoesApi } from '../../utils/capturaApi';
 import { obterServicoAleatorio, obterNomeServicoAleatorio } from '../../utils/listaservicos';
 
 test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) => {
-    test.setTimeout(1200000);
+    test.setTimeout(70000);
 
     await loginCompleto(page);    
 
