@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { loginCompleto } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
-import { obterProdutoAleatorio } from '../../utils/listaprodutos';
+import { obterServicoAleatorio } from '../../utils/listaservicos';
 
 test('Cadastro de Categorias', async ({ page }) => {
     test.setTimeout(1200000);
@@ -38,7 +38,7 @@ test('Cadastro de Categorias', async ({ page }) => {
 
     console.log('--- PREENCHENDO DADOS DA CATEGORIA ---');    
     const timestamp = Date.now();
-    const nomeCategoria = obterProdutoAleatorio().categoria + ' ' + timestamp;
+    const nomeCategoria = obterServicoAleatorio().categoria + ' ' + timestamp;
     const descricao = `Categoria criada automaticamente pelo Playwright em ${timestamp}`;    
     
     const preencherCampo = async (index: number, texto: string, nomeCampo: string) => {
