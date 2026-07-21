@@ -54,7 +54,7 @@ test('Cadastro de Atendentes E2E com Comissões', async ({ page }) => {
             if (index === 4 || index === 5) 
              console.log(`✅ ${nomeCampo}:`, Number(texto) / 100);
             else  
-            console.log(`✅ ${nomeCampo}:`, texto);
+             console.log(`✅ ${nomeCampo}:`, texto);
         } catch (e) {
             console.log(`⚠️ Falha ao preencher ${nomeCampo}`);
         }
