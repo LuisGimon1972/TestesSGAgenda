@@ -42,9 +42,9 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
     console.log('DADOS ENVIADOS PRA API');    
 
     const nomeProduto = obterProdutoAleatorio().nome;        
-    const valor = '2500';
+    const valor = Math.floor(Math.random() * 1000) + 1;
     const quantidade = '10';
-    const comissao = '2000';
+    const comissao = '20';
     
     try {
       const campoNome = page.locator('input:visible').nth(0);
@@ -59,7 +59,7 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
     try {
       const campoValor = page.locator('input:visible').nth(1);
       await campoValor.click({ force: true });
-      await campoValor.fill(valor, { force: true });
+      await campoValor.fill(valor.toFixed(), { force: true });
       console.log('✅ Valor:', valor);
     } catch (e) {
       console.log('⚠️ Falha ao preencher Valor');
