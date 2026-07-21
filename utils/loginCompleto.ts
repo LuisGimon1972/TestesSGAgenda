@@ -25,14 +25,14 @@ export async function loginCompleto(page: Page) {
   //await page.waitForURL(/empresas/, { timeout: 20000 });
   //console.log('✅ Chegou em Empresa');  
   
-  const botao = page.locator('button:has-text("ENTRAR")').nth(0);
+/*  const botao = page.locator('button:has-text("ENTRAR")').nth(0);
   //const botao = page.locator('button:has-text("ENTRAR")').first();
   await botao.highlight();
   await botao.evaluate((el: any) => {
     el.style.border = '5px solid red';
     el.click();
   });
-  console.log('✅ Clicou em Entrar ao Sistema');
+  console.log('✅ Clicou em Entrar ao Sistema');*/
 
   const botao1 = page.locator('button:has-text("Acessar")').nth(4);
   //const botao = page.locator('button:has-text("ENTRAR")').first();
