@@ -36,7 +36,7 @@ test('Cadastro de Categorias', async ({ page }) => {
 
     await page.waitForTimeout(1000);    
 
-    console.log('--- PREENCHENDO DADOS DA CATEGORIA ---');    
+    console.log('--- DADOS ENVIADOS PRA API ---');
     const timestamp = Date.now();
     const nomeCategoria = obterServicoAleatorio().categoria + ' ' + timestamp;
     const descricao = `Categoria criada automaticamente pelo Playwright em ${timestamp}`;    
@@ -54,22 +54,22 @@ test('Cadastro de Categorias', async ({ page }) => {
             console.log(`⚠️ Falha ao preencher ${nomeCampo}`);
         }
     };
-
-    // Preenche Nome da Categoria (input eq(0) do Cypress)
+    
     await preencherCampo(0, nomeCategoria, 'Nome da Categoria');
-
-    // Preenche Descrição da Categoria (textarea)
-    try {
+    
+try {
       const campoDescricao = page.locator('textarea:visible').first();
       await campoDescricao.scrollIntoViewIfNeeded();
       await campoDescricao.click({ force: true });
       await campoDescricao.press('Control+A');
       await campoDescricao.press('Backspace');
       await campoDescricao.type(descricao, { delay: 20 });
-      console.log('✅ Descrição da Categoria preenchida');
+      console.log('✅ Descrição preenchida:', descricao);
     } catch (e) {
       console.log('⚠️ Falha ao preencher Descrição');
     }
+
+    console.log('--- FIM DE DADOS ENVIADOS PRA API ---');
 
     await page.waitForTimeout(2000);       
     

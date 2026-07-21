@@ -7,7 +7,7 @@ export type Servico = {
 };
 
 export const servicos: Servico[] = [
-  // --- BARBEARIA ---
+  
   { id: '2001', nomeServico: 'Corte Masculino Tradicional', categoria: 'BARBEARIA', duracaoMinutos: 30, precoSugerido: 45 },
   { id: '2002', nomeServico: 'Corte Degradê / Fade', categoria: 'BARBEARIA', duracaoMinutos: 40, precoSugerido: 55 },
   { id: '2003', nomeServico: 'Barba Modelada com Toalha Quente', categoria: 'BARBEARIA', duracaoMinutos: 30, precoSugerido: 40 },
@@ -18,8 +18,7 @@ export const servicos: Servico[] = [
   { id: '2008', nomeServico: 'Corte Infantil Masculino', categoria: 'BARBEARIA', duracaoMinutos: 30, precoSugerido: 40 },
   { id: '2009', nomeServico: 'Selagem Masculina', categoria: 'BARBEARIA', duracaoMinutos: 50, precoSugerido: 90 },
   { id: '2010', nomeServico: 'Platinado / Nevou', categoria: 'BARBEARIA', duracaoMinutos: 120, precoSugerido: 150 },
-
-  // --- CABELEIREIRO ---
+  
   { id: '2011', nomeServico: 'Corte Feminino a Laser/Tesoura', categoria: 'CABELEIREIRO', duracaoMinutos: 50, precoSugerido: 90 },
   { id: '2012', nomeServico: 'Escova Modeladora e Lavagem', categoria: 'CABELEIREIRO', duracaoMinutos: 40, precoSugerido: 60 },
   { id: '2013', nomeServico: 'Coloração Raiz e Comprimento', categoria: 'CABELEIREIRO', duracaoMinutos: 90, precoSugerido: 180 },
@@ -30,8 +29,7 @@ export const servicos: Servico[] = [
   { id: '2018', nomeServico: 'Botox Capilar', categoria: 'CABELEIREIRO', duracaoMinutos: 90, precoSugerido: 160 },
   { id: '2019', nomeServico: 'Penteado para Festas e Eventos', categoria: 'CABELEIREIRO', duracaoMinutos: 60, precoSugerido: 150 },
   { id: '2020', nomeServico: 'Design de Sobrancelhas', categoria: 'CABELEIREIRO', duracaoMinutos: 30, precoSugerido: 35 },
-
-  // --- SPA & BEM-ESTAR ---
+  
   { id: '2021', nomeServico: 'Massagem Relaxante Corporal', categoria: 'SPA', duracaoMinutos: 60, precoSugerido: 140 },
   { id: '2022', nomeServico: 'Massagem Modeladora / Drenagem', categoria: 'SPA', duracaoMinutos: 60, precoSugerido: 130 },
   { id: '2023', nomeServico: 'Limpeza de Pele Profunda', categoria: 'SPA', duracaoMinutos: 80, precoSugerido: 160 },
@@ -44,17 +42,11 @@ export const servicos: Servico[] = [
   { id: '2030', nomeServico: 'Day Spa Relaxamento Total', categoria: 'SPA', duracaoMinutos: 180, precoSugerido: 450 }
 ];
 
-/**
- * Retorna o nome de um serviço aleatório.
- */
 export function obterNomeServicoAleatorio(): string {
   const servicoAleatorio = servicos[Math.floor(Math.random() * servicos.length)];
   return servicoAleatorio.nomeServico;
 }
 
-/**
- * Retorna o objeto completo de um serviço aleatório.
- */
 export function obterServicoAleatorio(): Servico {
   return servicos[Math.floor(Math.random() * servicos.length)];
 }
