@@ -40,12 +40,11 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
     await page.waitForTimeout(1000);   
 
     console.log('📝 DADOS ENVIADOS PRA API');    
-
     const nomeProduto = `${obterProdutoAleatorio().nome} ${Date.now()}`;
     const valor = Math.floor(Math.random() * 1000) + 1;
     const quantidade = '10';
     const comissao = '2000';
-    
+        
     try {
       const campoNome = page.locator('input:visible').nth(0);
       await campoNome.scrollIntoViewIfNeeded();
@@ -125,20 +124,20 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
         const jsonListagem = await respostaListagem.json();      
         const listaProdutos: any[] = jsonListagem?.data || jsonListagem || [];
         
-        const produtoCriado = listaProdutos.find(
+        const planoCriado = listaProdutos.find(
           (p: any) => p.name === nomeProduto || p.nome === nomeProduto
         );
 
-        if (produtoCriado) {
-          const idEncontrado = produtoCriado.id || produtoCriado.iid;
+        if (planoCriado) {
+          const idEncontrado = planoCriado.id || planoCriado.iid;
           console.log('✅ REGISTRO ENCONTRADO COM SUCESSO!');
           console.log('🆔 ID do Novo Registro:', idEncontrado);
-          console.log('📦 JSON do Registro Consultado:\n', JSON.stringify(produtoCriado, null, 2));
+          console.log('📦 JSON do Registro Consultado:\n', JSON.stringify(planoCriado, null, 2));
         } else {
-          console.log(`⚠️ Produto "${nomeProduto}" não foi localizado na primeira página.`);
+          console.log(`⚠️ Plano "${nomeProduto}" não foi localizado na primeira página.`);
         }
       } else {
-        console.log(`⚠️ Falha ao buscar a listagem de produtos. Status HTTP: ${respostaListagem.status()}`);
+        console.log(`⚠️ Falha ao buscar a listagem de planos. Status HTTP: ${respostaListagem.status()}`);
       }
     }
     
