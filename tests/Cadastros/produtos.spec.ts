@@ -41,10 +41,10 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
 
     console.log('📝 DADOS ENVIADOS PRA API');    
 
-    const nomeProduto = obterProdutoAleatorio().nome;        
+    const nomeProduto = `${obterProdutoAleatorio().nome} ${Date.now()}`;
     const valor = Math.floor(Math.random() * 1000) + 1;
     const quantidade = '10';
-    const comissao = '20';
+    const comissao = '2000';
     
     try {
       const campoNome = page.locator('input:visible').nth(0);
@@ -78,7 +78,7 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
       const campoComissao = page.locator('input:visible').nth(3);
       await campoComissao.click({ force: true });
       await campoComissao.fill(comissao, { force: true });
-      console.log('✅ Comissão:', comissao);
+      console.log('✅ Comissão:', Number(comissao)/100);
     } catch (e) {
       console.log('⚠️ Falha ao preencher Comissão');
     }
@@ -88,12 +88,61 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
     const btnGravar = page.getByText(/Gravar/i).first();
     await btnGravar.waitFor();
     await btnGravar.click({ force: true });
-    console.log('✅ Clicou em Gravar');          
+    console.log('✅ Clicou em Gravar');              
     
-    const salvarResponse = await salvarProdutoPromise;
-    if (salvarResponse) {
+    let respostaJson: any = null;
+    const salvarResponse = await salvarProdutoPromise;    
+    
+    if (salvarResponse) {    
       console.log('🌐 A URL capturada do POST é:', salvarResponse.url());
       console.log(`✅ Status da resposta API: ${salvarResponse.status()}`);
+      try {        
+        respostaJson = await salvarResponse.json();               
+        console.log('📦 JSON de resposta:', JSON.stringify(respostaJson, null, 2));        
+      } catch (e) {
+        console.log('⚠️ A resposta da API não contém um JSON válido ou veio vazia.');
+      }
+
+      const urlListagem = salvarResponse.url().replace(/\/$/, '');      
+      const headersGet = { ...salvarResponse.request().headers() };
+      delete headersGet['content-type'];
+      delete headersGet['content-length'];
+      delete headersGet[':method'];
+      delete headersGet[':path'];
+      delete headersGet[':authority'];
+      delete headersGet[':scheme'];
+      
+      const urlConsulta = `${urlListagem}?page=1&perPage=10&f_params[orderBy][field]=created_at&f_params[orderBy][type]=desc`;
+      
+      const respostaListagem = await page.request.get(urlConsulta, {
+        headers: headersGet,
+      });
+
+      console.log('🌐 URL da consulta de listagem:', urlConsulta);
+      console.log(`✅ Status da consulta GET: ${respostaListagem.status()}`);
+
+      if (respostaListagem.status() === 200) {
+        const jsonListagem = await respostaListagem.json();
+        
+        // Garante a leitura da lista (seja `jsonListagem.data` ou a própria lista)
+        const listaProdutos: any[] = jsonListagem?.data || jsonListagem || [];
+
+        // 4. Localiza o produto exato comparando pelo nome gerado no teste
+        const produtoCriado = listaProdutos.find(
+          (p: any) => p.name === nomeProduto || p.nome === nomeProduto
+        );
+
+        if (produtoCriado) {
+          const idEncontrado = produtoCriado.id || produtoCriado.iid;
+          console.log('✅ REGISTRO ENCONTRADO COM SUCESSO!');
+          console.log('🆔 ID do Novo Registro:', idEncontrado);
+          console.log('📦 Dados Completos do Registro:\n', JSON.stringify(produtoCriado, null, 2));
+        } else {
+          console.log(`⚠️ Produto "${nomeProduto}" não foi localizado na primeira página.`);
+        }
+      } else {
+        console.log(`⚠️ Falha ao buscar a listagem de produtos. Status HTTP: ${respostaListagem.status()}`);
+      }
     }
     
     try {
