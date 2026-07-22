@@ -40,8 +40,7 @@ test('Cadastro de Planos E2E com Serviço Prestado', async ({ page }) => {
 
     await page.waitForTimeout(1000);    
 
-    console.log('📝 DADOS ENVIADOS PRA API');    
-    const timestamp = Date.now();
+    console.log('📝 DADOS ENVIADOS PRA API');        
     const nomePlano = obterNomePlanoAleatorio();
     const valorPlano = '1475';     
     const descricaoPlano = `Plano destinado a atender às necessidades do seu negócio, oferecendo recursos essenciais, segurança, suporte e atualizações para uma gestão mais eficiente e produtiva.`;    
@@ -54,13 +53,13 @@ test('Cadastro de Planos E2E com Serviço Prestado', async ({ page }) => {
             await campo.press('Control+A');
             await campo.press('Backspace');
             await campo.type(texto, { delay: 50 });
-            console.log(`✅ ${nomeCampo}:`, texto);
+            console.log(`✅ ${nomeCampo.toUpperCase()}:`, texto);
         } catch (e) {
             console.log(`⚠️ Falha ao preencher ${nomeCampo}`);
         }
     };
     
-    await preencherCampo(0, nomePlano, 'Nome do Plano');
+    await preencherCampo(0, nomePlano.toUpperCase(), 'Nome do Plano');
     await preencherCampo(1, valorPlano, 'Valor do Plano');    
     
     try {
@@ -75,7 +74,7 @@ test('Cadastro de Planos E2E com Serviço Prestado', async ({ page }) => {
       await campoDescricao.click({ force: true });
       await campoDescricao.press('Control+A');
       await campoDescricao.press('Backspace');
-      await campoDescricao.type(descricaoPlano, { delay: 20 });
+      await campoDescricao.type(descricaoPlano.toUpperCase(), { delay: 20 });
       console.log('✅ Descrição do Plano preenchida:', descricaoPlano);
     } catch (e) {
       console.log('⚠️ Falha ao preencher Descrição');
