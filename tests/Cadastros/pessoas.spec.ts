@@ -138,7 +138,6 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
       await inputsModal.nth(indices.nomeEndereco).fill(nomeEndereco, { force: true });
       console.log('✅ Preencheu Nome do Endereço:', nomeEndereco);
 
-      // Escuta a requisição de CEP (API) antes de disparar a busca
       const cepPromise = page.waitForResponse(
         (res) => (res.url().includes('viacep') || res.url().includes('cep') || res.url().includes('addresses')) && res.status() === 200,
         { timeout: 7000 }
@@ -148,8 +147,7 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
       await cepInput.fill(cepValido, { force: true });
       await cepInput.press('Enter');
       console.log('✅ Preencheu e buscou CEP:', cepValido);
-
-      // Exibe os dados retornados pela API do CEP
+      
       const cepResponse = await cepPromise;
       if (cepResponse) {
         try {
@@ -168,8 +166,7 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
       }
 
       await page.waitForTimeout(2000);           
-
-      // Lê o campo de Endereço/Logradouro preenchido automaticamente na tela
+      
       try {
         const enderecoTela = await dialog.locator('input:visible').nth(indices.cep + 1).inputValue();
         if (enderecoTela) {
@@ -213,11 +210,53 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
     await btnGravar.waitFor();
     await btnGravar.click({ force: true });
     console.log('✅ Clicou em Gravar');          
-    
-    const salvarResponse = await salvarPessoaPromise;
+
+    let respostaJson: any = null;
+    const salvarResponse = await salvarPessoaPromise;    
+
     if (salvarResponse) {
       console.log('🌐 A URL capturada do POST é:', salvarResponse.url());
       console.log(`✅ Status da resposta API: ${salvarResponse.status()}`);
+
+      try {        
+        respostaJson = await salvarResponse.json();               
+        console.log('📦 JSON de resposta:', JSON.stringify(respostaJson, null, 2));        
+      } catch (e) {
+        console.log('⚠️ A resposta da API não contém um JSON válido ou veio vazia.');
+      }
+    }
+    
+    const idPessoa = respostaJson?.data?.id?.toString()?.trim() || respostaJson?.id?.toString()?.trim();
+
+    if (salvarResponse && idPessoa) {     
+      const urlPost = salvarResponse.url().replace(/\/$/, '');
+      const urlRegistroCriado = `${urlPost}/${idPessoa}`;      
+      const headersGetRegistro = { ...salvarResponse.request().headers() };      
+      delete headersGetRegistro['content-type'];
+      delete headersGetRegistro['content-length'];
+      delete headersGetRegistro[':method'];
+      delete headersGetRegistro[':path'];
+      delete headersGetRegistro[':authority'];
+      delete headersGetRegistro[':scheme'];      
+      const getCriadoResponse = await page.request.get(urlRegistroCriado, {
+        headers: headersGetRegistro,
+      });
+
+      console.log('🌐 URL do registro criado:', urlRegistroCriado);
+      console.log('✅ RESPOSTA DA API AO CONSULTAR O NOVO REGISTRO');
+      console.log('✅ Novo Controle/ID:', idPessoa);    
+      console.log(`✅ Status GET: ${getCriadoResponse.status()}`);
+
+      try {
+        const dadosCriado = await getCriadoResponse.json();
+        console.log('📦 JSON do Registro Consultado:\n', JSON.stringify(dadosCriado, null, 2));
+      } catch (error) {
+        console.error('⚠️ Erro ao converter resposta para JSON:', error);
+        const corpoBruto = await getCriadoResponse.text();
+        console.log('Corpo bruto da resposta:', corpoBruto);
+      }
+    } else {
+      console.log('⚠️ Não foi possível obter o ID do salvamento para consultar o registro.');
     }
     
     try {
@@ -228,7 +267,7 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
       console.log('✅ Cliente cadastrado com sucesso!');
     } catch (e) {
       console.log('⚠️ Validação de texto concluída.');
-    }
+    }       
 
     await capturarRequisicoesApi(page); 
     await page.waitForTimeout(4000);    
