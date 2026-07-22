@@ -47,8 +47,7 @@ test.describe('Agendamentos - Cadastro', () => {
     console.log('✅ Clicou em Cadastrar agendamento');
   }
 
-  async function selecionarServico(page: Page, tentativa = 0): Promise<void> {
-    console.log('📝 DADOS ENVIADOS PRA API');
+  async function selecionarServico(page: Page, tentativa = 0): Promise<void> {    
     await expect(page.locator('body')).toHaveText(/Escolha o servi[çc]o/i, { timeout: 30000 });
     await fecharCookiesSeAparecer(page);
     await page.waitForTimeout(1000);
@@ -345,7 +344,7 @@ test.describe('Agendamentos - Cadastro', () => {
     response.status() < 300,
     { timeout: 15000 }
     ).catch(() => null);
-
+    console.log('📝 DADOS ENVIADOS PRA API');
     await selecionarServico(page);
     await selecionarProfissional(page);
     await selecionarDataFuturaOuHoje(page);
