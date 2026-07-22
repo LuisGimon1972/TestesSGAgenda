@@ -1,7 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 import { loginCompleto } from '../../utils/loginCompleto';
 
-test.describe('Agendamentos - Finalizar agendamento criado no mês', () => {
+test.describe('Agendamentos - Cancenlar agendamento', () => {
 
   async function fecharCookiesSeAparecer(page: Page) {
     const btnEntendi = page.locator('button, .q-btn').filter({ hasText: /^Entendi$/i });
@@ -156,15 +156,15 @@ test.describe('Agendamentos - Finalizar agendamento criado no mês', () => {
     
     await expect(page.locator('body')).toHaveText(/Detalhes/i, { timeout: 30000 });
 
-    const finalizarAgendamentoPromise = page.waitForResponse((response) =>
-      (response.url().includes('/schedules') || response.url().includes('/finish') || response.url().includes('/status')) &&
+    const CancelarAgendamentoPromise = page.waitForResponse((response) =>
+      (response.url().includes('/schedules') || response.url().includes('/cancel') || response.url().includes('/status')) &&
       ['POST', 'PUT', 'PATCH'].includes(response.request().method()) &&
       response.status() >= 200 && response.status() < 300,
       { timeout: 15000 }
     ).catch(() => null);
     
     const btnFinalizar = page.locator('button.q-btn, [role="button"]')
-      .filter({ hasText: /^Finalizar$/i })
+      .filter({ hasText: /^Cancelar$/i })
       .first();
     await expect(btnFinalizar).toBeVisible({ timeout: 30000 });    
     await btnFinalizar.scrollIntoViewIfNeeded();
@@ -179,18 +179,18 @@ test.describe('Agendamentos - Finalizar agendamento criado no mês', () => {
       await btnConfirmar.click({ force: true });
     }
     
-    const responseFinalizar = await finalizarAgendamentoPromise;
+    const responseCancelar = await CancelarAgendamentoPromise;
 
-    if (responseFinalizar) {
-      console.log(`🌐 URL de Finalização: ${responseFinalizar.url()}`);
-      console.log(`✅ Status da API de Finalização: ${responseFinalizar.status()}`);
+    if (responseCancelar) {
+      console.log(`🌐 URL de Cancelamento: ${responseCancelar.url()}`);
+      console.log(`✅ Status da API de Finalização: ${responseCancelar.status()}`);
       
-      const payloadEnviado = responseFinalizar.request().postDataJSON();
+      const payloadEnviado = responseCancelar.request().postDataJSON();
       if (payloadEnviado) {
         console.log('📌 Payload enviado:\n', JSON.stringify(payloadEnviado, null, 2));
       }
     }
 
-    console.log('✅ Agendamento finalizado com sucesso!');
+    console.log('✅ Agendamento cancelado com sucesso!');
   });
 });
