@@ -93,7 +93,22 @@ test.describe('Agendamentos - Finalizar agendamento criado no mês', () => {
     const indiceSorteado = indicesCriados[Math.floor(Math.random() * indicesCriados.length)];
     const textoLinhaSelecionada = (await linhas.nth(indiceSorteado).innerText()).replace(/\s+/g, ' ').trim();
 
-    console.log(`📌 Agendamento Criado encontrado: ${textoLinhaSelecionada}`);
+    const partes = textoLinhaSelecionada.split(/face|construction|store|person/);
+    const clienteBruto = partes[4]?.trim() || "";
+    const matchCliente = clienteBruto.match(/^(.*?)\s+R\$\s*([\d.,]+)\s+(.+)$/);
+    const statusBruto = matchCliente ? matchCliente[3].trim() : "";
+    const statusLimpo = statusBruto.replace(/\s+.*/, '');
+    const dadosAgendamento = {
+    dataHora: partes[0]?.trim(),
+    profissional: partes[1]?.trim(),
+    servico: partes[2]?.trim(),
+    estabelecimento: partes[3]?.trim(),
+    cliente: matchCliente ? matchCliente[1].trim() : clienteBruto,
+    valor: matchCliente ? `R$ ${matchCliente[2]}` : "",
+    status: statusLimpo
+};
+    console.log('✅ Agendamento Criado encontrado:')
+    console.log(dadosAgendamento);
     await clicarEditarNaLinha(page, indiceSorteado);
     return true;
   }
@@ -187,7 +202,7 @@ test.describe('Agendamentos - Finalizar agendamento criado no mês', () => {
       
       const payloadEnviado = responseFinalizar.request().postDataJSON();
       if (payloadEnviado) {
-        console.log('📌 Payload enviado:\n', JSON.stringify(payloadEnviado, null, 2));
+        console.log('✅ Payload enviado:\n', JSON.stringify(payloadEnviado, null, 2));
       }
     }
 
