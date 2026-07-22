@@ -41,20 +41,19 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
 
     await page.waitForTimeout(1000);    
 
-    console.log('📝 DADOS ENVIADOS PRA API');    
-    const timestamp = Date.now();
+    console.log('📝 DADOS ENVIADOS PRA API');        
     const nomeServico = servico.nomeServico.toUpperCase();
-    const duracao = servico.duracaoMinutos.toFixed();
-    const valor = servico.precoSugerido.toFixed();
-    const comissao = '30';
-    const descricao = `Serviço criado automaticamente pelo Playwright em ${timestamp}`;
+    const duracao = servico.duracaoMinutos.toFixed();    
+    const valor = (servico.precoSugerido * 100).toFixed();
+    const comissao = '3000';
+    const descricao = `Serviço realizado por profissional qualificado, utilizando técnicas adequadas para atender às preferências e necessidades de cada cliente. O atendimento inclui avaliação do estilo desejado, execução do corte e acabamento, proporcionando um visual renovado, bem cuidado e alinhado.`;
     
     try {
       const campoNome = page.locator('input:visible').nth(0);
       await campoNome.scrollIntoViewIfNeeded();
       await campoNome.click({ force: true });
       await campoNome.fill(nomeServico, { force: true });
-      console.log('✅ Nome do Serviço:', nomeServico);
+      console.log('✅ Nome do Serviço:', nomeServico.toUpperCase());
     } catch (e) {
       console.log('⚠️ Falha ao preencher Nome do Serviço');
     }
@@ -69,19 +68,29 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
     }
     
     try {
-      const campoValor = page.locator('input:visible').nth(2);
+     const campoValor = page.locator('input:visible').nth(2);
+      await campoValor.scrollIntoViewIfNeeded();
       await campoValor.click({ force: true });
-      await campoValor.fill(valor, { force: true });
-      console.log('✅ Valor:', valor);
+      await campoValor.press('Control+A');
+      await campoValor.press('Backspace');
+      await campoValor.type(valor.toString(), { delay: 50 });
+
+      // O cálculo é feito na variável `valor`
+      const valorFormatado = (Number(valor) / 100).toFixed(2);
+      console.log('✅ Valor:', valorFormatado);
     } catch (e) {
       console.log('⚠️ Falha ao preencher Valor');
     }
     
     try {
       const campoComissao = page.locator('input:visible').nth(3);
+      await campoComissao.scrollIntoViewIfNeeded();
       await campoComissao.click({ force: true });
-      await campoComissao.fill(comissao, { force: true });
-      console.log('✅ Comissão:', comissao);
+      await campoComissao.press('Control+A');
+      await campoComissao.press('Backspace');
+      await campoComissao.type(comissao.toString(), { delay: 50 });      
+      const comissaoFormatada = (Number(comissao) / 100).toFixed(2);
+      console.log('✅ Comissão:', `${comissaoFormatada}%`);
     } catch (e) {
       console.log('⚠️ Falha ao preencher Comissão');
     }
@@ -90,7 +99,7 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
       const campoDescricao = page.locator('textarea:visible').first();
       await campoDescricao.scrollIntoViewIfNeeded();
       await campoDescricao.click({ force: true });
-      await campoDescricao.fill(descricao, { force: true });
+      await campoDescricao.fill(descricao.toUpperCase(), { force: true });
       console.log('✅ Descrição do Serviço preenchida');
     } catch (e) {
       console.log('⚠️ Falha ao preencher Descrição');
@@ -163,12 +172,54 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
     const btnGravar = page.getByText(/Gravar/i).first();
     await btnGravar.waitFor();
     await btnGravar.click({ force: true });
-    console.log('✅ Clicou em Gravar');          
+    console.log('✅ Clicou em Gravar');             
     
-    const salvarResponse = await salvarServicoPromise;
+    let respostaJson: any = null;
+    const salvarResponse = await salvarServicoPromise;    
+
     if (salvarResponse) {
       console.log('🌐 A URL capturada do POST é:', salvarResponse.url());
       console.log(`✅ Status da resposta API: ${salvarResponse.status()}`);
+
+      try {        
+        respostaJson = await salvarResponse.json();               
+        console.log('📦 JSON de resposta:', JSON.stringify(respostaJson, null, 2));        
+      } catch (e) {
+        console.log('⚠️ A resposta da API não contém um JSON válido ou veio vazia.');
+      }
+    }
+    
+    const idServico = respostaJson?.data?.id?.toString()?.trim() || respostaJson?.id?.toString()?.trim();
+
+    if (salvarResponse && idServico) {     
+      const urlPost = salvarResponse.url().replace(/\/$/, '');
+      const urlRegistroCriado = `${urlPost}/${idServico}`;      
+      const headersGetRegistro = { ...salvarResponse.request().headers() };      
+      delete headersGetRegistro['content-type'];
+      delete headersGetRegistro['content-length'];
+      delete headersGetRegistro[':method'];
+      delete headersGetRegistro[':path'];
+      delete headersGetRegistro[':authority'];
+      delete headersGetRegistro[':scheme'];      
+      const getCriadoResponse = await page.request.get(urlRegistroCriado, {
+        headers: headersGetRegistro,
+      });
+
+      console.log('🌐 URL do registro criado:', urlRegistroCriado);
+      console.log('✅ RESPOSTA DA API AO CONSULTAR O NOVO REGISTRO');
+      console.log('✅ Novo ID:', idServico);    
+      console.log(`✅ Status GET: ${getCriadoResponse.status()}`);
+
+      try {
+        const dadosCriado = await getCriadoResponse.json();
+        console.log('📦 JSON do Registro Consultado:\n', JSON.stringify(dadosCriado, null, 2));
+      } catch (error) {
+        console.error('⚠️ Erro ao converter resposta para JSON:', error);
+        const corpoBruto = await getCriadoResponse.text();
+        console.log('Corpo bruto da resposta:', corpoBruto);
+      }
+    } else {
+      console.log('⚠️ Não foi possível obter o ID do salvamento para consultar o registro.');
     }
     
     try {
