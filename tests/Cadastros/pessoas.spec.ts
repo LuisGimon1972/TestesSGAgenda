@@ -244,7 +244,7 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
 
       console.log('🌐 URL do registro criado:', urlRegistroCriado);
       console.log('✅ RESPOSTA DA API AO CONSULTAR O NOVO REGISTRO');
-      console.log('✅ Novo Controle/ID:', idPessoa);    
+      console.log('✅ Novo ID:', idPessoa);    
       console.log(`✅ Status GET: ${getCriadoResponse.status()}`);
 
       try {
