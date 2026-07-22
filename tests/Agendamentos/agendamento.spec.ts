@@ -48,6 +48,7 @@ test.describe('Agendamentos - Cadastro', () => {
   }
 
   async function selecionarServico(page: Page, tentativa = 0): Promise<void> {
+    console.log('📝 DADOS ENVIADOS PRA API');
     await expect(page.locator('body')).toHaveText(/Escolha o servi[çc]o/i, { timeout: 30000 });
     await fecharCookiesSeAparecer(page);
     await page.waitForTimeout(1000);
@@ -103,7 +104,12 @@ test.describe('Agendamentos - Cadastro', () => {
       throw new Error('Nenhum card de serviço encontrado com Corte, Serviço ou Moeda.');
     }
 
-    console.log(`✅ Serviço escolhido: ${resultadoClique.textoClicado}`);
+    const servicoLimpo = resultadoClique.textoClicado
+    ?.replace(/edit_square/i, '') 
+    ?.replace(/\s+/g, ' ')        
+    ?.trim();
+
+    console.log(`✅ Serviço escolhido: ${servicoLimpo}`);
     await page.waitForTimeout(1500);
 
     const textoDepois = await page.locator('body').innerText();
@@ -162,7 +168,11 @@ test.describe('Agendamentos - Cadastro', () => {
       throw new Error('Nenhum card de profissional foi encontrado após selecionar o serviço.');
     }
 
-    console.log(`✅ Profissional escolhido: ${resultadoClique.textoClicado}`);
+    const profissionalLimpo = resultadoClique.textoClicado
+    ?.replace(/^person|person/gi, '') 
+    ?.replace(/\s+/g, ' ')            
+    ?.trim();
+    console.log(`✅ Profissional escolhido: ${profissionalLimpo}`);
     await page.waitForTimeout(1500);
 
     const textoBody = await page.locator('body').innerText();    
@@ -231,8 +241,7 @@ test.describe('Agendamentos - Cadastro', () => {
     }
 
     dataSelecionadaEhHoje = dadosData.ehHoje;
-    console.log(`✅ Data escolhida: ${dadosData.texto}`);
-    console.log(`📅 Data escolhida é hoje? ${dataSelecionadaEhHoje}`);
+    console.log(`✅ Data escolhida: ${dadosData.texto}`);    
     
     return true; 
   }
@@ -275,8 +284,10 @@ test.describe('Agendamentos - Cadastro', () => {
   }
 
   async function selecionarCliente(page: Page) {
-    const lblCliente = page.locator('body').filter({ hasText: /Nome do cliente|Nombre del cliente/i });
-    await expect(lblCliente).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('body')).toHaveText(
+      /Nome do cliente|Nombre del cliente|Cliente|Selecione o cliente/i, 
+      { timeout: 30000 }
+    );
 
     const inputNome = page.locator('input:visible').nth(1);
     await inputNome.scrollIntoViewIfNeeded();  
@@ -286,9 +297,13 @@ test.describe('Agendamentos - Cadastro', () => {
     
     const primeiraOpcao = page.locator('.q-menu:visible .q-item, .q-virtual-scroll__content .q-item, [role="option"]')
       .filter({ hasNotText: /Nenhum resultado|Sin resultados/i }).first();
-      
-    await primeiraOpcao.click({ force: true });
-    console.log('✅ Selecionou o primeiro cliente da lista');
+          
+    const nomeClienteText = await primeiraOpcao.innerText();
+    const nomeClienteLimpo = nomeClienteText?.replace(/\s+/g, ' ').trim();
+    
+    await primeiraOpcao.click({ force: true });    
+    
+    console.log(`✅ Selecionou o primeiro cliente da lista: ${nomeClienteLimpo}`);
     
     await page.waitForTimeout(500);
 
@@ -302,6 +317,7 @@ test.describe('Agendamentos - Cadastro', () => {
       await inputTelefone.type(telefone, { delay: 50 });
       console.log(`✅ Preencheu telefone: ${telefone}`);
     }
+    console.log('📝 FIM DE DADOS ENVIADOS PRA API');
   }
   
   test('Deve cadastrar um agendamento com horário futuro.', async ({ page }) => {
@@ -348,7 +364,7 @@ test.describe('Agendamentos - Cadastro', () => {
     
     await btnAgendar.scrollIntoViewIfNeeded();
     await btnAgendar.click({ force: true });
-    console.log('✅ Clicou em Agendar / Guardar');
+    console.log('✅ Clicou em Agendar');
 
     const responseAgendamento = await salvarAgendamentoPromise;
 
