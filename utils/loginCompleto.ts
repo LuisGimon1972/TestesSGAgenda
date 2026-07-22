@@ -13,28 +13,16 @@ export async function loginCompleto(page: Page) {
   await page.waitForSelector('input[type="email"], input[type="text"]', {
     timeout: 15000
   });
-  //await page.waitForTimeout(1000);
+
   console.log('✅ Apareceu Form Login');  
   await page.locator('input[type="email"], input[type="text"]').first().fill(process.env.USER!);
   await page.locator('input[type="password"]').first().fill(process.env.PASS!);
-  //await page.waitForTimeout(1000);
+
   console.log('✅ Login Preenchido');  
   await page.getByRole('button', { name: /entrar/i }).click();
-  console.log('✅ Clicou em Entrar');
-  
-  //await page.waitForURL(/empresas/, { timeout: 20000 });
-  //console.log('✅ Chegou em Empresa');  
-  
-/*  const botao = page.locator('button:has-text("ENTRAR")').nth(0);
-  //const botao = page.locator('button:has-text("ENTRAR")').first();
-  await botao.highlight();
-  await botao.evaluate((el: any) => {
-    el.style.border = '5px solid red';
-    el.click();
-  });
-  console.log('✅ Clicou em Entrar ao Sistema');*/
+  console.log('✅ Clicou em Entrar'); 
 
-  const botao1 = page.locator('button:has-text("Acessar")').nth(4);
+  const botao1 = page.locator('button:has-text("Acessar")').nth(3);
   //const botao = page.locator('button:has-text("ENTRAR")').first();
   await botao1.highlight();
   await botao1.evaluate((el: any) => {
