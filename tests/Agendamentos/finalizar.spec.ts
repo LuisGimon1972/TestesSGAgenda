@@ -3,10 +3,6 @@ import { loginCompleto } from '../../utils/loginCompleto';
 
 test.describe('Agendamentos - Finalizar agendamento criado no mês', () => {
 
-  // ========================================================================
-  // FUNÇÕES AUXILIARES / HELPERS
-  // ========================================================================
-
   async function fecharCookiesSeAparecer(page: Page) {
     const btnEntendi = page.locator('button, .q-btn').filter({ hasText: /^Entendi$/i });
     
@@ -127,9 +123,8 @@ test.describe('Agendamentos - Finalizar agendamento criado no mês', () => {
     return false;
   }
   
-  test('Deve percorrer o mês até encontrar um agendamento Criado e finalizar', async ({ page }) => {
+  test('Deve percorrer o mês até encontrar um agendamento Criado e finalizar', async ({ page }) => {    
     
-    // 1. Executa o login completo utilizando o utilitário importado
     await loginCompleto(page);
     await page.waitForTimeout(2000);
 
