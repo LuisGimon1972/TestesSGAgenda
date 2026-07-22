@@ -122,12 +122,9 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
       console.log(`✅ Status da consulta GET: ${respostaListagem.status()}`);
 
       if (respostaListagem.status() === 200) {
-        const jsonListagem = await respostaListagem.json();
-        
-        // Garante a leitura da lista (seja `jsonListagem.data` ou a própria lista)
+        const jsonListagem = await respostaListagem.json();      
         const listaProdutos: any[] = jsonListagem?.data || jsonListagem || [];
-
-        // 4. Localiza o produto exato comparando pelo nome gerado no teste
+        
         const produtoCriado = listaProdutos.find(
           (p: any) => p.name === nomeProduto || p.nome === nomeProduto
         );
@@ -136,7 +133,7 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
           const idEncontrado = produtoCriado.id || produtoCriado.iid;
           console.log('✅ REGISTRO ENCONTRADO COM SUCESSO!');
           console.log('🆔 ID do Novo Registro:', idEncontrado);
-          console.log('📦 Dados Completos do Registro:\n', JSON.stringify(produtoCriado, null, 2));
+          console.log('📦 JSON do Registro Consultado:\n', JSON.stringify(produtoCriado, null, 2));
         } else {
           console.log(`⚠️ Produto "${nomeProduto}" não foi localizado na primeira página.`);
         }
