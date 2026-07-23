@@ -1,264 +1,262 @@
 import { test, expect, Page } from '@playwright/test';
-import { fecharPopupAtualizacao } from '../../utils/novidade';
-import { empresasParaguai } from '../../utils/rucs-paraguai';
+import * as fs from 'fs';
+import * as path from 'path';
 
-const aplicarZoom = async (page: Page, zoomLevel: string) => {
-  await page.emulateMedia({ media: 'screen' });
-  await page.evaluate((zoom) => {
-    document.body.style.zoom = zoom;
-  }, zoomLevel);  
-};
-
-const selecionarOpcaoQuasar = async (page: Page, nomeCampo: string | RegExp) => {
-  const wrapper = page.locator('.q-field').filter({ hasText: nomeCampo }).first();
-  await wrapper.scrollIntoViewIfNeeded();
-  await wrapper.click({ force: true });
-  
-  const menu = page.locator('.q-menu').last();
-  await menu.waitFor({ state: 'visible', timeout: 10000 });
-  await menu.locator('.q-item').first().click();  
-  
-  await page.waitForTimeout(500);
-};
-
-function gerarRUC(): string {
-  const empresaAleatoria = empresasParaguai[Math.floor(Math.random() * empresasParaguai.length)];
-  return empresaAleatoria.ruc;
-}
-
-test('Teste de Cadastro de Empresas', async ({ page }) => {     
-  test.setTimeout(90000); 
-
-  await page.setViewportSize({ width: 1920, height: 1080 });
-  await aplicarZoom(page, '0.5');
-
-  const salvarEmpresaPromise = page.waitForResponse((response) =>
-    response.url().includes('/api/empresa') &&
-    ['POST'].includes(response.request().method()) &&
-    response.status() >= 200 &&
-    response.status() < 300
-  );
-
-  let razaoSocial = '';
-  let urlempresa = '';
-
-  console.log('--- INICIO DO TESTE ---');
-  await page.goto(process.env.BASE_URL!);
-  
-  await page.getByText(/entrar/i).click();  
-  
-  const inputEmail = page.locator('input[type="email"], input[type="text"]').first();
-  await inputEmail.waitFor({ state: 'visible', timeout: 15000 });
-  
-  await inputEmail.fill(process.env.USER!);
-  await page.locator('input[type="password"]').first().fill(process.env.PASS!);
-  await page.getByRole('button', { name: /sign in|entrar/i }).click();
-  console.log('✅ Login realizado');
-  
-  await page.waitForURL(/empresas/, { timeout: 20000 });
-  
-  const btnAdicionar = page.getByText('Adicionar empresa', { exact: true });
-  await btnAdicionar.waitFor({ state: 'visible' });
-  await btnAdicionar.click();    
-  
-  console.log('DADOS ENVIADOS PARA API');
-
-  const ruc = gerarRUC();
-  const inputRuc = page.locator('input[aria-label*="RUC" i], .q-field:has-text("RUC") input').first();
-  await inputRuc.waitFor({ state: 'visible' });
-  await inputRuc.fill(ruc);
-  console.log(`✅ RUC preenchido: ${ruc}`);      
-  
-  const inputRazao = page.locator('input[aria-label*="Razão social" i], .q-field:has-text("Razão social") input').first();
-  try {    
-    await expect(inputRazao).not.toHaveValue('', { timeout: 8000 });
-    razaoSocial = await inputRazao.inputValue();
-  } catch {
-    console.log('⚠️ API do RUC demorou. Preenchendo Razão Social manualmente.');
-    razaoSocial = `EMPRESA AUTO RUC ${ruc} - ${Date.now()}`;
-    await inputRazao.fill(razaoSocial);
-  }
-  console.log(`✅ Razão social: ${razaoSocial}`);
-  
-  const codigoEstabelecimento = Math.floor(Math.random() * 1000) + 100;
-  await page.locator('input[aria-label*="Código do estabelecimento" i], .q-field:has-text("Código") input').first()
-    .fill(codigoEstabelecimento.toString());
-  console.log(`✅ Código de Estabelicimento: ${codigoEstabelecimento}`);
-  
-  const telefone = Array.from({ length: 9 }, () => Math.floor(Math.random() * 10)).join('');    
-  const inputTelefone = page.locator('input[type="tel"]').first();
-  await inputTelefone.scrollIntoViewIfNeeded();
-  await inputTelefone.click({ force: true });
-  await inputTelefone.press('Control+A');
-  await inputTelefone.press('Backspace');
-  await inputTelefone.pressSequentially(telefone, { delay: 10 });
-  console.log(`✅ Telefone: ${telefone}`);
-  
-  const email = `empresa${Date.now()}@gmail.com`;
-  const campoEmail = page.locator('.q-field').filter({ hasText: /e-mail/i }).first().locator('input');
-  await campoEmail.fill(email);
-  console.log(`✅ E-mail: ${email}`);
-  
-  await page.locator('#submit-company').click();
-  
-  const checkboxTermos = page.getByText('Declaro estar ciente', { exact: true });
-  await checkboxTermos.waitFor({ state: 'visible' });
-  await checkboxTermos.click();
-
-  await page.getByRole('button', { name: /confirmar/i }).click();
-  
-  const dominio = `empresa${Math.floor(Math.random() * (10000 - 21 + 1)) + 21}`;
-  urlempresa = dominio;
-  
-  try {  
-    await page.waitForTimeout(500); // Pausa visual para transição de tela
-    
-    let inputDominio = page.locator('input[aria-label*="domínio" i], input[aria-label*="dominio" i], .q-field:has-text("domínio") input, .q-field:has-text("dominio") input').first();
-    
-    if (await inputDominio.count() === 0) {
-        inputDominio = page.locator('input[type="text"] >> visible=true').last();
-    }
-
-    await inputDominio.waitFor({ state: 'visible', timeout: 5000 });  
-    await inputDominio.click(); 
-    await inputDominio.fill(''); 
-    await inputDominio.pressSequentially(dominio, { delay: 50 }); // Digitação humanizada
-    
-    console.log(`✅ Domínio preenchido: ${dominio}`);  
-  } catch (error) {
-    console.log('⚠️ Erro ao tentar preencher o domínio:', error);
-  }
-  
-  await page.locator('#submit-domain').waitFor({ state: 'visible' });
-  await page.locator('#submit-domain').click();
-  console.log('✅ Cadastro inicial finalizado. Redirecionando...');  
-  
-  await page.waitForURL(/\/py\/empresas/, { timeout: 20000 });
-  
-  const campoPesquisa = page.getByPlaceholder(/pesquisar empresas/i);
-  await campoPesquisa.waitFor({ state: 'visible', timeout: 20000 });
-  await campoPesquisa.fill(razaoSocial.trim());
-  await page.keyboard.press('Enter');
-  
-  await page.waitForTimeout(1000); // Espera a tabela filtrar    
-  await page.getByText(razaoSocial.trim(), { exact: false })
-            .first()
-            .waitFor({ state: 'visible', timeout: 15000 });
-  
-  const botaoEntrar = page.locator('button:has-text("ENTRAR")').first();
-  if (await botaoEntrar.count() > 0) {
-    for (let i = 0; i < 3; i++) {
+test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)', () => {
+  test.beforeEach(async ({ context }) => {
+    await context.clearCookies();
+    for (const p of context.pages()) {
       try {
-        await botaoEntrar.waitFor({ state: 'visible', timeout: 5000 });
-        await botaoEntrar.click({ force: true });
-        console.log('✅ Botão ENTRAR clicado com sucesso');
-        break;
-      } catch {
-        await page.waitForTimeout(1000);
-      }
+        await p.evaluate(() => localStorage.clear());
+        await p.evaluate(() => sessionStorage.clear());
+      } catch {}
+    }
+  });
+
+  const timestamp = Date.now();
+  const nomeUsuario = `Usuario ${timestamp}`;
+  const emailUsuario = `usuario.${timestamp}@teste.com`;
+  const senhaUsuario = '12345678';
+
+  const razaoSocial = `Barbearia ${timestamp}`;
+  const fantasia = `Fantasia ${timestamp}`;
+  const slug = `site-${timestamp}`;
+
+  function gerarCnpjValido(): string {
+    const base = `${Math.floor(10000000 + Math.random() * 90000000)}0001`;
+    function calcularDigito(cnpjBase: string): string {
+      const pesos = cnpjBase.length === 12
+          ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+          : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+      const soma = cnpjBase.split('').reduce((total, num, i) => total + Number(num) * pesos[i], 0);
+      const resto = soma % 11;
+      return resto < 2 ? '0' : String(11 - resto);
+    }
+    const digito1 = calcularDigito(base);
+    const digito2 = calcularDigito(base + digito1);
+    return (base + digito1 + digito2).replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+  }
+
+  const cnpjValido = gerarCnpjValido();
+
+  /* =========================================================
+     HELPERS GEOMÉTRICOS
+     ========================================================= */
+
+  async function fecharCookiesSeAparecer(page: Page) {
+    const btnGlobal = page.getByText(/Entendi|Aceitar|Aceito|OK|Concordo/i).first();
+    if (await btnGlobal.isVisible().catch(() => false)) {
+      try { await btnGlobal.click({ force: true, timeout: 3000 }); } catch {}
     }
   }
 
-  await page.waitForTimeout(2000);
-  await page.evaluate(() => {
-    document.querySelectorAll('.q-dialog, .q-dialog__backdrop, .q-overlay').forEach((el: any) => {
-      el.remove();
-    });
-  });
-  
-  const urlDatosEmpresa = `https://${urlempresa}.hom.sgmaster.com.br/py/datos-empresa`;
-  await page.waitForURL(urlDatosEmpresa, { timeout: 15000 }).catch(() => {});    
-
-    await page.evaluate(() => {
-    document.querySelectorAll('.q-dialog, .q-dialog__backdrop, .q-overlay').forEach((el: any) => {
-      el.remove();
-    });
-  });
-
-  await page.waitForTimeout(2000);
-  await page.evaluate(() => {
-    document.querySelectorAll('.q-dialog, .q-dialog__backdrop, .q-overlay').forEach((el: any) => {
-      el.remove();
-    });
-  });
-
-  await fecharPopupAtualizacao(page)   
-
-  const hoje = new Date();
-  const dia = String(hoje.getDate()).padStart(2, '0');
-  const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-  const ano = hoje.getFullYear();
-  const dataISO = `${dia}-${mes}-${ano}`;  
-  await page.getByLabel(/data de fundação/i).fill(dataISO);  
-  console.log(`✅ Data de Fundação: ${dataISO}`);  
-
-  await aplicarZoom(page, '0.6');    
-
-  await selecionarOpcaoQuasar(page, /departamento/i);
-  const dep = await page.locator('input[aria-label="Departamento"]').inputValue();
-  console.log(`✅ Departamento: ${dep}`);
-  await selecionarOpcaoQuasar(page, /distrito/i);
-  const distrito = await page.locator('input[aria-label="Distrito"]').inputValue();
-  console.log(`✅ Distrito: ${distrito}`);
-  await selecionarOpcaoQuasar(page, /cidade/i);
-  const city = await page.locator('input[aria-label="Cidade/Bairro"]').inputValue();
-  console.log(`✅ Cidade: ${city}`);
-  
-  const direccion = `TEST DIRECCION ${Date.now()}`;
-  await page.getByLabel(/direção/i).fill(direccion);
-  console.log(`✅ Endereço: ${direccion}`);
-
-  const numero = Math.floor(Math.random() * 1000) + 1;
-  await page.locator('.q-field').filter({ hasText: /número/i }).last().locator('input').fill(numero.toString());
-  console.log(`✅ Número: ${numero}`);     
-  
-  await selecionarOpcaoQuasar(page, /atividade econômica/i);
-
-  console.log('FIM DE DADOS ENVIADOS');
-  
-  await page.locator('.q-btn').filter({ hasText: /salvar|guardar/i }).click({ force: true });
-  console.log('✅ Configuração da empresa salva com sucesso!'); 
- 
-  const salvarUrlResponse = await salvarEmpresaPromise;     
-  const urlCompletaPost = salvarUrlResponse.url();
-  console.log('✅ A URL capturada do POST é:', urlCompletaPost);
-
-  const salvarEmpresaResponse = await salvarEmpresaPromise;
-  const dadosSalvos = await salvarEmpresaResponse.json();
-  console.log('✅ DADOS RETORNADOS NA CRIAÇÃO');
-  console.log(JSON.stringify(dadosSalvos, null, 2));
-  
-  const idEmpresa = dadosSalvos.codEmpresa.toString().trim();        
-  const urlRegistroCriado = `https://global-hom.sgmw.com.br/api/empresa/${idEmpresa}`;  
-  const headersOriginais = salvarEmpresaResponse.request().headers();
-  const headersGetRegistro: Record<string, string> = {
-    Accept: 'application/json',
-    'X-Requested-With': 'XMLHttpRequest',
-    authorization: headersOriginais['authorization'],
-    'x-xsrf-token': headersOriginais['x-xsrf-token'],
-    'x-tenant': headersOriginais['x-tenant'],
-    'x-empresa': headersOriginais['x-empresa'],
-  };
-  
-  const getCriadoResponse = await page.request.get(urlRegistroCriado, {
-    headers: headersGetRegistro,
-  });
-  console.log('🌐 URL do registro criado:', urlRegistroCriado);
-  console.log('✅ RESPOSTA DA API AO CONSULTAR O NOVO REGISTRO');
-  console.log('✅ Novo Controle:', idEmpresa);    
-  console.log(`✅ Status: ${getCriadoResponse.status()}`);
-
-  try {
-    const dadosCriado = await getCriadoResponse.json();
-    console.log(JSON.stringify(dadosCriado, null, 2));
-  } catch (error) {
-    console.error('Erro ao converter resposta para JSON:', error);
-    const corpoBruto = await getCriadoResponse.text();
-    console.log('Corpo bruto da resposta:', corpoBruto);
+  async function preencherInputVisivel(page: Page, index: number, valor: string) {
+    const input = page.locator('input:visible, textarea:visible').nth(index);
+    await input.waitFor({ state: 'visible', timeout: 10000 });
+    await input.click({ force: true });
+    await input.fill('');
+    await input.type(valor, { delay: 20 });
   }
-  expect([404, 200]).toContain(getCriadoResponse.status());    
-  
-  await page.evaluate(() => {
-    document.querySelectorAll('.q-dialog, .q-dialog__backdrop, .q-overlay').forEach((el: any) => el.remove());
-  }).catch(() => {});
+
+  async function preencherCampoProximoAoLabel(page: Page, labelRegex: RegExp, valor: string) {
+    await expect(page.getByText(labelRegex).first()).toBeVisible({ timeout: 15000 });
+
+    const inputHandle = await page.evaluateHandle(({ source, flags }) => {
+      const regex = new RegExp(source, flags);
+      const allElements = Array.from(document.querySelectorAll('body *'));
+      let targetLabel: HTMLElement | null = null;
+      
+      for (const el of allElements) {
+        if (regex.test(el.textContent || '') && window.getComputedStyle(el).display !== 'none') {
+          const hasChildMatch = Array.from(el.children).some(child => regex.test(child.textContent || ''));
+          if (!hasChildMatch) {
+            targetLabel = el as HTMLElement;
+            break;
+          }
+        }
+      }
+
+      if (!targetLabel) throw new Error(`Label geométrico não encontrado: ${source}`);
+      const labelRect = targetLabel.getBoundingClientRect();
+
+      const inputs = Array.from(document.querySelectorAll('input, textarea')) as HTMLElement[];
+      const visibleInputs = inputs.filter(i => {
+         const rect = i.getBoundingClientRect();
+         return rect.width > 0 && rect.height > 0 && window.getComputedStyle(i).visibility !== 'hidden' && !(i as HTMLInputElement).disabled;
+      });
+
+      const camposOrdenados = visibleInputs
+        .filter(campo => campo.getBoundingClientRect().top >= labelRect.top - 10)
+        .sort((a, b) => {
+          const rectA = a.getBoundingClientRect();
+          const rectB = b.getBoundingClientRect();
+          const distanciaA = Math.abs(rectA.top - labelRect.bottom) + Math.abs(rectA.left - labelRect.left);
+          const distanciaB = Math.abs(rectB.top - labelRect.bottom) + Math.abs(rectB.left - labelRect.left);
+          return distanciaA - distanciaB;
+        });
+
+      if (camposOrdenados.length === 0) throw new Error(`Campo próximo ao label ${source} não encontrado`);
+      return camposOrdenados[0];
+    }, { source: labelRegex.source, flags: labelRegex.flags });
+
+    await inputHandle.click({ force: true });
+    await inputHandle.fill(valor);
+    
+    await inputHandle.evaluate((node: any) => {
+      node.dispatchEvent(new Event('input', { bubbles: true }));
+      node.dispatchEvent(new Event('change', { bubbles: true }));
+      node.dispatchEvent(new Event('blur', { bubbles: true }));
+    });
+    
+    await inputHandle.dispose();
+  }
+
+  async function selecionarComboPorLabel(page: Page, labelRegex: RegExp, opcaoRegex: RegExp) {
+    await expect(page.getByText(labelRegex).first()).toBeVisible({ timeout: 15000 });
+
+    const comboHandle = await page.evaluateHandle(({ source, flags }) => {
+      const regex = new RegExp(source, flags);
+      const allElements = Array.from(document.querySelectorAll('body *'));
+      let targetLabel: HTMLElement | null = null;
+      
+      for (const el of allElements) {
+        if (regex.test(el.textContent || '') && window.getComputedStyle(el).display !== 'none') {
+          const hasChildMatch = Array.from(el.children).some(child => regex.test(child.textContent || ''));
+          if (!hasChildMatch) {
+            targetLabel = el as HTMLElement;
+            break;
+          }
+        }
+      }
+
+      if (!targetLabel) throw new Error(`Label de combo não encontrado: ${source}`);
+      const labelRect = targetLabel.getBoundingClientRect();
+
+      const combos = Array.from(document.querySelectorAll('.q-field, [role="combobox"]')) as HTMLElement[];
+      const visibleCombos = combos.filter(i => {
+         const rect = i.getBoundingClientRect();
+         return rect.width > 0 && rect.height > 0 && window.getComputedStyle(i).visibility !== 'hidden';
+      });
+
+      const combosOrdenados = visibleCombos
+        .filter(campo => campo.getBoundingClientRect().top >= labelRect.top - 10)
+        .sort((a, b) => {
+          const rectA = a.getBoundingClientRect();
+          const rectB = b.getBoundingClientRect();
+          const distA = Math.abs(rectA.top - labelRect.bottom) + Math.abs(rectA.left - labelRect.left);
+          const distB = Math.abs(rectB.top - labelRect.bottom) + Math.abs(rectB.left - labelRect.left);
+          return distA - distB;
+        });
+
+      if (combosOrdenados.length === 0) throw new Error(`Combo próximo ao label ${source} não encontrado`);
+      return combosOrdenados[0];
+    }, { source: labelRegex.source, flags: labelRegex.flags });
+
+    await comboHandle.click({ force: true });
+    await comboHandle.dispose();
+
+    await page.waitForTimeout(1200);
+
+    const opcao = page.locator('.q-menu .q-item, .q-portal .q-item, [role="option"], .q-item').filter({ hasText: opcaoRegex }).first();
+    await opcao.waitFor({ state: 'visible', timeout: 10000 });
+    await opcao.click({ force: true });
+    await page.waitForTimeout(800);
+  }
+
+  // 3) Tela 3: Configuração do Site (Utilizando o helper geométrico para o segmento)
+  async function preencherConfiguracaoSite(page: Page) {
+    await expect(page.getByText(/Configura[çc][ão] do site|URL do site/i).first()).toBeVisible({ timeout: 30000 });
+    await page.waitForTimeout(1500);
+
+    // Preenche o Slug do site
+    const inputSlug = page.locator('input[type="text"]:visible').first();
+    await inputSlug.waitFor({ state: 'visible', timeout: 10000 });
+    await inputSlug.click({ force: true });
+    await inputSlug.fill('');
+    await inputSlug.type(slug, { delay: 20 });
+    
+    await inputSlug.evaluate((node: any) => {
+      node.dispatchEvent(new Event('input', { bubbles: true }));
+      node.dispatchEvent(new Event('change', { bubbles: true }));
+      node.dispatchEvent(new Event('blur', { bubbles: true }));
+    });
+    await page.waitForTimeout(1000);
+
+    // Seleciona o Segmento utilizando o helper geométrico robusto
+    await selecionarComboPorLabel(page, /Segmento/i, /Barbearia/i);
+
+    // Clica em Gravar
+    await page.getByText(/^Gravar$/i).first().click({ force: true });
+  }
+
+  /* =========================================================
+     FLUXO DE TESTE
+     ========================================================= */
+
+  test('Deve cadastrar usuário, empresa e configuração inicial do site.', async ({ page }) => {
+    test.setTimeout(180000);
+
+    await page.goto('/');
+    await page.waitForTimeout(1500);
+    await fecharCookiesSeAparecer(page);
+    
+    const bodyText = await page.locator('body').innerText().catch(() => '');
+    if (/Dashboard|Agenda|Clientes|Atendentes/i.test(bodyText) && !/Bem vindo|Entrar|Cadastre-se/i.test(bodyText)) {
+      const perfilBtn = page.locator('button, .q-btn, [role="button"]').filter({ hasText: /keyboard_arrow_down|expand_more|@/i }).last();
+      if (await perfilBtn.count() > 0) await perfilBtn.click({ force: true });
+      await page.waitForTimeout(700);
+      const btnSair = page.getByText(/^Sair$/i).first();
+      if (await btnSair.count() > 0) await btnSair.click({ force: true });
+      else { await page.context().clearCookies(); await page.goto('/'); }
+    }
+
+    // 1) Tela 1: Cadastre-se
+    await page.getByText(/Cadastre-se/i).first().waitFor({ state: 'visible', timeout: 30000 });
+    await page.getByText(/Cadastre-se/i).first().click({ force: true });
+    
+    console.log(`E-mail criado para cadastro: ${emailUsuario}`);
+    await preencherInputVisivel(page, 0, nomeUsuario);
+    await preencherInputVisivel(page, 1, emailUsuario);
+    await preencherInputVisivel(page, 2, senhaUsuario);
+    await preencherInputVisivel(page, 3, senhaUsuario);
+
+    await page.getByText(/^Gravar$/i).first().click({ force: true });
+
+    // Aguarda carregar a Tela 2: Empresa
+    await expect(page.getByText(/Informa[çc][õo]es da empresa|Raz[aã]o social|Fantasia/i).first()).toBeVisible({ timeout: 30000 });
+    await page.waitForTimeout(2000);
+
+    // 2) Tela 2: Empresa
+    await preencherCampoProximoAoLabel(page, /Raz[aã]o social/i, razaoSocial);
+    await preencherCampoProximoAoLabel(page, /Fantasia/i, fantasia);
+    await selecionarComboPorLabel(page, /Pa[ií]s/i, /Brasil/i);
+    await selecionarComboPorLabel(page, /Moeda/i, /Real|R\$\s*-?\s*Real|Brasileiro/i);
+
+    const checkCnpj = await page.locator('body').innerText();
+    if (/CNPJ/i.test(checkCnpj)) {
+        await preencherCampoProximoAoLabel(page, /CNPJ/i, cnpjValido);
+    }
+
+    await page.getByText(/^Gravar$/i).first().click({ force: true });
+
+    // 3) Tela 3: Site
+    await preencherConfiguracaoSite(page);
+
+    // 4) Sucesso
+    await expect(page.getByText(/Dashboard|Agenda|Clientes|Bom dia|Boa tarde/i).first()).toBeVisible({ timeout: 30000 });
+
+    // Salvar JSON
+    const caminhoArquivo = path.join(process.cwd(), 'cypress', 'fixtures', 'usuarios-gerados.json');
+    const usuarioGerado = { dataCriacao: new Date().toISOString(), pais: 'Brasil', nomeUsuario, emailUsuario, senhaUsuario, razaoSocial, fantasia, documento: cnpjValido, slug };
+    
+    let usuarios: any[] = [];
+    try {
+      if (fs.existsSync(caminhoArquivo)) usuarios = JSON.parse(fs.readFileSync(caminhoArquivo, 'utf-8') || '[]');
+      usuarios.push(usuarioGerado);
+      const diretorio = path.dirname(caminhoArquivo);
+      if (!fs.existsSync(diretorio)) fs.mkdirSync(diretorio, { recursive: true });
+      fs.writeFileSync(caminhoArquivo, JSON.stringify(usuarios, null, 2), 'utf-8');
+      console.log(`✅ Usuário salvo no JSON: ${emailUsuario}`);
+    } catch {}
+  });
 });
