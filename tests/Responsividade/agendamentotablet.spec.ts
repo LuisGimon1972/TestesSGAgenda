@@ -1,11 +1,10 @@
 import { test, expect, Page, devices } from '@playwright/test';
-import { loginCompletomobile } from '../../utils/logincompletomobile';
+import { loginCompleto } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
 
 test.describe('Agendamentos - Cadastro', () => {
   let dataSelecionadaEhHoje = false;
   let dataselecta = true;
-  let horarioDisponivel = true;
   const telefone = gerarTelefoneAleatorio();
 
   function gerarTelefoneAleatorio() {
@@ -29,44 +28,9 @@ test.describe('Agendamentos - Cadastro', () => {
   }
 
   async function abrirAgenda(page: Page) {
-    const botoesMenu = [
-      page.locator('header button, .q-header button').first(),
-      page.locator('[aria-label*="menu" i]').first(),
-      page.locator('button:has(.q-icon)').first(),
-      page.locator('.q-layout__section--marginal button').first()
-    ];
-
-    for (const btn of botoesMenu) {
-      try {
-        if (await btn.isVisible({ timeout: 1000 })) {
-          await btn.click({ force: true });
-          await page.waitForTimeout(800);
-          console.log('✅ Abriu o menu lateral mobile');
-          break;
-        }
-      } catch (e) {}
-    }
-
-    const btnAgenda = page.locator('.q-item, a, button').filter({ hasText: /Agenda/i });
-    const quantidade = await btnAgenda.count();
-    let elementoAlvo = null;
-
-    for (let i = 0; i < quantidade; i++) {
-      const item = btnAgenda.nth(i);
-      if (await item.isVisible()) {
-        const texto = await item.textContent();
-        if (texto && /termos/i.test(texto)) continue;
-        elementoAlvo = item;
-        break;
-      }
-    }
-
-    if (!elementoAlvo) {
-      elementoAlvo = page.locator('.q-item, a, button').filter({ hasText: /^Agenda$/i }).first();
-    }
-
-    await elementoAlvo.scrollIntoViewIfNeeded();
-    await elementoAlvo.click({ force: true });    
+    const btnAgenda = page.locator('.q-item, a, button').filter({ hasText: /Agenda/i }).first();
+    await btnAgenda.scrollIntoViewIfNeeded();
+    await btnAgenda.click({ force: true });    
 
     await expect(page.locator('body')).toHaveText(/Listagem de agendamentos/i, { timeout: 30000 });
     await fecharCookiesSeAparecer(page);
@@ -139,7 +103,11 @@ test.describe('Agendamentos - Cadastro', () => {
       throw new Error('Nenhum card de serviço encontrado com Corte, Serviço ou Moeda.');
     }
 
-    const servicoLimpo = resultadoClique.textoClicado?.replace(/edit_square/i, '')?.replace(/\s+/g, ' ')?.trim();
+    const servicoLimpo = resultadoClique.textoClicado
+    ?.replace(/edit_square/i, '') 
+    ?.replace(/\s+/g, ' ')        
+    ?.trim();
+
     console.log(`✅ Serviço escolhido: ${servicoLimpo}`);
     await page.waitForTimeout(1500);
 
@@ -177,15 +145,16 @@ test.describe('Agendamentos - Cadastro', () => {
         
         const depoisDoTitulo = rect.top >= (topTitulo - 5);
         const temTamanhoPossivel = rect.width >= 40 && rect.width <= 800 && rect.height >= 20 && rect.height <= 400;
-        const pareceProfissional = /Helena|Bruna|Lorenzo|Manuela|Luis|Atendente|Barbeiro|Peluquero|person/i.test(texto);
-        const naoEhMenuOuTitulo = !/Escolha o profissional|Escolha o servi[çc]o|Corte|Barba|Cejas|Servi[çc]o|Servicio|R\$|₲|\$|Dashboard|Agenda|Clientes|Atendentes|Produtos|Configura[çc][õo]es/i.test(texto);
+        const pareceProfissional = /Usuario Paraguai|E2E\s+Atendente|Atendente|Barbeiro|Peluquero|person/i.test(texto);
+        const naoEhMenuOuTitulo = !/Escolha o profissional|Escolha o servi[çc]o|Corte|Barba|Cejas|Servi[çc]o|Servicio|R\$|₲|\$|Dashboard|Agenda|Clientes|Atendentes|Produtos|Configura[çc][õo]es|Termos de uso|Política de privacidade|cookies|Entendi/i.test(texto);
 
         return depoisDoTitulo && temTamanhoPossivel && pareceProfissional && naoEhMenuOuTitulo;
       });
 
       if (profEls.length === 0) return { sucesso: false };
 
-      const card = profEls[0];
+      const profPref = profEls.find(el => /Usuario Paraguai|E2E\s+Atendente|Atendente|Barbeiro|Peluquero/i.test(limparTexto(el.textContent)));
+      const card = profPref || profEls[0];
       const clicavel = card.closest('.q-card, .q-item, button, [role="button"]') || card;
       
       clicavel.scrollIntoView();
@@ -198,21 +167,20 @@ test.describe('Agendamentos - Cadastro', () => {
       throw new Error('Nenhum card de profissional foi encontrado após selecionar o serviço.');
     }
 
-    const profissionalLimpo = resultadoClique.textoClicado?.replace(/^person|person/gi, '')?.replace(/\s+/g, ' ')?.trim();
+    const profissionalLimpo = resultadoClique.textoClicado
+    ?.replace(/^person|person/gi, '') 
+    ?.replace(/\s+/g, ' ')            
+    ?.trim();
     console.log(`✅ Profissional escolhido: ${profissionalLimpo}`);
     await page.waitForTimeout(1500);
 
     const textoBody = await page.locator('body').innerText();    
+    
     if (/Escolha o profissional/i.test(textoBody) && !/\d{2}\/\d{2}/.test(textoBody)) {
       console.log('⚠️ Ainda na etapa profissional. Tentando clicar diretamente no nome.');
       await page.evaluate(() => {
-        const els = Array.from(document.body.querySelectorAll('div, span, p'));
-        const profPorTexto = els.find(el => {
-          const style = window.getComputedStyle(el);
-          if (style.display === 'none' || style.visibility === 'hidden') return false;
-          const texto = (el.textContent || '').trim();
-          return /Helena|Bruna|Lorenzo|Manuela|Luis|Atendente|Barbeiro|Peluquero/i.test(texto) && texto.length < 40;
-        });
+        const els = Array.from(document.body.querySelectorAll('*:visible'));
+        const profPorTexto = els.find(el => /Usuario Paraguai|E2E\s+Atendente|Atendente|Barbeiro|Peluquero/i.test((el.textContent||'').trim()));
         if (profPorTexto) {
           const clicavel = profPorTexto.closest('.q-card, .q-item, button, [role="button"], div') || profPorTexto;
           clicavel.scrollIntoView();
@@ -267,17 +235,18 @@ test.describe('Agendamentos - Cadastro', () => {
     });
     
     if (!dadosData) {
-      dataselecta = false;  
+      dataselecta = false  
       console.log('⚠️ AVISO: Nenhuma data futura ou de hoje foi encontrada na tela de agendamento.');
       return false; 
     }
 
     dataSelecionadaEhHoje = dadosData.ehHoje;
     console.log(`✅ Data escolhida: ${dadosData.texto}`);    
+    
     return true; 
   }
 
-  async function selecionarHorarioMaiorQueAgora(page: Page): Promise<boolean> {
+  async function selecionarHorarioMaiorQueAgora(page: Page) {
     await page.waitForTimeout(1000);    
     const horarioEscolhido = await page.evaluate((isHoje) => {
       const els = Array.from(document.querySelectorAll('*')).filter(el => {
@@ -310,13 +279,9 @@ test.describe('Agendamentos - Cadastro', () => {
       return escolhido.texto;
     }, dataSelecionadaEhHoje);
 
-    if (!horarioEscolhido) {
-      console.log('⚠️ AVISO: Não existe horário disponível maior que a hora atual para a data selecionada.');
-      return false;
-    }
+    if (!horarioEscolhido) throw new Error('Não existe horário disponível maior que a hora atual para a data selecionada.');
 
     console.log(`✅ Horário escolhido: ${horarioEscolhido}`);
-    return true;
   }
 
   async function selecionarCliente(page: Page) {
@@ -338,17 +303,26 @@ test.describe('Agendamentos - Cadastro', () => {
     const nomeClienteLimpo = nomeClienteText?.replace(/\s+/g, ' ').trim();
     
     await primeiraOpcao.click({ force: true });    
+    
     console.log(`✅ Selecionou o primeiro cliente da lista: ${nomeClienteLimpo}`);
+    
     await page.waitForTimeout(500);
+ 
     console.log('📝 FIM DE DADOS ENVIADOS PRA API');
   }
   
   test('Deve cadastrar um agendamento com horário futuro.', async ({ page }) => {
     test.setTimeout(120000);     
+    page.on('pageerror', (err) => {
+      const msg = err.message || '';
+      if (/Element not found|Cannot read properties of null.*nextSibling|reading 'nextSibling'/i.test(msg)) {
+        console.log(`⚠️ Erro ignorado da aplicação: ${msg}`);
+      }
+    });
 
-    const iPhone = devices['iPhone 13'];
-    await page.setViewportSize(iPhone.viewport);
-    await page.setExtraHTTPHeaders({ 'User-Agent': iPhone.userAgent });
+    const tablet = devices['iPad (gen 6)'];
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.setExtraHTTPHeaders({ 'User-Agent': tablet.userAgent });
 
     page.on('pageerror', (err) => {
       const msg = err.message || '';
@@ -357,114 +331,115 @@ test.describe('Agendamentos - Cadastro', () => {
       }
     });
 
-    console.log('📱 Resolução alterada para Mobile.');
+    console.log('📱 Resolução alterada para Tablet.');
 
-    await page.context().clearCookies();    
+    await page.context().clearCookies();   
     
-    await loginCompletomobile(page);
+    await loginCompleto(page);
     await fecharCookiesSeAparecer(page);    
     
     await abrirAgenda(page);
     await abrirCadastroAgendamento(page);
 
     const salvarAgendamentoPromise = page.waitForResponse((response) =>
-      response.url().includes('/schedules') &&
-      ['POST', 'PUT', 'PATCH'].includes(response.request().method()) &&
-      response.status() >= 200 &&
-      response.status() < 300,
-      { timeout: 15000 }
+    response.url().includes('/schedules') &&
+    ['POST', 'PUT', 'PATCH'].includes(response.request().method()) &&
+    response.status() >= 200 &&
+    response.status() < 300,
+    { timeout: 15000 }
     ).catch(() => null);
-
     console.log('📝 DADOS ENVIADOS PRA API');
     await selecionarServico(page);
     await selecionarProfissional(page);
     await selecionarDataFuturaOuHoje(page);
 
-    if (dataselecta) {
-      await page.waitForTimeout(2000);
-      await expect(page.locator('body')).toHaveText(/Hor[aá]rios dispon[ií]veis|Horarios disponibles/i, { timeout: 30000 });
+    if(dataselecta){
+    await page.waitForTimeout(2000);
+    await expect(page.locator('body')).toHaveText(/Hor[aá]rios dispon[ií]veis|Horarios disponibles/i, { timeout: 30000 });
 
-      horarioDisponivel = await selecionarHorarioMaiorQueAgora(page);
+    await selecionarHorarioMaiorQueAgora(page);
+    await page.waitForTimeout(1000);
 
-      if (!horarioDisponivel) {
-        console.log('⚠️ Teste finalizado com aviso: Não há horários disponíveis para continuar o agendamento.');
-        return; 
-      }
+    await selecionarCliente(page);
 
-      await page.waitForTimeout(1000);
-      await selecionarCliente(page);
+    const btnAgendar = page.locator('button:visible, .q-btn:visible, [role="button"]:visible')
+      .filter({ hasText: /Agendar|To Schedule|Guardar/i }).first();
+    
+    await btnAgendar.scrollIntoViewIfNeeded();
+    await btnAgendar.click({ force: true });
+    console.log('✅ Clicou em Agendar');
 
-      const btnAgendar = page.locator('button:visible, .q-btn:visible, [role="button"]:visible')
-        .filter({ hasText: /Agendar|To Schedule|Guardar/i }).first();
+    const responseAgendamento = await salvarAgendamentoPromise;
+
+    if (responseAgendamento) {      
+      const payloadEnviado = responseAgendamento.request().postDataJSON();
+
+      console.log('🌐 URL do POST:', responseAgendamento.url());
+      console.log(`✅ Status da resposta API: ${responseAgendamento.status()}`);
+      console.log('✅ Payload enviado (POST):\n', JSON.stringify(payloadEnviado, null, 2));
       
-      await btnAgendar.scrollIntoViewIfNeeded();
-      await btnAgendar.click({ force: true });
-      console.log('✅ Clicou em Agendar');
+      const urlBase = responseAgendamento.url().split('?')[0].replace(/\/$/, '');
+      const headersGet = { ...responseAgendamento.request().headers() };
+      delete headersGet['content-type'];
+      delete headersGet['content-length'];
+      delete headersGet[':method'];
+      delete headersGet[':path'];
+      delete headersGet[':authority'];
+      delete headersGet[':scheme'];
 
-      const responseAgendamento = await salvarAgendamentoPromise;
+      const dataAgendada = payloadEnviado?.date;
+      const urlConsulta = `${urlBase}?date=${dataAgendada}&page=1&perPage=50`;
 
-      if (responseAgendamento) {      
-        const payloadEnviado = responseAgendamento.request().postDataJSON();
+      const respostaGet = await page.request.get(urlConsulta, {
+        headers: headersGet,
+      });
 
-        console.log('🌐 URL do POST:', responseAgendamento.url());
-        console.log(`✅ Status da resposta API: ${responseAgendamento.status()}`);
-        console.log('✅ Payload enviado (POST):\n', JSON.stringify(payloadEnviado, null, 2));
+      console.log('🌐 URL da consulta de listagem:', urlConsulta);
+      console.log(`✅ Status da consulta GET: ${respostaGet.status()}`);
+
+      if (respostaGet.status() === 200) {
+        const jsonConsulta = await respostaGet.json();
+        const listaAgendamentos: any[] = jsonConsulta?.data || jsonConsulta || [];
         
-        const urlBase = responseAgendamento.url().split('?')[0].replace(/\/$/, '');
-        const headersGet = { ...responseAgendamento.request().headers() };
-        delete headersGet['content-type'];
-        delete headersGet['content-length'];
-        delete headersGet[':method'];
-        delete headersGet[':path'];
-        delete headersGet[':authority'];
-        delete headersGet[':scheme'];
-
-        const dataAgendada = payloadEnviado?.date;
-        const urlConsulta = `${urlBase}?date=${dataAgendada}&page=1&perPage=50`;
-
-        const respostaGet = await page.request.get(urlConsulta, { headers: headersGet });
-
-        console.log('🌐 URL da consulta de listagem:', urlConsulta);
-        console.log(`✅ Status da consulta GET: ${respostaGet.status()}`);
-
-        if (respostaGet.status() === 200) {
-          const jsonConsulta = await respostaGet.json();
-          const listaAgendamentos: any[] = jsonConsulta?.data || jsonConsulta || [];
+        const agendamentoEncontrado = listaAgendamentos.find((ag: any) => {
+          const mesmaData = ag.date === payloadEnviado?.date;
           
-          const agendamentoEncontrado = listaAgendamentos.find((ag: any) => {
-            const mesmaData = ag.date === payloadEnviado?.date;
-            const horaObjeto = (ag.time || ag.start_time || '').substring(0, 5);
-            const horaPayload = (payloadEnviado?.time || '').substring(0, 5);
-            const mesmoHorario = horaObjeto === horaPayload;
-            
-            const mesmoClienteId = payloadEnviado?.customerId && ag.customerId === payloadEnviado?.customerId;
-            const mesmoClienteNome = 
-              ag.customerName?.trim().toUpperCase() === payloadEnviado?.customerName?.trim().toUpperCase() ||
-              ag.customer?.name?.trim().toUpperCase() === payloadEnviado?.customerName?.trim().toUpperCase();
+          const horaObjeto = (ag.time || ag.start_time || '').substring(0, 5);
+          const horaPayload = (payloadEnviado?.time || '').substring(0, 5);
+          const mesmoHorario = horaObjeto === horaPayload;
+          
+          const mesmoClienteId = payloadEnviado?.customerId && ag.customerId === payloadEnviado?.customerId;
+          const mesmoClienteNome = 
+            ag.customerName?.trim().toUpperCase() === payloadEnviado?.customerName?.trim().toUpperCase() ||
+            ag.customer?.name?.trim().toUpperCase() === payloadEnviado?.customerName?.trim().toUpperCase();
 
-            return mesmaData && mesmoHorario && (mesmoClienteId || mesmoClienteNome);
-          });
+          return mesmaData && mesmoHorario && (mesmoClienteId || mesmoClienteNome);
+        });
 
-          if (agendamentoEncontrado) {
-            const idEncontrado = agendamentoEncontrado.id || agendamentoEncontrado.iid;
-            console.log('✅ REGISTRO ENCONTRADO COM SUCESSO!');
-            console.log('🆔 ID do Novo Agendamento:', idEncontrado);
-            console.log('📦 JSON do Registro Consultado:\n', JSON.stringify(agendamentoEncontrado, null, 2));
-          } else {
-            console.log(`⚠️ Agendamento do cliente "${payloadEnviado?.customerName}" às ${payloadEnviado?.time} não foi localizado na lista.`);
-          }
+        if (agendamentoEncontrado) {
+          const idEncontrado = agendamentoEncontrado.id || agendamentoEncontrado.iid;
+          console.log('✅ REGISTRO ENCONTRADO COM SUCESSO!');
+          console.log('🆔 ID do Novo Agendamento:', idEncontrado);
+          console.log('📦 JSON do Registro Consultado:\n', JSON.stringify(agendamentoEncontrado, null, 2));
+        } else {
+          console.log(`⚠️ Agendamento do cliente "${payloadEnviado?.customerName}" às ${payloadEnviado?.time} não foi localizado na lista.`);
+          console.log('🔍 Exemplo do primeiro registro retornado pela API GET para comparação:\n', JSON.stringify(listaAgendamentos[0] || {}, null, 2));
         }
-      } 
-       
-      await expect(page.locator('body')).toHaveText(
-        /agendamento|sucesso|salvo|criado|Listagem de agendamentos|guardado|creado/i, 
-        { timeout: 30000 }
-      );
-      console.log('✅ Agendamento criado com sucesso!');
-      await capturarRequisicoesApi(page); 
-      await page.waitForTimeout(4000);    
-    } else {
-      console.log('⚠️ Deve cadastrar o horário do profissional!');
+      } else {
+        console.log(`⚠️ Falha ao buscar a listagem de agendamentos. Status HTTP: ${respostaGet.status()}`);
+      }
+    } 
+     
+    await expect(page.locator('body')).toHaveText(
+      /agendamento|sucesso|salvo|criado|Listagem de agendamentos|guardado|creado/i, 
+      { timeout: 30000 }
+    );
+    console.log('✅ Agendamento criado com sucesso!');
+    await capturarRequisicoesApi(page); 
+    await page.waitForTimeout(4000);    
+    }
+    else{
+        console.log('⚠️ Deve cadastrar o horário do professional!');
     }
   });
 });

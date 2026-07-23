@@ -1,102 +1,96 @@
-import { test, expect } from '@playwright/test';
+import { test, devices } from '@playwright/test';
 import { loginCompletomobile } from '../../utils/logincompletomobile';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
 
-test('Teste de Responsividade Navegação Tablet', async ({ page }) => {
-    await page.setViewportSize({ width: 768, height: 1024 });
+test.describe('Navegação de Menus - Mobile', () => {
+  test('Deve navegar por todos os menus principais no modo mobile', async ({ page }) => {
+    test.setTimeout(90000);
 
-    await loginCompletomobile(page);      
+    const tablet = devices['iPad (gen 6)'];
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.setExtraHTTPHeaders({ 'User-Agent': tablet.userAgent });
+
+    page.on('pageerror', (err) => {
+      const msg = err.message || '';
+      if (/Element not found|Cannot read properties of null.*nextSibling|reading 'nextSibling'/i.test(msg)) {
+        console.log(`⚠️ Erro ignorado da aplicação: ${msg}`);
+      }
+    });
+
+    console.log('📱 Resolução alterada para Tablet.');    
+
+    await page.context().clearCookies();
+    await loginCompletomobile(page);
+    await page.waitForTimeout(2000);
     
-    const dashboardBtn = page.getByText(/dashboard/i).first();
-    await expect(dashboardBtn).toBeVisible({ timeout: 5000 });
-    await dashboardBtn.click();
-    console.log('CLICOU EM DASKBOARD');          
-        
-    await page.waitForTimeout(1000);
-    await page.getByText(/pessoas/i).click({ force: true }); 
-    console.log('CLICOU EM PESSOAS');    
+    async function abrirMenuMobile() {
+      const botoesMenu = [
+        page.locator('header button, .q-header button').first(),
+        page.locator('[aria-label*="menu" i]').first(),
+        page.locator('button:has(.q-icon)').first(),
+        page.locator('.q-layout__section--marginal button').first()
+      ];
 
-    await page.waitForTimeout(1000);
-    await Promise.all([
-      page.waitForURL(/producto/, { timeout: 15000 }),
-      page.locator('a[href*="producto"]').first().click()
-    ]);
-    console.log('CLICOU EM PRODUTOS');        
+      for (const btn of botoesMenu) {
+        try {
+          if (await btn.isVisible({ timeout: 1500 })) {
+            await btn.click({ force: true });
+            await page.waitForTimeout(600);
+            return;
+          }
+        } catch (e) {}
+      }
+    }
+    
+    async function navegarPara(nomeItem: string) {
+      await abrirMenuMobile();
+      await page.waitForTimeout(600);
+     
+      const itens = page.locator('.q-item, a, button').filter({ hasText: new RegExp(nomeItem, 'i') });
+      const quantidade = await itens.count();
+      
+      let elementoAlvo = null;
+      for (let i = 0; i < quantidade; i++) {
+        const item = itens.nth(i);
+        if (await item.isVisible()) {
+          const texto = await item.textContent();          
+          if (texto && texto.trim().toLowerCase() === nomeItem.toLowerCase()) {
+            elementoAlvo = item;
+            break;
+          }
+        }
+      }
+      
+      if (!elementoAlvo) {
+        elementoAlvo = itens.first();
+      }
 
-    await page.waitForTimeout(1000);
-    await page.getByText(/vendas/i).click({ force: true });
-    console.log('CLICOU EM VENDAS');
+      await elementoAlvo.waitFor({ state: 'visible', timeout: 5000 });
+      await elementoAlvo.scrollIntoViewIfNeeded();
+      await elementoAlvo.click({ force: true });
+      console.log(`✅ Clicou em ${nomeItem}`);
+      await page.waitForTimeout(800);
+    }
+   
+    const menus = [
+      'Dashboard',
+      'Agenda',
+      'Clientes',
+      'Atendentes',
+      'Serviços',
+      'Produtos',
+      'Categorias',
+      'Comissões',
+      'Planos',
+      'Configurações'
+    ];
 
-    await page.waitForTimeout(1000);
-    await Promise.all([
-      page.waitForURL(/facturacion/, { timeout: 15000 }),
-      page.locator('a[href*="facturacion"]').first().click()
-    ]);
-    console.log('CLICOU EM FATURAMENTO');
+    for (const menu of menus) {
+      await navegarPara(menu);
+    }
 
-    await page.waitForTimeout(1000);
-    await Promise.all([
-      page.waitForURL(/dav/, { timeout: 15000 }),
-      page.locator('a[href*="dav"]').first().click()
-    ]);
-    console.log('CLICOU EM DAV');
-
-    await page.waitForTimeout(1000);
-    await Promise.all([
-      page.waitForURL(/lotes/, { timeout: 15000 }),
-      page.locator('a[href*="lotes"]').first().click()
-    ]);
-    console.log('CLICOU EM LOTES'); 
-
-    const usuariosBtn = page.getByText(/usu[aá]rios/i).first();
-    await expect(usuariosBtn).toBeVisible({ timeout: 5000 });
-    await usuariosBtn.click();
-    console.log('CLICOU EM USUÁRIOS');
-
-    await page.waitForTimeout(1000);
-    page.locator('a[href*="usuario/listado"]').click()
-    console.log('CLICOU EM LISTAGEM DE USUARIOS');
-
-    await page.waitForTimeout(1000);
-    page.locator('a[href*="usuario/perfil"]').click()
-    console.log('CLICOU EM PERFIL DE ACESSO');
-
-    const comprasBtn = page.getByText(/compras/i).first();
-    await expect(comprasBtn).toBeVisible({ timeout: 5000 });
-    await comprasBtn.click();
-    console.log('CLICOU EM COMPRAS');
-
-    await page.waitForTimeout(1000);
-    page.locator('a[href*="compras/listagem"]').click()
-    console.log('CLICOU EM LISTAGEM DE COMPRAS'); 
-
-    await page.waitForTimeout(1000);
-    await page.getByText(/cadastros/i).click({ force: true });
-    console.log('CLICOU EM CADASTROS');
-
-    await page.waitForTimeout(1000);
-    page.locator('a[href*="registros/metodos-pagos"]').click()
-    console.log('CLICOU EM ESPÉCIES');  
-
-  /*  await page.waitForTimeout(1000);
-    page.locator('a[href*="registros/cotizacion-monedas"]').click()
-    console.log('CLICOU EM COTAÇÃO');*/
-
-    await page.waitForTimeout(1000);
-    page.locator('a[href*="registros/grupos"]').click()
-    console.log('CLICOU EM GRUPOS');
-
-    await page.waitForTimeout(1000);
-    page.locator('a[href*="registros/subgrupos"]').click()
-    console.log('CLICOU EM SUBGRUPOS');    
-
-    await page.waitForTimeout(1000);
-    page.locator('a[href*="registros/marcas"]').click()
-    console.log('CLICOU EM MARCAS');     
-
-    await page.waitForTimeout(1000);
-    await page.getByText(/funcionários/i).click({ force: true });
-    console.log('CLICOU EM FUNCIONÁRIOS');         
-
-    await capturarRequisicoesApi(page);                
+    await capturarRequisicoesApi(page);
+    await page.waitForTimeout(2000);
+    console.log('✅ Navegação mobile concluída com sucesso!');
+  });
 });

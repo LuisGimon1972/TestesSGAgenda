@@ -1,59 +1,99 @@
 import { Page, expect } from '@playwright/test';
 import { talVez } from '../utils/talvez';
+import { fecharPopupAtualizacao } from '../utils/novidade';
 
-export async function loginCompletomobile(page: Page) {  
-  
-
-  console.log('INICIO');
+export async function loginCompletomobile(page: Page) {
+  console.log('INICIO (MOBILE)');
   await page.goto(process.env.BASE_URL!);
-  console.log('ABRIU SITE');
-
-  const menuHamburguer = page.getByLabel(/menu/i); // ou ajuste conforme o seletor real
-  await expect(menuHamburguer).toBeVisible({ timeout: 5000 });
-  await menuHamburguer.click();
-  console.log('✅ Menu mobile clicado com sucesso');  
-
-  await page.waitForTimeout(1000);
-
-  await page.getByText(/entrar/i).click();
-  console.log('CLICOU EM ENTRAR');
+  console.log('✅ Abriu Site');
+  
+  await page.getByText(/log in|entrar/i).click();
+  console.log('✅ Clicou em Entrar');
   
   await page.waitForSelector('input[type="email"], input[type="text"]', {
     timeout: 15000
   });
-  await page.waitForTimeout(1000);
-  console.log('FORM LOGIN APARECEU');  
+
+  console.log('✅ Apareceu Form Login');  
   await page.locator('input[type="email"], input[type="text"]').first().fill(process.env.USER!);
   await page.locator('input[type="password"]').first().fill(process.env.PASS!);
-  await page.waitForTimeout(1000);
-  console.log('PREENCHIDO');  
-  await page.getByRole('button', { name: /sign in|entrar/i }).click();
-  console.log('CLICOU EM SIGN LN');
-  
-  await page.waitForURL(/empresas/, { timeout: 20000 });
-  console.log('CHEGOU EM EMPRESAS');  
-  
-  //const botao = page.locator('button:has-text("ENTRAR")').nth(1);
-  const botao = page.locator('button:has-text("ENTRAR")').first();
-  await botao.highlight();
-  await botao.evaluate((el: any) => {
+
+  console.log('✅ Login Preenchido');  
+  await page.getByRole('button', { name: /entrar/i }).click();
+  console.log('✅ Clicou em Entrar'); 
+
+  const botao1 = page.locator('button:has-text("Acessar")').nth(3);
+  await botao1.highlight();
+  await botao1.evaluate((el: any) => {
     el.style.border = '5px solid red';
     el.click();
   });
-  console.log('CLIQUE FORÇADO EXECUTADO');
+  console.log('✅ Clicou em Acessar Empresa');
 
   await page.waitForTimeout(3000);
-  console.log('URL:', await page.url());
-  console.log('CLICOU EM ACESSAR EMPRESA');
-
-  // 🔥 remover modais
+  console.log('🌐 URL:', await page.url()); 
+  
+  // Remoção de modais e overlays do Quasar Framework
+  await page.evaluate(() => {
+    document.querySelectorAll('.q-dialog, .q-dialog__backdrop, .q-overlay').forEach((el: any) => {
+      el.remove();
+    });
+  });
+  
+  await page.waitForTimeout(2000);
   await page.evaluate(() => {
     document.querySelectorAll('.q-dialog, .q-dialog__backdrop, .q-overlay').forEach((el: any) => {
       el.remove();
     });
   });
 
-  console.log('MODAL + OVERLAY REMOVIDOS');
+  console.log('✅ Modal + Overlay Removidos');
 
- // await talVez(page);   
+  const botaoFecharPopup = page.locator('button:has-text("×"), svg[aria-label="Close"], .modal-close');
+
+  if (await botaoFecharPopup.isVisible()) {
+    console.log('Popup de atualização detectado, fechando...');
+    await botaoFecharPopup.click().catch(() => {});
+    console.log('Popup fechado com sucesso.');
+  }
+  
+  await fecharPopupAtualizacao(page);   
+
+  // ----------------------------------------------------
+  // ABRE O MENU MOBILE COM SEGURANÇA E FALLBACKS MÚLTIPLOS
+  // ----------------------------------------------------
+  console.log('🔄 Tentando localizar e abrir o menu mobile...');
+
+  const seletoresMenu = [
+    page.getByLabel(/menu/i),
+    page.locator('header button, .q-header button').first(),
+    page.locator('[aria-label*="menu" i]').first(),
+    page.locator('button:has(.q-icon), .q-btn:has(.q-icon)').first(),
+    page.locator('.q-layout__section--marginal button').first(),
+    page.locator('button[class*="menu"], .q-btn[class*="menu"]').first()
+  ];
+
+  let menuClicado = false;
+
+  for (const seletor of seletoresMenu) {
+    try {
+      if (await seletor.isVisible({ timeout: 2000 })) {
+        await seletor.click({ force: true });
+        menuClicado = true;
+        console.log('✅ Menu mobile clicado com sucesso');
+        break;
+      }
+    } catch (e) {
+      // Ignora erro e tenta o próximo seletor da lista
+    }
+  }
+
+  if (!menuClicado) {
+    const botaoGenerico = page.locator('header button, ion-menu-button, [role="button"]').first();
+    await botaoGenerico.click({ force: true });
+    console.log('✅ Menu mobile clicado via fallback genérico');
+  }
+
+  await page.waitForTimeout(800);
+  // await talVez(page);   
 }
