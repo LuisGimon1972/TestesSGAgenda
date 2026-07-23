@@ -163,5 +163,16 @@
     "fantasia": "Fantasia Alice",
     "documento": "76.619.190/0001-91",
     "slug": "site-Alice Alves"
+  },
+  {
+    "dataCriacao": "2026-07-23T20:29:33.600Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Maria Eduarda Marques Souza",
+    "emailUsuario": "maria.1784838554435@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Maria Eduarda Marques Souza",
+    "fantasia": "Fantasia Maria",
+    "documento": "82.581.671/0001-58",
+    "slug": "site-Maria Eduarda"
   }
 ]
