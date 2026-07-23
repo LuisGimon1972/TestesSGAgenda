@@ -39,26 +39,26 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
 
   const cnpjValido = gerarCnpjValido();
 
-  /* =========================================================
-     HELPERS GEOMÉTRICOS
-     ========================================================= */
-
   async function fecharCookiesSeAparecer(page: Page) {
     const btnGlobal = page.getByText(/Entendi|Aceitar|Aceito|OK|Concordo/i).first();
     if (await btnGlobal.isVisible().catch(() => false)) {
-      try { await btnGlobal.click({ force: true, timeout: 3000 }); } catch {}
+      try { 
+        await btnGlobal.click({ force: true, timeout: 3000 }); 
+        console.log('✅ Fechou aviso de cookies');
+      } catch {}
     }
   }
 
-  async function preencherInputVisivel(page: Page, index: number, valor: string) {
+  async function preencherInputVisivel(page: Page, index: number, valor: string, nomeCampoDescricao: string) {
     const input = page.locator('input:visible, textarea:visible').nth(index);
     await input.waitFor({ state: 'visible', timeout: 10000 });
     await input.click({ force: true });
     await input.fill('');
     await input.type(valor, { delay: 20 });
+    console.log(`✅ Preencheu input [${nomeCampoDescricao}] com "${valor}"`);
   }
 
-  async function preencherCampoProximoAoLabel(page: Page, labelRegex: RegExp, valor: string) {
+  async function preencherCampoProximoAoLabel(page: Page, labelRegex: RegExp, valor: string, nomeCampoDescricao: string) {
     await expect(page.getByText(labelRegex).first()).toBeVisible({ timeout: 15000 });
 
     const inputHandle = await page.evaluateHandle(({ source, flags }) => {
@@ -109,9 +109,10 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
     });
     
     await inputHandle.dispose();
+    console.log(`✅ Preencheu campo de texto "${nomeCampoDescricao}" com "${valor}"`);
   }
 
-  async function selecionarComboPorLabel(page: Page, labelRegex: RegExp, opcaoRegex: RegExp) {
+  async function selecionarComboPorLabel(page: Page, labelRegex: RegExp, opcaoRegex: RegExp, nomeComboDescricao: string) {
     await expect(page.getByText(labelRegex).first()).toBeVisible({ timeout: 15000 });
 
     const comboHandle = await page.evaluateHandle(({ source, flags }) => {
@@ -158,17 +159,20 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
     await page.waitForTimeout(1200);
 
     const opcao = page.locator('.q-menu .q-item, .q-portal .q-item, [role="option"], .q-item').filter({ hasText: opcaoRegex }).first();
-    await opcao.waitFor({ state: 'visible', timeout: 10000 });
+    await opcao.waitFor({ state: 'visible', timeout: 10000 });    
+    
+    const textoOpcao = await opcao.innerText().catch(() => opcaoRegex.toString());
+    
     await opcao.click({ force: true });
+    console.log(`✅ Selecionou o ${nomeComboDescricao}: ${textoOpcao.trim()}`);
     await page.waitForTimeout(800);
   }
-
-  // 3) Tela 3: Configuração do Site (Utilizando o helper geométrico para o segmento)
+  
   async function preencherConfiguracaoSite(page: Page) {
     await expect(page.getByText(/Configura[çc][ão] do site|URL do site/i).first()).toBeVisible({ timeout: 30000 });
+    console.log('✅ Abriu tela de Configuração do site');
     await page.waitForTimeout(1500);
-
-    // Preenche o Slug do site
+   
     const inputSlug = page.locator('input[type="text"]:visible').first();
     await inputSlug.waitFor({ state: 'visible', timeout: 10000 });
     await inputSlug.click({ force: true });
@@ -181,22 +185,19 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
       node.dispatchEvent(new Event('blur', { bubbles: true }));
     });
     await page.waitForTimeout(1000);
-
-    // Seleciona o Segmento utilizando o helper geométrico robusto
-    await selecionarComboPorLabel(page, /Segmento/i, /Barbearia/i);
-
-    // Clica em Gravar
+    console.log(`✅ Preencheu o slug do site: ${slug}`);
+    
+    await selecionarComboPorLabel(page, /Segmento/i, /Barbearia/i, 'Segmento');
+    
     await page.getByText(/^Gravar$/i).first().click({ force: true });
-  }
-
-  /* =========================================================
-     FLUXO DE TESTE
-     ========================================================= */
+    console.log('✅ Clicou em Gravar (Configuração do site)');
+  }  
 
   test('Deve cadastrar usuário, empresa e configuração inicial do site.', async ({ page }) => {
     test.setTimeout(180000);
 
     await page.goto('/');
+    console.log('✅ Abriu Site');
     await page.waitForTimeout(1500);
     await fecharCookiesSeAparecer(page);
     
@@ -209,44 +210,45 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
       if (await btnSair.count() > 0) await btnSair.click({ force: true });
       else { await page.context().clearCookies(); await page.goto('/'); }
     }
-
-    // 1) Tela 1: Cadastre-se
+   
     await page.getByText(/Cadastre-se/i).first().waitFor({ state: 'visible', timeout: 30000 });
     await page.getByText(/Cadastre-se/i).first().click({ force: true });
+    console.log('✅ Clicou em Cadastre-se');
     
-    console.log(`E-mail criado para cadastro: ${emailUsuario}`);
-    await preencherInputVisivel(page, 0, nomeUsuario);
-    await preencherInputVisivel(page, 1, emailUsuario);
-    await preencherInputVisivel(page, 2, senhaUsuario);
-    await preencherInputVisivel(page, 3, senhaUsuario);
+    console.log(`✅ E-mail criado para cadastro: ${emailUsuario}`);
+    await preencherInputVisivel(page, 0, nomeUsuario, 'Nome do Usuário');
+    await preencherInputVisivel(page, 1, emailUsuario, 'E-mail do Usuário');
+    await preencherInputVisivel(page, 2, senhaUsuario, 'Senha do Usuário');
+    await preencherInputVisivel(page, 3, senhaUsuario, 'Confirmar Senha');
 
     await page.getByText(/^Gravar$/i).first().click({ force: true });
-
-    // Aguarda carregar a Tela 2: Empresa
+    console.log('✅ Clicou em Gravar (Cadastro de Usuário)');
+    
     await expect(page.getByText(/Informa[çc][õo]es da empresa|Raz[aã]o social|Fantasia/i).first()).toBeVisible({ timeout: 30000 });
+    console.log('✅ Abriu tela de Informações da Empresa');
     await page.waitForTimeout(2000);
-
-    // 2) Tela 2: Empresa
-    await preencherCampoProximoAoLabel(page, /Raz[aã]o social/i, razaoSocial);
-    await preencherCampoProximoAoLabel(page, /Fantasia/i, fantasia);
-    await selecionarComboPorLabel(page, /Pa[ií]s/i, /Brasil/i);
-    await selecionarComboPorLabel(page, /Moeda/i, /Real|R\$\s*-?\s*Real|Brasileiro/i);
+    
+    await preencherCampoProximoAoLabel(page, /Raz[aã]o social/i, razaoSocial, 'Razão Social');
+    await preencherCampoProximoAoLabel(page, /Fantasia/i, fantasia, 'Nome Fantasia');
+    await selecionarComboPorLabel(page, /Pa[ií]s/i, /Brasil/i, 'País');
+    await selecionarComboPorLabel(page, /Moeda/i, /Real|R\$\s*-?\s*Real|Brasileiro/i, 'Moeda');
 
     const checkCnpj = await page.locator('body').innerText();
     if (/CNPJ/i.test(checkCnpj)) {
-        await preencherCampoProximoAoLabel(page, /CNPJ/i, cnpjValido);
+        await preencherCampoProximoAoLabel(page, /CNPJ/i, cnpjValido, 'CNPJ');
     }
 
     await page.getByText(/^Gravar$/i).first().click({ force: true });
-
-    // 3) Tela 3: Site
+    console.log('✅ Clicou em Gravar (Empresa)');
+    
     await preencherConfiguracaoSite(page);
-
-    // 4) Sucesso
+    
     await expect(page.getByText(/Dashboard|Agenda|Clientes|Bom dia|Boa tarde/i).first()).toBeVisible({ timeout: 30000 });
+    console.log('✅ Acessou com sucesso o Dashboard / Tela Inicial');
+    
+    const caminhoArquivo = path.join(process.cwd(), 'test', 'usuarios', 'usuarios-gerados.json');
+    console.log(`📂 Caminho absoluto onde o arquivo está sendo salvo: ${path.resolve(caminhoArquivo)}`);
 
-    // Salvar JSON
-    const caminhoArquivo = path.join(process.cwd(), 'tests', 'usuarios', 'usuarios-gerados.json');
     const usuarioGerado = { dataCriacao: new Date().toISOString(), pais: 'Brasil', nomeUsuario, emailUsuario, senhaUsuario, razaoSocial, fantasia, documento: cnpjValido, slug };
     
     let usuarios: any[] = [];
@@ -256,7 +258,9 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
       const diretorio = path.dirname(caminhoArquivo);
       if (!fs.existsSync(diretorio)) fs.mkdirSync(diretorio, { recursive: true });
       fs.writeFileSync(caminhoArquivo, JSON.stringify(usuarios, null, 2), 'utf-8');
-      console.log(`✅ Usuário salvo no JSON: ${emailUsuario}`);
-    } catch {}
+      console.log(`✅ Usuário salvo com sucesso no JSON: ${emailUsuario}`);
+    } catch (e) {
+      console.error(`❌ Erro ao salvar arquivo JSON:`, e);
+    }
   });
 });

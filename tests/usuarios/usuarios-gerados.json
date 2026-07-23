@@ -515,5 +515,38 @@
     "fantasia": "Fantasia 1784833157959",
     "documento": "18.787.976/0001-11",
     "slug": "site-1784833157959"
+  },
+  {
+    "dataCriacao": "2026-07-23T19:04:58.448Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Usuario 1784833475035",
+    "emailUsuario": "usuario.1784833475035@teste.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia 1784833475035",
+    "fantasia": "Fantasia 1784833475035",
+    "documento": "48.913.728/0001-30",
+    "slug": "site-1784833475035"
+  },
+  {
+    "dataCriacao": "2026-07-23T19:12:21.694Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Usuario 1784833922680",
+    "emailUsuario": "usuario.1784833922680@teste.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia 1784833922680",
+    "fantasia": "Fantasia 1784833922680",
+    "documento": "28.878.414/0001-37",
+    "slug": "site-1784833922680"
+  },
+  {
+    "dataCriacao": "2026-07-23T19:16:07.338Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Usuario 1784834132004",
+    "emailUsuario": "usuario.1784834132004@teste.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia 1784834132004",
+    "fantasia": "Fantasia 1784834132004",
+    "documento": "64.748.034/0001-41",
+    "slug": "site-1784834132004"
   }
 ]
