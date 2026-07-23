@@ -1,6 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
+import { obterNomePessoaAleatorio } from '../../utils/nomescompletos';
 
 test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)', () => {
   test.beforeEach(async ({ context }) => {
@@ -14,13 +15,18 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
   });
 
   const timestamp = Date.now();
-  const nomeUsuario = `Usuario ${timestamp}`;
-  const emailUsuario = `usuario.${timestamp}@teste.com`;
+  const nomeUsuario = obterNomePessoaAleatorio();  
+  const usuario = nomeUsuario
+  .split(' ')[0]
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase();
+  const emailUsuario = `${usuario}.${timestamp}@sgbr.com`;  
   const senhaUsuario = '12345678';
 
-  const razaoSocial = `Barbearia ${timestamp}`;
-  const fantasia = `Fantasia ${timestamp}`;
-  const slug = `site-${timestamp}`;
+  const razaoSocial = `Barbearia ${nomeUsuario}`;
+  const fantasia = `Fantasia ${nomeUsuario.split(' ')[0]}`;
+  const slug = `site-${nomeUsuario.split(' ').slice(0, 2).join(' ')}`;
 
   function gerarCnpjValido(): string {
     const base = `${Math.floor(10000000 + Math.random() * 90000000)}0001`;
@@ -55,7 +61,7 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
     await input.click({ force: true });
     await input.fill('');
     await input.type(valor, { delay: 20 });
-    console.log(`✅ Preencheu input [${nomeCampoDescricao}] com "${valor}"`);
+    console.log(`✅ ${nomeCampoDescricao}: ${valor}`);
   }
 
   async function preencherCampoProximoAoLabel(page: Page, labelRegex: RegExp, valor: string, nomeCampoDescricao: string) {
@@ -185,7 +191,8 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
       node.dispatchEvent(new Event('blur', { bubbles: true }));
     });
     await page.waitForTimeout(1000);
-    console.log(`✅ Preencheu o slug do site: ${slug}`);
+    const slugFormatado = slug.replace(/\s+/g, '').toLowerCase();
+    console.log(`✅ Preencheu o slug do site: ${slugFormatado}`);
     
     await selecionarComboPorLabel(page, /Segmento/i, /Barbearia/i, 'Segmento');
     
@@ -246,8 +253,7 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
     await expect(page.getByText(/Dashboard|Agenda|Clientes|Bom dia|Boa tarde/i).first()).toBeVisible({ timeout: 30000 });
     console.log('✅ Acessou com sucesso o Dashboard / Tela Inicial');
     
-    const caminhoArquivo = path.join(process.cwd(), 'test', 'usuarios', 'usuarios-gerados.json');
-    console.log(`📂 Caminho absoluto onde o arquivo está sendo salvo: ${path.resolve(caminhoArquivo)}`);
+    const caminhoArquivo = path.join(process.cwd(), 'test', 'usuarios', 'usuarios-gerados.json');    
 
     const usuarioGerado = { dataCriacao: new Date().toISOString(), pais: 'Brasil', nomeUsuario, emailUsuario, senhaUsuario, razaoSocial, fantasia, documento: cnpjValido, slug };
     

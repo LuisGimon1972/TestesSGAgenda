@@ -42,5 +42,126 @@
     "fantasia": "Fantasia 1784834545906",
     "documento": "17.791.301/0001-83",
     "slug": "site-1784834545906"
+  },
+  {
+    "dataCriacao": "2026-07-23T19:25:22.519Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Usuario 1784834703318",
+    "emailUsuario": "usuario.1784834703318@teste.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia 1784834703318",
+    "fantasia": "Fantasia 1784834703318",
+    "documento": "93.701.431/0001-66",
+    "slug": "site-1784834703318"
+  },
+  {
+    "dataCriacao": "2026-07-23T19:33:42.015Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Sophia Lima Lopes",
+    "emailUsuario": "Sophia.1784835199081@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia 1784835199081",
+    "fantasia": "Fantasia 1784835199081",
+    "documento": "40.888.389/0001-78",
+    "slug": "site-1784835199081"
+  },
+  {
+    "dataCriacao": "2026-07-23T19:36:50.173Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Felipe Souza Carvalho",
+    "emailUsuario": "Felipe.1784835388189@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia 1784835388189",
+    "fantasia": "Fantasia 1784835388189",
+    "documento": "64.329.361/0001-69",
+    "slug": "site-Felipe"
+  },
+  {
+    "dataCriacao": "2026-07-23T19:38:27.349Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Luiza Moreira Santos",
+    "emailUsuario": "Luiza.1784835488460@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Luiza",
+    "fantasia": "Fantasia Luiza",
+    "documento": "63.810.231/0001-80",
+    "slug": "site-Luiza"
+  },
+  {
+    "dataCriacao": "2026-07-23T19:39:16.817Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Heitor Ribeiro Vieira",
+    "emailUsuario": "Heitor.1784835537964@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Heitor Ribeiro Vieira",
+    "fantasia": "Fantasia Heitor",
+    "documento": "66.256.227/0001-00",
+    "slug": "site-Heitor"
+  },
+  {
+    "dataCriacao": "2026-07-23T19:42:37.885Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Sophia Lima Lopes",
+    "emailUsuario": "Sophia.1784835738875@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Sophia Lima Lopes",
+    "fantasia": "Fantasia Sophia",
+    "documento": "91.301.677/0001-15",
+    "slug": "site-Sophia Lima"
+  },
+  {
+    "dataCriacao": "2026-07-23T19:45:17.291Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Theo Fernandes Moreira",
+    "emailUsuario": "Theo.1784835898083@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Theo Fernandes Moreira",
+    "fantasia": "Fantasia Theo",
+    "documento": "48.012.869/0001-82",
+    "slug": "site-Theo Fernandes"
+  },
+  {
+    "dataCriacao": "2026-07-23T19:48:43.717Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Leticia Silva Pereira",
+    "emailUsuario": "Leticia.1784836104258@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Leticia Silva Pereira",
+    "fantasia": "Fantasia Leticia",
+    "documento": "92.321.392/0001-09",
+    "slug": "site-Leticia Silva"
+  },
+  {
+    "dataCriacao": "2026-07-23T19:54:18.819Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Enzo Andrade Silva",
+    "emailUsuario": "enzo.1784836439426@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Enzo Andrade Silva",
+    "fantasia": "Fantasia Enzo",
+    "documento": "43.846.581/0001-90",
+    "slug": "site-Enzo Andrade"
+  },
+  {
+    "dataCriacao": "2026-07-23T19:55:55.256Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Henrique Almeida Costa",
+    "emailUsuario": "henrique.1784836534017@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Henrique Almeida Costa",
+    "fantasia": "Fantasia Henrique",
+    "documento": "33.247.757/0001-33",
+    "slug": "site-Henrique Almeida"
+  },
+  {
+    "dataCriacao": "2026-07-23T19:58:31.645Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Alice Alves Carvalho",
+    "emailUsuario": "alice.1784836692857@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Alice Alves Carvalho",
+    "fantasia": "Fantasia Alice",
+    "documento": "76.619.190/0001-91",
+    "slug": "site-Alice Alves"
   }
 ]
