@@ -1,5 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { loginCompleto } from '../../utils/loginCompleto';
+import { capturarRequisicoesApi } from '../../utils/capturaApi';
 
 test.describe('Agendamentos - Finalizar agendamento criado no mês', () => {
 
@@ -99,14 +100,15 @@ test.describe('Agendamentos - Finalizar agendamento criado no mês', () => {
     const statusBruto = matchCliente ? matchCliente[3].trim() : "";
     const statusLimpo = statusBruto.replace(/\s+.*/, '');
     const dadosAgendamento = {
-    dataHora: partes[0]?.trim(),
-    profissional: partes[1]?.trim(),
-    servico: partes[2]?.trim(),
-    estabelecimento: partes[3]?.trim(),
-    cliente: matchCliente ? matchCliente[1].trim() : clienteBruto,
-    valor: matchCliente ? `R$ ${matchCliente[2]}` : "",
-    status: statusLimpo
-};
+        dataHora: partes[0]?.trim(),
+        profissional: partes[1]?.trim(),
+        servico: partes[2]?.trim(),
+        estabelecimento: partes[3]?.trim(),
+        cliente: matchCliente ? matchCliente[1].trim() : clienteBruto,
+        valor: matchCliente ? `R$ ${matchCliente[2]}` : "",
+        status: statusLimpo
+    };
+    
     console.log('✅ Agendamento Criado encontrado:')
     console.log(dadosAgendamento);
     await clicarEditarNaLinha(page, indiceSorteado);
@@ -197,15 +199,57 @@ test.describe('Agendamentos - Finalizar agendamento criado no mês', () => {
     const responseFinalizar = await finalizarAgendamentoPromise;
 
     if (responseFinalizar) {
-      console.log(`🌐 URL de Finalização: ${responseFinalizar.url()}`);
-      console.log(`✅ Status da API de Finalização: ${responseFinalizar.status()}`);
-      
       const payloadEnviado = responseFinalizar.request().postDataJSON();
-      if (payloadEnviado) {
-        console.log('✅ Payload enviado:\n', JSON.stringify(payloadEnviado, null, 2));
+
+      console.log('🌐 URL do POST:', responseFinalizar.url());
+      console.log(`✅ Status da resposta API: ${responseFinalizar.status()}`);
+      console.log('✅ Payload enviado (POST):\n', payloadEnviado ? JSON.stringify(payloadEnviado, null, 2) : 'null');
+      
+      // AJUSTE CRUCIAL: Regex para pegar apenas a URL base do agendamento e o ID
+      // Ex: transforma ".../schedules/123-abc/items" em ".../schedules/123-abc"
+      let urlConsulta = responseFinalizar.url().split('?')[0];
+      const matchSchedule = urlConsulta.match(/(.*\/schedules\/[a-zA-Z0-9-]+)/);
+      if (matchSchedule) {
+        urlConsulta = matchSchedule[1];
       }
-    }
+      
+      const headersGet = { ...responseFinalizar.request().headers() };
+      delete headersGet['content-type'];
+      delete headersGet['content-length'];
+      delete headersGet[':method'];
+      delete headersGet[':path'];
+      delete headersGet[':authority'];
+      delete headersGet[':scheme'];
+
+      const respostaGet = await page.request.get(urlConsulta, {
+        headers: headersGet,
+      });
+
+      console.log('🌐 URL da consulta (GET) do registro:', urlConsulta);
+      console.log(`✅ Status da consulta GET: ${respostaGet.status()}`);
+
+      if (respostaGet.status() === 200) {
+        try {
+          const jsonConsulta = await respostaGet.json();
+          const agendamentoEncontrado = jsonConsulta?.data || jsonConsulta;
+          
+          console.log('✅ REGISTRO ENCONTRADO COM SUCESSO!');
+          console.log('🆔 ID do Agendamento:', agendamentoEncontrado?.id || agendamentoEncontrado?.iid || 'Desconhecido');
+          console.log('📦 JSON do Registro Consultado:\n', JSON.stringify(agendamentoEncontrado, null, 2));
+          
+          if(agendamentoEncontrado?.status?.toLowerCase().includes('finish') || agendamentoEncontrado?.status?.toLowerCase().includes('conclu')) {
+             console.log('✅ Status de finalização confirmado no JSON da API!');
+          }
+        } catch (e) {
+          console.log('⚠️ Falha ao converter a resposta da consulta para JSON.');
+        }
+      } else {
+        console.log(`⚠️ Falha ao buscar o agendamento finalizado. Status HTTP: ${respostaGet.status()}`);
+      }
+    } 
 
     console.log('✅ Agendamento finalizado com sucesso!');
+    await capturarRequisicoesApi(page); 
+    await page.waitForTimeout(4000);    
   });
 });

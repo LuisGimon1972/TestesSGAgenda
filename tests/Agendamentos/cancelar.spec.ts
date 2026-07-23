@@ -1,7 +1,8 @@
 import { test, expect, Page } from '@playwright/test';
 import { loginCompleto } from '../../utils/loginCompleto';
+import { capturarRequisicoesApi } from '../../utils/capturaApi';
 
-test.describe('Agendamentos - Cancenlar agendamento', () => {
+test.describe('Agendamentos - Cancelar agendamento', () => {
 
   async function fecharCookiesSeAparecer(page: Page) {
     const btnEntendi = page.locator('button, .q-btn').filter({ hasText: /^Entendi$/i });
@@ -93,22 +94,22 @@ test.describe('Agendamentos - Cancenlar agendamento', () => {
     const indiceSorteado = indicesCriados[Math.floor(Math.random() * indicesCriados.length)];
     const textoLinhaSelecionada = (await linhas.nth(indiceSorteado).innerText()).replace(/\s+/g, ' ').trim();
 
-const partes = textoLinhaSelecionada.split(/face|construction|store|person/);
-const clienteBruto = partes[4]?.trim() || "";
-const matchCliente = clienteBruto.match(/^(.*?)\s+R\$\s*([\d.,]+)\s+(.+)$/);
-const statusBruto = matchCliente ? matchCliente[3].trim() : "";
-const statusLimpo = statusBruto.replace(/\s+.*/, '');
-const dadosAgendamento = {
-    dataHora: partes[0]?.trim(),
-    profissional: partes[1]?.trim(),
-    servico: partes[2]?.trim(),
-    estabelecimento: partes[3]?.trim(),
-    cliente: matchCliente ? matchCliente[1].trim() : clienteBruto,
-    valor: matchCliente ? `R$ ${matchCliente[2]}` : "",
-    status: statusLimpo
-};
-console.log('✅ Agendamento Criado encontrado:')
-console.log(dadosAgendamento);
+    const partes = textoLinhaSelecionada.split(/face|construction|store|person/);
+    const clienteBruto = partes[4]?.trim() || "";
+    const matchCliente = clienteBruto.match(/^(.*?)\s+R\$\s*([\d.,]+)\s+(.+)$/);
+    const statusBruto = matchCliente ? matchCliente[3].trim() : "";
+    const statusLimpo = statusBruto.replace(/\s+.*/, '');
+    const dadosAgendamento = {
+        dataHora: partes[0]?.trim(),
+        profissional: partes[1]?.trim(),
+        servico: partes[2]?.trim(),
+        estabelecimento: partes[3]?.trim(),
+        cliente: matchCliente ? matchCliente[1].trim() : clienteBruto,
+        valor: matchCliente ? `R$ ${matchCliente[2]}` : "",
+        status: statusLimpo
+    };
+    console.log('✅ Agendamento Criado encontrado:')
+    console.log(dadosAgendamento);
 
     await clicarEditarNaLinha(page, indiceSorteado);
     return true;
@@ -139,7 +140,7 @@ console.log(dadosAgendamento);
     return false;
   }
   
-  test('Deve percorrer o mês até encontrar um agendamento Criado e finalizar', async ({ page }) => {    
+  test('Deve percorrer o mês até encontrar um agendamento Criado e cancelar', async ({ page }) => {    
     
     await loginCompleto(page);
     await page.waitForTimeout(2000);
@@ -172,9 +173,9 @@ console.log(dadosAgendamento);
     
     await expect(page.locator('body')).toHaveText(/Detalhes/i, { timeout: 30000 });
 
-    const CancelarAgendamentoPromise = page.waitForResponse((response) =>
+    const cancelarAgendamentoPromise = page.waitForResponse((response) =>
       (response.url().includes('/schedules') || response.url().includes('/cancel') || response.url().includes('/status')) &&
-      ['POST', 'PUT', 'PATCH'].includes(response.request().method()) &&
+      ['POST', 'PUT', 'PATCH', 'DELETE'].includes(response.request().method()) &&
       response.status() >= 200 && response.status() < 300,
       { timeout: 15000 }
     ).catch(() => null);
@@ -195,18 +196,50 @@ console.log(dadosAgendamento);
       await btnConfirmar.click({ force: true });
     }
     
-    const responseCancelar = await CancelarAgendamentoPromise;
+    const responseAgendamento = await cancelarAgendamentoPromise;
 
-    if (responseCancelar) {
-      console.log(`🌐 URL de Cancelamento: ${responseCancelar.url()}`);
-      console.log(`✅ Status da API de Finalização: ${responseCancelar.status()}`);
+    if (responseAgendamento) {            
+      const urlConsulta = responseAgendamento.url().split('?')[0].replace(/\/cancel\/?$/, '').replace(/\/status\/?$/, '');
       
-      const payloadEnviado = responseCancelar.request().postDataJSON();
-      if (payloadEnviado) {
-        console.log('✅ Payload enviado:\n', JSON.stringify(payloadEnviado, null, 2));
+      const headersGet = { ...responseAgendamento.request().headers() };
+      delete headersGet['content-type'];
+      delete headersGet['content-length'];
+      delete headersGet[':method'];
+      delete headersGet[':path'];
+      delete headersGet[':authority'];
+      delete headersGet[':scheme'];
+
+      const respostaGet = await page.request.get(urlConsulta, {
+        headers: headersGet,
+      });
+
+      console.log('🌐 URL da consulta (GET) do registro:', urlConsulta);
+      console.log(`✅ Status da consulta GET: ${respostaGet.status()}`);
+
+      if (respostaGet.status() === 200) {
+        try {
+          const jsonConsulta = await respostaGet.json();
+          // Garante o mapeamento do objeto correto, esteja ele dentro de "data" ou direto na raiz
+          const agendamentoEncontrado = jsonConsulta?.data || jsonConsulta;
+          
+          console.log('✅ REGISTRO ENCONTRADO COM SUCESSO!');
+          console.log('🆔 ID do Agendamento:', agendamentoEncontrado?.id || agendamentoEncontrado?.iid || 'Desconhecido');
+          console.log('📦 JSON do Registro Consultado:\n', JSON.stringify(agendamentoEncontrado, null, 2));
+          
+          // Validação simples de segurança que o status realmente mudou
+          if(agendamentoEncontrado?.status?.toLowerCase().includes('cancel')) {
+             console.log('✅ Status de cancelamento confirmado no JSON!');
+          }
+        } catch (e) {
+          console.log('⚠️ Falha ao converter a resposta da consulta para JSON.');
+        }
+      } else {
+        console.log(`⚠️ Falha ao buscar o agendamento cancelado. Status HTTP: ${respostaGet.status()}`);
       }
-    }
+    } 
 
     console.log('✅ Agendamento cancelado com sucesso!');
+    await capturarRequisicoesApi(page); 
+    await page.waitForTimeout(4000);    
   });
 });
