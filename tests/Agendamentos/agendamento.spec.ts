@@ -194,6 +194,7 @@ test.describe('Agendamentos - Cadastro', () => {
   }
 
   async function selecionarDataFuturaOuHoje(page: Page) {
+    await page.waitForTimeout(2000);    
     const dadosData = await page.evaluate(() => {
       const els = Array.from(document.querySelectorAll('*')).filter(el => {
         const style = window.getComputedStyle(el);
@@ -246,6 +247,7 @@ test.describe('Agendamentos - Cadastro', () => {
   }
 
   async function selecionarHorarioMaiorQueAgora(page: Page) {
+    await page.waitForTimeout(1000);    
     const horarioEscolhido = await page.evaluate((isHoje) => {
       const els = Array.from(document.querySelectorAll('*')).filter(el => {
         const style = window.getComputedStyle(el);
@@ -305,23 +307,12 @@ test.describe('Agendamentos - Cadastro', () => {
     console.log(`✅ Selecionou o primeiro cliente da lista: ${nomeClienteLimpo}`);
     
     await page.waitForTimeout(500);
-
-    const inputTelefone = page.locator('input:visible').nth(0);
-    const valorAtual = await inputTelefone.inputValue();    
-    
-    if (!valorAtual || valorAtual.trim() === '') {
-      await inputTelefone.click({ force: true });
-      await inputTelefone.press('Control+A');
-      await inputTelefone.press('Backspace');
-      await inputTelefone.type(telefone, { delay: 50 });
-      console.log(`✅ Preencheu telefone: ${telefone}`);
-    }
+ 
     console.log('📝 FIM DE DADOS ENVIADOS PRA API');
   }
   
   test('Deve cadastrar um agendamento com horário futuro.', async ({ page }) => {
-    test.setTimeout(120000); 
-    
+    test.setTimeout(120000);     
     page.on('pageerror', (err) => {
       const msg = err.message || '';
       if (/Element not found|Cannot read properties of null.*nextSibling|reading 'nextSibling'/i.test(msg)) {
