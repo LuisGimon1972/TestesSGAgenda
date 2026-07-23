@@ -1,0 +1,24 @@
+[
+  {
+    "dataCriacao": "2026-07-23T18:55:36.599Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Usuario 1784832917637",
+    "emailUsuario": "usuario.1784832917637@teste.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia 1784832917637",
+    "fantasia": "Fantasia 1784832917637",
+    "documento": "14.052.520/0001-52",
+    "slug": "site-1784832917637"
+  },
+  {
+    "dataCriacao": "2026-07-23T18:57:45.354Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Usuario 1784833046483",
+    "emailUsuario": "usuario.1784833046483@teste.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia 1784833046483",
+    "fantasia": "Fantasia 1784833046483",
+    "documento": "24.413.788/0001-26",
+    "slug": "site-1784833046483"
+  }
+]

@@ -246,7 +246,7 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
     await expect(page.getByText(/Dashboard|Agenda|Clientes|Bom dia|Boa tarde/i).first()).toBeVisible({ timeout: 30000 });
 
     // Salvar JSON
-    const caminhoArquivo = path.join(process.cwd(), 'cypress', 'fixtures', 'usuarios-gerados.json');
+    const caminhoArquivo = path.join(process.cwd(), 'tests', 'usuarios', 'usuarios-gerados.json');
     const usuarioGerado = { dataCriacao: new Date().toISOString(), pais: 'Brasil', nomeUsuario, emailUsuario, senhaUsuario, razaoSocial, fantasia, documento: cnpjValido, slug };
     
     let usuarios: any[] = [];
