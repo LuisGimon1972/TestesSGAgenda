@@ -2,6 +2,7 @@ import { test, expect, Page } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
 import { obterNomePessoaAleatorio } from '../../utils/nomescompletos';
+import { capturarRequisicoesApi } from '../../utils/capturaApi';
 
 test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)', () => {
   test.beforeEach(async ({ context }) => {
@@ -269,5 +270,7 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
     } catch (e) {
       console.error(`❌ Erro ao salvar arquivo JSON:`, e);
     }
-  });
+   await capturarRequisicoesApi(page); 
+   await page.waitForTimeout(4000);    
+  });  
 });

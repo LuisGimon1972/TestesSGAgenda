@@ -482,5 +482,27 @@
     "fantasia": "Fantasia Lorena",
     "documento": "80.916.644/0001-63",
     "slug": "site-lorenamendes1784902058080"
+  },
+  {
+    "dataCriacao": "2026-07-24T14:17:22.616Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Nicolas Santos Lima",
+    "emailUsuario": "nicolas.1784902623292@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Nicolas Santos Lima",
+    "fantasia": "Fantasia Nicolas",
+    "documento": "62.844.315/0001-72",
+    "slug": "site-nicolassantos1784902623292"
+  },
+  {
+    "dataCriacao": "2026-07-24T14:18:17.668Z",
+    "pais": "Paraguai",
+    "nomeUsuario": "Theo Fernandes Moreira",
+    "emailUsuario": "theo.1784902677930@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Theo Fernandes Moreira",
+    "fantasia": "Fantasia Theo",
+    "documento": "80015541",
+    "slug": "site-theofernandes1784902677930"
   }
 ]

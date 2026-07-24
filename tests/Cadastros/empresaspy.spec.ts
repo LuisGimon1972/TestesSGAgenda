@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { obterNomePessoaAleatorio } from '../../utils/nomescompletos';
 import { empresasParaguai } from '../../utils/rucs-paraguai';
+import { capturarRequisicoesApi } from '../../utils/capturaApi';
 
 function gerarRUC(): string {
   const empresaAleatoria = empresasParaguai[Math.floor(Math.random() * empresasParaguai.length)];
@@ -122,7 +123,7 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
     try {
       await inputHandle.click({ force: true });
     } catch {
-      // ignore
+
     }
     await inputHandle.fill(valor);
 
@@ -192,17 +193,14 @@ async function selecionarComboPorLabel(
 
       await candidates.first().waitFor({ state: 'visible', timeout: 6000 });
       const opcao = candidates.first();
-
-      // garante que a opção esteja visível no viewport antes do click
+      
       await opcao.scrollIntoViewIfNeeded().catch(() => {});
       const textoOpcao = (await opcao.innerText().catch(() => '')).trim();
 
       await opcao.click({ force: true });
-
-      // espera a seleção refletir no DOM
+      
       await page.waitForTimeout(500);
-
-      // log claro do que foi selecionado
+      
       console.log(`✅ ${nomeComboDescricao}: ${textoOpcao}`);
 
       return textoOpcao;
@@ -253,7 +251,6 @@ async function selecionarComboPorLabel(
   console.log('✅' + ' ' +  texto, 'Selecionado(a):',selecionadoTexto);
   return selecionadoTexto;
 }
-
   
   async function preencherRucParaguai(page: Page, rucValor?: string) {
     const valor = gerarRUC();
@@ -421,5 +418,7 @@ async function selecionarComboPorLabel(
     } catch (e) {
       console.error(`❌ Erro ao salvar arquivo JSON:`, e);
     }
+   await capturarRequisicoesApi(page); 
+   await page.waitForTimeout(4000);    
   });
 });
