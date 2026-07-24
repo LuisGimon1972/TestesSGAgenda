@@ -174,5 +174,71 @@
     "fantasia": "Fantasia Maria",
     "documento": "82.581.671/0001-58",
     "slug": "site-Maria Eduarda"
+  },
+  {
+    "dataCriacao": "2026-07-24T11:28:10.667Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Meire Ferreira Silva",
+    "emailUsuario": "meire.1784892471331@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Meire Ferreira Silva",
+    "fantasia": "Fantasia Meire",
+    "documento": "33.575.410/0001-10",
+    "slug": "site-Meire Ferreira"
+  },
+  {
+    "dataCriacao": "2026-07-24T11:30:30.497Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Enzo Andrade Silva",
+    "emailUsuario": "enzo.1784892612660@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Enzo Andrade Silva",
+    "fantasia": "Fantasia Enzo",
+    "documento": "56.444.748/0001-38",
+    "slug": "site-Enzo Andrade"
+  },
+  {
+    "dataCriacao": "2026-07-24T11:35:23.446Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Enzo Andrade Silva",
+    "emailUsuario": "enzo.1784892907514@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Enzo Andrade Silva",
+    "fantasia": "Fantasia Enzo",
+    "documento": "49.695.737/0001-65",
+    "slug": "site-Enzo Andrade"
+  },
+  {
+    "dataCriacao": "2026-07-24T12:33:23.155Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Alex Alves Santos",
+    "emailUsuario": "alex.1784896384549@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Alex Alves Santos",
+    "fantasia": "Fantasia Alex",
+    "documento": "97.395.340/0001-09",
+    "slug": "site-Alex Alves"
+  },
+  {
+    "dataCriacao": "2026-07-24T12:44:59.892Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Lucas Gabriel Ferreira",
+    "emailUsuario": "lucas.1784897080159@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Lucas Gabriel Ferreira",
+    "fantasia": "Fantasia Lucas",
+    "documento": "Documento",
+    "slug": "site-Lucas Gabriel"
+  },
+  {
+    "dataCriacao": "2026-07-24T12:48:12.251Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Solange Carvalho Alves",
+    "emailUsuario": "solange.1784897272590@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Solange Carvalho Alves",
+    "fantasia": "Fantasia Solange",
+    "documento": "Documento",
+    "slug": "site-Solange Carvalho"
   }
 ]

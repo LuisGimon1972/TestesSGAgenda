@@ -2,9 +2,14 @@ import { test, expect, Page } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
 import { obterNomePessoaAleatorio } from '../../utils/nomescompletos';
+import { empresasParaguai } from '../../utils/rucs-paraguai';
 
-test.describe('Cadastro completo - Usuário e empresa Paraguay', () => {
-  let rucValido = '5545454'  
+function gerarRUC(): string {
+  const empresaAleatoria = empresasParaguai[Math.floor(Math.random() * empresasParaguai.length)];
+  return empresaAleatoria.ruc;
+}
+
+test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto) - suporte Paraguai', () => {
   test.beforeEach(async ({ context }) => {
     await context.clearCookies();
     for (const p of context.pages()) {
@@ -16,44 +21,50 @@ test.describe('Cadastro completo - Usuário e empresa Paraguay', () => {
   });
 
   const timestamp = Date.now();
-  const nomeUsuario = obterNomePessoaAleatorio();  
+  const nomeUsuario = obterNomePessoaAleatorio();
   const usuario = nomeUsuario
     .split(' ')[0]
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase();
-  
-  const emailUsuario = `${usuario}.${timestamp}@sgbr.com`;  
+  const emailUsuario = `${usuario}.${timestamp}@sgbr.com`;
   const senhaUsuario = '12345678';
 
   const razaoSocial = `Barbearia ${nomeUsuario}`;
   const fantasia = `Fantasia ${nomeUsuario.split(' ')[0]}`;
-  const slug = `site-${usuario}-${timestamp}`.toLowerCase();
-
-  function gerarCnpjValido(): string {
-    const base = `${Math.floor(10000000 + Math.random() * 90000000)}0001`;
-    function calcularDigito(cnpjBase: string): string {
-      const pesos = cnpjBase.length === 12
-          ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
-          : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-      const soma = cnpjBase.split('').reduce((total, num, i) => total + Number(num) * pesos[i], 0);
-      const resto = soma % 11;
-      return resto < 2 ? '0' : String(11 - resto);
-    }
-    const digito1 = calcularDigito(base);
-    const digito2 = calcularDigito(base + digito1);
-    return (base + digito1 + digito2).replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
-  }
-
-  const cnpjValido = gerarCnpjValido();
+  const slug = `site-${nomeUsuario.split(' ').slice(0, 2).join(' ')}`;  
 
   async function fecharCookiesSeAparecer(page: Page) {
     const btnGlobal = page.getByText(/Entendi|Aceitar|Aceito|OK|Concordo/i).first();
     if (await btnGlobal.isVisible().catch(() => false)) {
-      try { 
-        await btnGlobal.click({ force: true, timeout: 3000 }); 
+      try {
+        await btnGlobal.click({ force: true, timeout: 3000 });
         console.log('✅ Fechou aviso de cookies');
       } catch {}
+    }
+  }
+
+  async function clicarBotaoGravarAtual(page: Page) {
+    await page.waitForTimeout(700);
+
+    const botoes = page.locator('button:visible, .q-btn:visible, [role="button"]:visible');
+    const count = await botoes.count();
+
+    let clicado = false;
+    for (let i = 0; i < count; i++) {
+      const botao = botoes.nth(i);
+      const texto = (await botao.innerText()).replace(/\s+/g, ' ').trim();
+      if (/Guardar|Gravar|Salvar|Confirmar|Continuar/i.test(texto)) {
+        await botao.scrollIntoViewIfNeeded();
+        await expect(botao).toBeVisible();
+        await botao.click({ force: true });
+        clicado = true;
+        break;
+      }
+    }
+
+    if (!clicado) {
+      throw new Error('Botão Guardar/Gravar visível não encontrado');
     }
   }
 
@@ -64,17 +75,16 @@ test.describe('Cadastro completo - Usuário e empresa Paraguay', () => {
     await input.fill('');
     await input.type(valor, { delay: 20 });
     console.log(`✅ ${nomeCampoDescricao}: ${valor}`);
-  }  
+  }
 
-  async function selecionarComboPorLabel(page: Page, labelRegex: RegExp, opcaoRegex: RegExp, nomeComboDescricao: string) {
-    // Timeout estendido para 30s para garantir o carregamento do combo na tela de empresa
-    await expect(page.getByText(labelRegex).first()).toBeVisible({ timeout: 30000 });
+  async function preencherCampoProximoAoLabel(page: Page, labelRegex: RegExp, valor: string, nomeCampoDescricao: string) {
+    await expect(page.getByText(labelRegex).first()).toBeVisible({ timeout: 15000 });
 
-    const comboHandle = await page.evaluateHandle(({ source, flags }) => {
+    const inputHandle = await page.evaluateHandle(({ source, flags }) => {
       const regex = new RegExp(source, flags);
       const allElements = Array.from(document.querySelectorAll('body *'));
       let targetLabel: HTMLElement | null = null;
-      
+
       for (const el of allElements) {
         if (regex.test(el.textContent || '') && window.getComputedStyle(el).display !== 'none') {
           const hasChildMatch = Array.from(el.children).some(child => regex.test(child.textContent || ''));
@@ -85,15 +95,69 @@ test.describe('Cadastro completo - Usuário e empresa Paraguay', () => {
         }
       }
 
-      if (!targetLabel) throw new Error(`Label de combo não encontrado: ${source}`);
+      if (!targetLabel) throw new Error(`Label geométrico não encontrado: ${source}`);
       const labelRect = targetLabel.getBoundingClientRect();
 
-      const combos = Array.from(document.querySelectorAll('.q-field, [role="combobox"]')) as HTMLElement[];
-      const visibleCombos = combos.filter(i => {
-         const rect = i.getBoundingClientRect();
-         return rect.width > 0 && rect.height > 0 && window.getComputedStyle(i).visibility !== 'hidden';
+      const inputs = Array.from(document.querySelectorAll('input, textarea')) as HTMLElement[];
+      const visibleInputs = inputs.filter(i => {
+        const rect = i.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0 && window.getComputedStyle(i).visibility !== 'hidden' && !(i as HTMLInputElement).disabled;
       });
 
+      const camposOrdenados = visibleInputs
+        .filter(campo => campo.getBoundingClientRect().top >= labelRect.top - 10)
+        .sort((a, b) => {
+          const rectA = a.getBoundingClientRect();
+          const rectB = b.getBoundingClientRect();
+          const distanciaA = Math.abs(rectA.top - labelRect.bottom) + Math.abs(rectA.left - labelRect.left);
+          const distanciaB = Math.abs(rectB.top - labelRect.bottom) + Math.abs(rectB.left - labelRect.left);
+          return distanciaA - distanciaB;
+        });
+
+      if (camposOrdenados.length === 0) throw new Error(`Campo próximo ao label ${source} não encontrado`);
+      return camposOrdenados[0];
+    }, { source: labelRegex.source, flags: labelRegex.flags });
+
+    try {
+      await inputHandle.click({ force: true });
+    } catch {
+      // ignore
+    }
+    await inputHandle.fill(valor);
+
+    await inputHandle.evaluate((node: any) => {
+      node.dispatchEvent(new Event('input', { bubbles: true }));
+      node.dispatchEvent(new Event('change', { bubbles: true }));
+      node.dispatchEvent(new Event('blur', { bubbles: true }));
+    });
+
+    await inputHandle.dispose();
+    console.log(`✅ Preencheu campo de texto "${nomeCampoDescricao}" com "${valor}"`);
+  }
+  
+  async function selecionarComboPorLabel(page: Page, labelRegex: RegExp, opcaoRegex: RegExp, nomeComboDescricao: string, opts?: { exact?: boolean, retries?: number }) {
+    const retries = opts?.retries ?? 2;
+    const exact = opts?.exact ?? false;
+
+    await expect(page.getByText(labelRegex).first()).toBeVisible({ timeout: 15000 });
+   
+    const comboHandle = await page.evaluateHandle(({ source, flags }) => {
+      const regex = new RegExp(source, flags);
+      const allElements = Array.from(document.querySelectorAll('body *'));
+      let targetLabel: HTMLElement | null = null;
+      for (const el of allElements) {
+        if (regex.test(el.textContent || '') && window.getComputedStyle(el).display !== 'none') {
+          const hasChildMatch = Array.from(el.children).some(child => regex.test(child.textContent || ''));
+          if (!hasChildMatch) { targetLabel = el as HTMLElement; break; }
+        }
+      }
+      if (!targetLabel) throw new Error(`Label de combo não encontrado: ${source}`);
+      const labelRect = targetLabel.getBoundingClientRect();
+      const combos = Array.from(document.querySelectorAll('.q-field, [role="combobox"], .select, .v-select')) as HTMLElement[];
+      const visibleCombos = combos.filter(i => {
+        const rect = i.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0 && window.getComputedStyle(i).visibility !== 'hidden';
+      });
       const combosOrdenados = visibleCombos
         .filter(campo => campo.getBoundingClientRect().top >= labelRect.top - 10)
         .sort((a, b) => {
@@ -103,26 +167,52 @@ test.describe('Cadastro completo - Usuário e empresa Paraguay', () => {
           const distB = Math.abs(rectB.top - labelRect.bottom) + Math.abs(rectB.left - labelRect.left);
           return distA - distB;
         });
-
       if (combosOrdenados.length === 0) throw new Error(`Combo próximo ao label ${source} não encontrado`);
       return combosOrdenados[0];
     }, { source: labelRegex.source, flags: labelRegex.flags });
-
-    await comboHandle.click({ force: true });
-    await comboHandle.dispose();
-
-    await page.waitForTimeout(1200);
-
-    const opcao = page.locator('.q-menu .q-item, .q-portal .q-item, [role="option"], .q-item').filter({ hasText: opcaoRegex }).first();
-    await opcao.waitFor({ state: 'visible', timeout: 10000 });    
     
-    const textoOpcao = await opcao.innerText().catch(() => opcaoRegex.toString());
-    
-    await opcao.click({ force: true });
-    console.log(`✅ Selecionou o ${nomeComboDescricao}: ${textoOpcao.trim()}`);
-    await page.waitForTimeout(800);
+    let lastError: any = null;
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        await comboHandle.click({ force: true });
+        await comboHandle.dispose();        
+        await page.waitForTimeout(400 + attempt * 200);        
+        const optionsLocator = page.locator('.q-menu .q-item, .q-portal .q-item, [role="option"], .q-item, .v-list-item');
+        const candidates = exact
+          ? optionsLocator.filter({ hasText: new RegExp(`^${opcaoRegex.source}$`, opcaoRegex.flags) })
+          : optionsLocator.filter({ hasText: opcaoRegex });
+
+        await candidates.first().waitFor({ state: 'visible', timeout: 6000 });
+        const opcao = candidates.first();
+        const textoOpcao = (await opcao.innerText().catch(() => '')).trim();
+        await opcao.click({ force: true });
+        
+        await page.waitForTimeout(500);
+        console.log(`✅ Tentativa ${attempt+1}: clicou na opção "${textoOpcao}" para ${nomeComboDescricao}`);
+        return textoOpcao;
+      } catch (e) {
+        lastError = e;        
+        await page.waitForTimeout(300);
+      }
+    }
+
+    throw new Error(`Falha ao selecionar ${nomeComboDescricao}: ${lastError?.message || lastError}`);
   }
-
+  
+  async function assertComboValue(page: Page, labelRegex: RegExp, expectedRegex: RegExp, timeout = 5000) {
+    const start = Date.now();
+    while (Date.now() - start < timeout) {
+      try {
+        const label = page.getByText(labelRegex).first();
+        if (await label.count() === 0) break;
+        const combo = page.locator('.q-field, [role="combobox"], .select, .v-select').filter({ hasText: expectedRegex }).first();
+        if (await combo.count() > 0) return true;
+      } catch {}
+      await page.waitForTimeout(300);
+    }
+    return false;
+  } 
+ 
     async function selecionarComboPorIndice(page: Page, index: number, opcao: RegExp) {
     const combo = page.locator('.q-field:visible').nth(index);
     await combo.waitFor({ state: 'visible', timeout: 30000 });
@@ -150,79 +240,94 @@ test.describe('Cadastro completo - Usuário e empresa Paraguay', () => {
 
     await page.waitForTimeout(800);
   }
-
-    async function preencherInformacoesEmpresaParaguai(page: Page) {
-    await expect(page.locator('body')).toHaveText(
-      /Información de la empresa|Informa[çc][õo]es da empresa|Razón social|Raz[aãóo]+ social|Nombre comercial|Fantasia|Pa[ií]s|Moneda|Moeda/i,
-      { timeout: 30000 }
-    );
-
-    await preencherInputVisivel(page, 0, razaoSocial, 'Razão social');
-    await preencherInputVisivel(page, 1, fantasia, 'Fantasia');
-    await selecionarComboPorIndice(page, 2, /Paraguay|Paraguai/i);
-    await selecionarComboPorIndice(page, 3, /Guarani|Guaran[ií]s|PYG|₲|G\./i);
-    await preencherRucParaguai(page);
-
-   // await clicarBotaoGravarAtual(page);
-
-    await expect(page.locator('body')).toHaveText(
-      /Configura[çc][aã]o do site|Configuraci[oó]n del sitio|URL do site|URL del sitio|Segmento|dados iniciais|datos iniciales/i,
-      { timeout: 30000 }
-    );
-  }
-
-    async function preencherRucParaguai(page: Page) {
-    const inputs = page.locator('input:visible');
-    await expect(inputs).toHaveCount(await inputs.count(), { timeout: 30000 });
-
-    await page.waitForTimeout(1200);
-    
-    const rucInput = inputs.nth(2);
-    await rucInput.waitFor({ state: 'visible', timeout: 30000 });
-    await rucInput.click({ force: true });
-    await rucInput.fill('');
-    await rucInput.type(rucValido, { delay: 20 });
-
-    await page.waitForTimeout(1200);
-
-    const bodyText = await page.locator('body').innerText();
-    expect(bodyText).not.toMatch(/no v[aá]lido|inv[aá]lido/i);
-  }
-
   
+  async function preencherRucParaguai(page: Page, rucValor?: string) {
+    const valor = gerarRUC();
+    const labelRegexes = [/RUC/i, /Registro Único de Contribuyentes/i, /Registro Unico/i, /Registro Tributario/i, /Documento/i];
+    let preenchido = false;
+
+    for (const rx of labelRegexes) {
+      try {
+        await preencherCampoProximoAoLabel(page, rx, valor, 'RUC (Paraguai)');
+        console.log(`✅ Preencheu RUC com: ${valor}`);
+        preenchido = true;
+        break;
+      } catch {
+        console.log(`✅ Não preencheu RUC com: ${valor}`);
+      }
+    }
+
+    if (!preenchido) {
+      const fallback = page.locator('input[placeholder*="ruc" i], input[aria-label*="ruc" i], input[name*="ruc" i]').first();
+      if (await fallback.count() > 0) {
+        await fallback.waitFor({ state: 'visible', timeout: 8000 });
+        await fallback.fill('');
+        await fallback.type(valor, { delay: 20 });
+        await fallback.evaluate((node: any) => {
+          node.dispatchEvent(new Event('input', { bubbles: true }));
+          node.dispatchEvent(new Event('change', { bubbles: true }));
+          node.dispatchEvent(new Event('blur', { bubbles: true }));
+        });
+        console.log(`✅ Preencheu RUC (fallback) com: ${valor}`);
+        preenchido = true;
+      }
+    }
+
+    if (!preenchido) throw new Error('Campo RUC não encontrado (nem por label nem por placeholder).');
+
+    await page.waitForTimeout(900);
+
+    const invalid = await page.locator('text=/no v[aá]lido|inv[aá]lido|RUC inválido|inválido/i').count();
+    if (invalid > 0) throw new Error('Validação de RUC retornou inválido.');
+
+    return valor;
+  }
+
   async function preencherConfiguracaoSite(page: Page) {
-    await expect(page.getByText(/Configura[çc][ão] do site|URL do site/i).first()).toBeVisible({ timeout: 30000 });
+
+    await expect(page.locator('body')).toHaveText(
+      /Configura[çc][aã]o do site|Configuraci[oó]n del sitio|URL do site|URL del sitio/i,
+      { timeout: 30000 }
+    );
     console.log('✅ Abriu tela de Configuração do site');
+    
     await page.waitForTimeout(1500);
    
     const inputSlug = page.locator('input[type="text"]:visible').first();
     await inputSlug.waitFor({ state: 'visible', timeout: 10000 });
-    await inputSlug.click({ force: true });
-    await inputSlug.fill('');
-    await inputSlug.type(slug, { delay: 20 });
+    await inputSlug.click({ force: true });    
+  
+    await inputSlug.press('Control+A');
+    await inputSlug.press('Backspace');
+    await page.waitForTimeout(200);
+    
+    const slugFormatado = slug.replace(/\s+/g, '').toLowerCase();
+    
+    await inputSlug.pressSequentially(slugFormatado, { delay: 20 });    
     
     await inputSlug.evaluate((node: any) => {
       node.dispatchEvent(new Event('input', { bubbles: true }));
       node.dispatchEvent(new Event('change', { bubbles: true }));
       node.dispatchEvent(new Event('blur', { bubbles: true }));
     });
+    
     await page.waitForTimeout(1000);
-    console.log(`✅ Preencheu o slug do site: ${slug}`);
+    console.log(`✅ Preencheu o slug do site: ${slugFormatado}`);
     
-    await selecionarComboPorLabel(page, /Segmento/i, /Barbearia/i, 'Segmento');
+    await selecionarComboPorLabel(page, /Segmento/i, /Barbearia|Barber[ií]a/i, 'Segmento');    
     
-    await page.getByText(/^Gravar$/i).first().click({ force: true });
+    await clicarBotaoGravarAtual(page);
     console.log('✅ Clicou em Gravar (Configuração do site)');
-  }  
+  }
 
-  test('Deve cadastrar usuário, empresa e configuração inicial do site.', async ({ page }) => {
+  test('Deve cadastrar usuário, empresa e configuração inicial do site (suporte Paraguai).', async ({ page }) => {
     test.setTimeout(180000);
 
     await page.goto('/');
     console.log('✅ Abriu Site');
     await page.waitForTimeout(1500);
     await fecharCookiesSeAparecer(page);
-    
+
     const bodyText = await page.locator('body').innerText().catch(() => '');
     if (/Dashboard|Agenda|Clientes|Atendentes/i.test(bodyText) && !/Bem vindo|Entrar|Cadastre-se/i.test(bodyText)) {
       const perfilBtn = page.locator('button, .q-btn, [role="button"]').filter({ hasText: /keyboard_arrow_down|expand_more|@/i }).last();
@@ -232,11 +337,11 @@ test.describe('Cadastro completo - Usuário e empresa Paraguay', () => {
       if (await btnSair.count() > 0) await btnSair.click({ force: true });
       else { await page.context().clearCookies(); await page.goto('/'); }
     }
-   
+
     await page.getByText(/Cadastre-se/i).first().waitFor({ state: 'visible', timeout: 30000 });
     await page.getByText(/Cadastre-se/i).first().click({ force: true });
     console.log('✅ Clicou em Cadastre-se');
-    
+
     console.log(`✅ E-mail criado para cadastro: ${emailUsuario}`);
     await preencherInputVisivel(page, 0, nomeUsuario, 'Nome do Usuário');
     await preencherInputVisivel(page, 1, emailUsuario, 'E-mail do Usuário');
@@ -245,28 +350,51 @@ test.describe('Cadastro completo - Usuário e empresa Paraguay', () => {
 
     await page.getByText(/^Gravar$/i).first().click({ force: true });
     console.log('✅ Clicou em Gravar (Cadastro de Usuário)');
-    
-    // Pequena pausa para garantir a transição da tela de usuário para empresa
-    await page.waitForTimeout(1500);
 
     await expect(page.getByText(/Informa[çc][õo]es da empresa|Raz[aã]o social|Fantasia/i).first()).toBeVisible({ timeout: 30000 });
     console.log('✅ Abriu tela de Informações da Empresa');
-    await page.waitForTimeout(2000);    
+    await page.waitForTimeout(2000);
 
-    await preencherInformacoesEmpresaParaguai(page);   
+    await preencherCampoProximoAoLabel(page, /Raz[aã]o social/i, razaoSocial, 'Razão Social');
+    await preencherCampoProximoAoLabel(page, /Fantasia/i, fantasia, 'Nome Fantasia');    
     
-    await page.getByText(/^Gravar$/i).first().click({ force: true });
+    await selecionarComboPorIndice(page, 2, /Paraguay|Paraguai/i);
+    await selecionarComboPorIndice(page, 3, /Guarani|Guaran[ií]s|PYG|₲|G\./i);
+    
+    const checkDocumento = await page.locator('body').innerText().catch(() => '');
+    if (/Paraguai/i.test(checkDocumento) || /RUC/i.test(checkDocumento) || /Registro Unico/i.test(checkDocumento) || /Registro Único/i.test(checkDocumento)) {         
+      try {
+          await preencherRucParaguai(page);
+          
+      } catch (e) {
+        console.error('❌ Falha ao preencher RUC:', (e as Error).message);
+        throw e;
+      }
+    }   
+
+    clicarBotaoGravarAtual(page)          
     console.log('✅ Clicou em Gravar (Empresa)');
-    
+
+    await page.waitForTimeout(800);
     await preencherConfiguracaoSite(page);
-    
+
     await expect(page.getByText(/Dashboard|Agenda|Clientes|Bom dia|Boa tarde/i).first()).toBeVisible({ timeout: 30000 });
     console.log('✅ Acessou com sucesso o Dashboard / Tela Inicial');
-    
-    const caminhoArquivo = path.join(process.cwd(), 'test', 'usuarios', 'usuarios-gerados.json');    
 
-    const usuarioGerado = { dataCriacao: new Date().toISOString(), pais: 'Paraguay', nomeUsuario, emailUsuario, senhaUsuario, razaoSocial, fantasia, documento: cnpjValido, slug };
-    
+    const caminhoArquivo = path.join(process.cwd(), 'test', 'usuarios', 'usuarios-gerados.json');
+
+    const usuarioGerado: any = {
+      dataCriacao: new Date().toISOString(),
+      pais: /Paraguai/i.test(await page.locator('body').innerText().catch(() => '')) ? 'Paraguai' : 'Brasil',
+      nomeUsuario,
+      emailUsuario,
+      senhaUsuario,
+      razaoSocial,
+      fantasia,
+      documento: /Paraguai/i.test(await page.locator('body').innerText().catch(() => '')) ? 'RUC' : 'Documento',
+      slug
+    };
+
     let usuarios: any[] = [];
     try {
       if (fs.existsSync(caminhoArquivo)) usuarios = JSON.parse(fs.readFileSync(caminhoArquivo, 'utf-8') || '[]');
