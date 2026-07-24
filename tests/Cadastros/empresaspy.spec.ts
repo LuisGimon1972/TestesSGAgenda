@@ -8,8 +8,9 @@ function gerarRUC(): string {
   const empresaAleatoria = empresasParaguai[Math.floor(Math.random() * empresasParaguai.length)];
   return empresaAleatoria.ruc;
 }
-
+let rucValido= '';
 test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto) - suporte Paraguai', () => {
+  
   test.beforeEach(async ({ context }) => {
     await context.clearCookies();
     for (const p of context.pages()) {
@@ -32,7 +33,7 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
 
   const razaoSocial = `Barbearia ${nomeUsuario}`;
   const fantasia = `Fantasia ${nomeUsuario.split(' ')[0]}`;
-  const slug = `site-${nomeUsuario.split(' ').slice(0, 2).join(' ')}`+timestamp;  
+  let slug = `site-${nomeUsuario.split(' ').slice(0, 2).join(' ')}`+timestamp;  
 
   async function fecharCookiesSeAparecer(page: Page) {
     const btnGlobal = page.getByText(/Entendi|Aceitar|Aceito|OK|Concordo/i).first();
@@ -135,114 +136,128 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
     console.log(`✅ ${nomeCampoDescricao}:${valor}`);
   }
   
-  async function selecionarComboPorLabel(page: Page, labelRegex: RegExp, opcaoRegex: RegExp, nomeComboDescricao: string, opts?: { exact?: boolean, retries?: number }) {
-    const retries = opts?.retries ?? 2;
-    const exact = opts?.exact ?? false;
+async function selecionarComboPorLabel(
+  page: Page,
+  labelRegex: RegExp,
+  opcaoRegex: RegExp,
+  nomeComboDescricao: string,
+  opts?: { exact?: boolean; retries?: number }
+) {
+  const retries = opts?.retries ?? 2;
+  const exact = opts?.exact ?? false;
 
-    await expect(page.getByText(labelRegex).first()).toBeVisible({ timeout: 15000 });
-   
-    const comboHandle = await page.evaluateHandle(({ source, flags }) => {
-      const regex = new RegExp(source, flags);
-      const allElements = Array.from(document.querySelectorAll('body *'));
-      let targetLabel: HTMLElement | null = null;
-      for (const el of allElements) {
-        if (regex.test(el.textContent || '') && window.getComputedStyle(el).display !== 'none') {
-          const hasChildMatch = Array.from(el.children).some(child => regex.test(child.textContent || ''));
-          if (!hasChildMatch) { targetLabel = el as HTMLElement; break; }
-        }
-      }
-      if (!targetLabel) throw new Error(`Label de combo não encontrado: ${source}`);
-      const labelRect = targetLabel.getBoundingClientRect();
-      const combos = Array.from(document.querySelectorAll('.q-field, [role="combobox"], .select, .v-select')) as HTMLElement[];
-      const visibleCombos = combos.filter(i => {
-        const rect = i.getBoundingClientRect();
-        return rect.width > 0 && rect.height > 0 && window.getComputedStyle(i).visibility !== 'hidden';
-      });
-      const combosOrdenados = visibleCombos
-        .filter(campo => campo.getBoundingClientRect().top >= labelRect.top - 10)
-        .sort((a, b) => {
-          const rectA = a.getBoundingClientRect();
-          const rectB = b.getBoundingClientRect();
-          const distA = Math.abs(rectA.top - labelRect.bottom) + Math.abs(rectA.left - labelRect.left);
-          const distB = Math.abs(rectB.top - labelRect.bottom) + Math.abs(rectB.left - labelRect.left);
-          return distA - distB;
-        });
-      if (combosOrdenados.length === 0) throw new Error(`Combo próximo ao label ${source} não encontrado`);
-      return combosOrdenados[0];
-    }, { source: labelRegex.source, flags: labelRegex.flags });
-    
-    let lastError: any = null;
-    for (let attempt = 0; attempt <= retries; attempt++) {
-      try {
-        await comboHandle.click({ force: true });
-        await comboHandle.dispose();        
-        await page.waitForTimeout(400 + attempt * 200);        
-        const optionsLocator = page.locator('.q-menu .q-item, .q-portal .q-item, [role="option"], .q-item, .v-list-item');
-        const candidates = exact
-          ? optionsLocator.filter({ hasText: new RegExp(`^${opcaoRegex.source}$`, opcaoRegex.flags) })
-          : optionsLocator.filter({ hasText: opcaoRegex });
+  await expect(page.getByText(labelRegex).first()).toBeVisible({ timeout: 15000 });
 
-        await candidates.first().waitFor({ state: 'visible', timeout: 6000 });
-        const opcao = candidates.first();
-        const textoOpcao = (await opcao.innerText().catch(() => '')).trim();
-        await opcao.click({ force: true });
-        
-        await page.waitForTimeout(500);
-        console.log(`✅ Tentativa ${attempt+1}: clicou na opção "${textoOpcao}" para ${nomeComboDescricao}`);
-        return textoOpcao;
-      } catch (e) {
-        lastError = e;        
-        await page.waitForTimeout(300);
+  const comboHandle = await page.evaluateHandle(({ source, flags }) => {
+    const regex = new RegExp(source, flags);
+    const allElements = Array.from(document.querySelectorAll('body *'));
+    let targetLabel: HTMLElement | null = null;
+    for (const el of allElements) {
+      if (regex.test(el.textContent || '') && window.getComputedStyle(el).display !== 'none') {
+        const hasChildMatch = Array.from(el.children).some(child => regex.test(child.textContent || ''));
+        if (!hasChildMatch) { targetLabel = el as HTMLElement; break; }
       }
     }
+    if (!targetLabel) throw new Error(`Label de combo não encontrado: ${source}`);
+    const labelRect = targetLabel.getBoundingClientRect();
+    const combos = Array.from(document.querySelectorAll('.q-field, [role="combobox"], .select, .v-select')) as HTMLElement[];
+    const visibleCombos = combos.filter(i => {
+      const rect = i.getBoundingClientRect();
+      return rect.width > 0 && rect.height > 0 && window.getComputedStyle(i).visibility !== 'hidden';
+    });
+    const combosOrdenados = visibleCombos
+      .filter(campo => campo.getBoundingClientRect().top >= labelRect.top - 10)
+      .sort((a, b) => {
+        const rectA = a.getBoundingClientRect();
+        const rectB = b.getBoundingClientRect();
+        const distA = Math.abs(rectA.top - labelRect.bottom) + Math.abs(rectA.left - labelRect.left);
+        const distB = Math.abs(rectB.top - labelRect.bottom) + Math.abs(rectB.left - labelRect.left);
+        return distA - distB;
+      });
+    if (combosOrdenados.length === 0) throw new Error(`Combo próximo ao label ${source} não encontrado`);
+    return combosOrdenados[0];
+  }, { source: labelRegex.source, flags: labelRegex.flags });
 
-    throw new Error(`Falha ao selecionar ${nomeComboDescricao}: ${lastError?.message || lastError}`);
-  }
-  
-  async function assertComboValue(page: Page, labelRegex: RegExp, expectedRegex: RegExp, timeout = 5000) {
-    const start = Date.now();
-    while (Date.now() - start < timeout) {
-      try {
-        const label = page.getByText(labelRegex).first();
-        if (await label.count() === 0) break;
-        const combo = page.locator('.q-field, [role="combobox"], .select, .v-select').filter({ hasText: expectedRegex }).first();
-        if (await combo.count() > 0) return true;
-      } catch {}
+  let lastError: any = null;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      await comboHandle.click({ force: true });
+      await comboHandle.dispose();
+      await page.waitForTimeout(400 + attempt * 200);
+
+      const optionsLocator = page.locator('.q-menu .q-item, .q-portal .q-item, [role="option"], .q-item, .v-list-item');
+      const candidates = exact
+        ? optionsLocator.filter({ hasText: new RegExp(`^${opcaoRegex.source}$`, opcaoRegex.flags) })
+        : optionsLocator.filter({ hasText: opcaoRegex });
+
+      await candidates.first().waitFor({ state: 'visible', timeout: 6000 });
+      const opcao = candidates.first();
+
+      // garante que a opção esteja visível no viewport antes do click
+      await opcao.scrollIntoViewIfNeeded().catch(() => {});
+      const textoOpcao = (await opcao.innerText().catch(() => '')).trim();
+
+      await opcao.click({ force: true });
+
+      // espera a seleção refletir no DOM
+      await page.waitForTimeout(500);
+
+      // log claro do que foi selecionado
+      console.log(`✅ ${nomeComboDescricao}: ${textoOpcao}`);
+
+      return textoOpcao;
+    } catch (e) {
+      lastError = e;
+      console.warn(`⚠️ Tentativa ${attempt + 1} falhou para ${nomeComboDescricao}: ${(e as Error).message}`);
       await page.waitForTimeout(300);
     }
-    return false;
-  } 
- 
-    async function selecionarComboPorIndice(page: Page, index: number, opcao: RegExp) {
-    const combo = page.locator('.q-field:visible').nth(index);
-    await combo.waitFor({ state: 'visible', timeout: 30000 });
-    await combo.click({ force: true });
-
-    await page.waitForTimeout(800);
-
-    const opcoes = page.locator('.q-menu:visible .q-item, .q-virtual-scroll__content .q-item, [role="option"]:visible');
-    const count = await opcoes.count();
-
-    let encontrada = false;
-    for (let i = 0; i < count; i++) {
-      const item = opcoes.nth(i);
-      const texto = (await item.innerText()).replace(/\s+/g, ' ').trim();
-      if (opcao.test(texto)) {
-        await item.click({ force: true });
-        encontrada = true;
-        break;
-      }
-    }
-
-    if (!encontrada) {
-      throw new Error(`Opção não encontrada no combo: ${opcao}`);
-    }
-
-    await page.waitForTimeout(800);
   }
+
+  throw new Error(`Falha ao selecionar ${nomeComboDescricao}: ${lastError?.message || lastError}`);
+} 
+ 
+ async function selecionarComboPorIndice(page: Page, index: number, opcao: RegExp): Promise<string> {
+  const combo = page.locator('.q-field:visible').nth(index);
+  await combo.waitFor({ state: 'visible', timeout: 30000 });
+  await combo.click({ force: true });
+
+  await page.waitForTimeout(800);
+
+  const opcoes = page.locator('.q-menu:visible .q-item, .q-virtual-scroll__content .q-item, [role="option"]:visible, .q-portal .q-item');
+  const count = await opcoes.count();
+
+  let encontrada = false;
+  let selecionadoTexto = '';
+
+  for (let i = 0; i < count; i++) {
+    const item = opcoes.nth(i);
+    const textoRaw = await item.innerText().catch(() => '');
+    const texto = textoRaw.replace(/\s+/g, ' ').trim();
+    if (opcao.test(texto)) {      
+      await item.scrollIntoViewIfNeeded().catch(() => {});
+      await item.click({ force: true });
+      selecionadoTexto = texto;
+      encontrada = true;
+      break;
+    }
+  }
+
+  if (!encontrada) {
+    console.error(`❌ Opção não encontrada no combo índice ${index}: ${opcao}`);
+    throw new Error(`Opção não encontrada no combo: ${opcao}`);
+  }
+  
+  await page.waitForTimeout(800);
+  let texto = ''  
+  texto = index === 2 ? 'País' : 'Moeda';
+  console.log('✅' + ' ' +  texto, 'Selecionado(a):',selecionadoTexto);
+  return selecionadoTexto;
+}
+
   
   async function preencherRucParaguai(page: Page, rucValor?: string) {
     const valor = gerarRUC();
+    rucValido = valor
     const labelRegexes = [/RUC/i, /Registro Único de Contribuyentes/i, /Registro Unico/i, /Registro Tributario/i, /Documento/i];
     let preenchido = false;
 
@@ -301,6 +316,7 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
     await page.waitForTimeout(200);
     
     const slugFormatado = slug.replace(/\s+/g, '').toLowerCase();
+    slug = slugFormatado;
     
     await inputSlug.pressSequentially(slugFormatado, { delay: 20 });    
     
@@ -311,7 +327,7 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
     });
     
     await page.waitForTimeout(1000);
-    console.log(`✅ Preencheu o slug do site: ${slugFormatado}`);
+    console.log(`✅ Slug do site: ${slugFormatado}`);
     
     await selecionarComboPorLabel(page, /Segmento/i, /Barbearia|Barber[ií]a/i, 'Segmento');    
     
@@ -384,13 +400,13 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
 
     const usuarioGerado: any = {
       dataCriacao: new Date().toISOString(),
-      pais: /Paraguai/i.test(await page.locator('body').innerText().catch(() => '')) ? 'Paraguai' : 'Brasil',
+      pais: 'Paraguai',
       nomeUsuario,
       emailUsuario,
       senhaUsuario,
       razaoSocial,
       fantasia,
-      documento: /Paraguai/i.test(await page.locator('body').innerText().catch(() => '')) ? 'RUC' : 'Documento',
+      documento: rucValido,
       slug
     };
 

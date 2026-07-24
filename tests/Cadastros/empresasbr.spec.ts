@@ -26,7 +26,7 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
 
   const razaoSocial = `Barbearia ${nomeUsuario}`;
   const fantasia = `Fantasia ${nomeUsuario.split(' ')[0]}`;
-  const slug = `site-${nomeUsuario.split(' ').slice(0, 2).join(' ')}`;
+  let slug = `site-${nomeUsuario.split(' ').slice(0, 2).join(' ')}`+timestamp;
 
   function gerarCnpjValido(): string {
     const base = `${Math.floor(10000000 + Math.random() * 90000000)}0001`;
@@ -191,7 +191,8 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
       node.dispatchEvent(new Event('blur', { bubbles: true }));
     });
     await page.waitForTimeout(1000);
-    const slugFormatado = slug.replace(/\s+/g, '').toLowerCase();
+    const slugFormatado = slug.replace(/\s+/g, '').toLowerCase();    
+    slug = slugFormatado;
     console.log(`✅ Preencheu o slug do site: ${slugFormatado}`);
     
     await selecionarComboPorLabel(page, /Segmento/i, /Barbearia/i, 'Segmento');
