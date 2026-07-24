@@ -341,7 +341,7 @@ test.describe('Agendamentos - Cadastro', () => {
     await selecionarDataFuturaOuHoje(page);
 
     if(dataselecta){
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(3000);
     await expect(page.locator('body')).toHaveText(/Hor[aá]rios dispon[ií]veis|Horarios disponibles/i, { timeout: 30000 });
 
     await selecionarHorarioMaiorQueAgora(page);
