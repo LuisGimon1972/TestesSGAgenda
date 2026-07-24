@@ -32,7 +32,7 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
 
   const razaoSocial = `Barbearia ${nomeUsuario}`;
   const fantasia = `Fantasia ${nomeUsuario.split(' ')[0]}`;
-  const slug = `site-${nomeUsuario.split(' ').slice(0, 2).join(' ')}`;  
+  const slug = `site-${nomeUsuario.split(' ').slice(0, 2).join(' ')}`+timestamp;  
 
   async function fecharCookiesSeAparecer(page: Page) {
     const btnGlobal = page.getByText(/Entendi|Aceitar|Aceito|OK|Concordo/i).first();
@@ -74,7 +74,7 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
     await input.click({ force: true });
     await input.fill('');
     await input.type(valor, { delay: 20 });
-    console.log(`✅ ${nomeCampoDescricao}: ${valor}`);
+    console.log(`✅ ${nomeCampoDescricao}:  ${valor}`);
   }
 
   async function preencherCampoProximoAoLabel(page: Page, labelRegex: RegExp, valor: string, nomeCampoDescricao: string) {
@@ -132,7 +132,7 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
     });
 
     await inputHandle.dispose();
-    console.log(`✅ Preencheu campo de texto "${nomeCampoDescricao}" com "${valor}"`);
+    console.log(`✅ ${nomeCampoDescricao}:${valor}`);
   }
   
   async function selecionarComboPorLabel(page: Page, labelRegex: RegExp, opcaoRegex: RegExp, nomeComboDescricao: string, opts?: { exact?: boolean, retries?: number }) {
@@ -248,8 +248,7 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
 
     for (const rx of labelRegexes) {
       try {
-        await preencherCampoProximoAoLabel(page, rx, valor, 'RUC (Paraguai)');
-        console.log(`✅ Preencheu RUC com: ${valor}`);
+        await preencherCampoProximoAoLabel(page, rx, valor, 'RUC (Paraguai)');        
         preenchido = true;
         break;
       } catch {
