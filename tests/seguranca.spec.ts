@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { formatarDataHora } from '../utils/loginCompleto';
 
 test('Teste de segurança completo no login e módulo Pessoas', async ({ page, request }) => {    
   test.setTimeout(120000);
@@ -100,4 +101,5 @@ test('Teste de segurança completo no login e módulo Pessoas', async ({ page, r
     console.log('Página Pessoas não exibiu mensagem de login, verificar comportamento esperado');
   }
   console.log('✅ 9) TESTE DE SEGURANÇA TESTE SEM LOGIN ');    
+  console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
 });

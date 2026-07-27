@@ -4,6 +4,7 @@ import * as path from 'path';
 import { obterNomePessoaAleatorio } from '../../utils/nomescompletos';
 import { empresasParaguai } from '../../utils/rucs-paraguai';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
+import { formatarDataHora } from '../../utils/loginCompleto';
 
 function gerarRUC(): string {
   const empresaAleatoria = empresasParaguai[Math.floor(Math.random() * empresasParaguai.length)];
@@ -420,5 +421,6 @@ async function selecionarComboPorLabel(
     }
    await capturarRequisicoesApi(page); 
    await page.waitForTimeout(4000);    
+   console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
   });
 });

@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { obterNomePessoaAleatorio } from '../../utils/nomescompletos';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
+import { formatarDataHora } from '../../utils/loginCompleto';
 
 test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)', () => {
   test.beforeEach(async ({ context }) => {
@@ -272,5 +273,6 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
     }
    await capturarRequisicoesApi(page); 
    await page.waitForTimeout(4000);    
+   console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
   });  
 });

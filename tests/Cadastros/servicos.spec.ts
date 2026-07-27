@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginCompleto } from '../../utils/loginCompleto';
+import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
 import { obterServicoAleatorio } from '../../utils/listaservicos';
 
@@ -234,4 +234,5 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
 
     await capturarRequisicoesApi(page); 
     await page.waitForTimeout(4000);    
+    console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
 });

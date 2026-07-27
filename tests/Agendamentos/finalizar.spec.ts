@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { loginCompleto } from '../../utils/loginCompleto';
+import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
 
 test.describe('Agendamentos - Finalizar agendamento criado no mês', () => {
@@ -250,6 +250,7 @@ test.describe('Agendamentos - Finalizar agendamento criado no mês', () => {
 
     console.log('✅ Agendamento finalizado com sucesso!');
     await capturarRequisicoesApi(page); 
-    await page.waitForTimeout(4000);    
+    await page.waitForTimeout(4000);   
+    console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);    
   });
 });

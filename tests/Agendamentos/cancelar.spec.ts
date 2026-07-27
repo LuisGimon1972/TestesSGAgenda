@@ -1,5 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
-import { loginCompleto } from '../../utils/loginCompleto';
+import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
 
 test.describe('Agendamentos - Cancelar agendamento', () => {
@@ -241,5 +241,6 @@ test.describe('Agendamentos - Cancelar agendamento', () => {
     console.log('✅ Agendamento cancelado com sucesso!');
     await capturarRequisicoesApi(page); 
     await page.waitForTimeout(4000);    
+    console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
   });
 });
