@@ -334,6 +334,7 @@ async function selecionarComboPorLabel(
   }
 
   test('Deve cadastrar usuário, empresa e configuração inicial do site (suporte Paraguai).', async ({ page }) => {
+    console.log(`🕒 Início do teste: ${formatarDataHora(new Date())}`);   
     test.setTimeout(180000);
 
     await page.goto('/');

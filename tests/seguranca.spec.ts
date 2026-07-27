@@ -4,6 +4,8 @@ import { formatarDataHora } from '../utils/loginCompleto';
 test('Teste de segurança completo no login e módulo Pessoas', async ({ page, request }) => {    
   test.setTimeout(120000);
 
+  console.log(`🕒 Início do teste: ${formatarDataHora(new Date())}`);   
+
   await page.goto(process.env.BASE_URL!);
   await page.getByText(/entrar/i).first().click();
   

@@ -7,6 +7,7 @@ import { formatarDataHora } from '../../utils/loginCompleto';
 
 test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)', () => {
   test.beforeEach(async ({ context }) => {
+    console.log(`🕒 Início do teste: ${formatarDataHora(new Date())}`);   
     await context.clearCookies();
     for (const p of context.pages()) {
       try {

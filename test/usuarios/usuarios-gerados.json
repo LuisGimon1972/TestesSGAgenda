@@ -537,5 +537,27 @@
     "fantasia": "Fantasia Gabriel",
     "documento": "80077187",
     "slug": "site-gabrieldias1785178639669"
+  },
+  {
+    "dataCriacao": "2026-07-27T20:29:15.952Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Lívia Silva Pereira",
+    "emailUsuario": "livia.1785184135229@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Lívia Silva Pereira",
+    "fantasia": "Fantasia Lívia",
+    "documento": "94.905.479/0001-59",
+    "slug": "site-líviasilva1785184135229"
+  },
+  {
+    "dataCriacao": "2026-07-27T20:30:05.313Z",
+    "pais": "Paraguai",
+    "nomeUsuario": "Leandro Pereira Souza",
+    "emailUsuario": "leandro.1785184184712@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Leandro Pereira Souza",
+    "fantasia": "Fantasia Leandro",
+    "documento": "80107761",
+    "slug": "site-leandropereira1785184184712"
   }
 ]
