@@ -1,5 +1,6 @@
 import { test, expect, Page, devices } from '@playwright/test';
 import { loginCompletomobile } from '../../utils/logincompletomobile';
+import { formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
 
 test.describe('Agendamentos - Cadastro', () => {
@@ -463,6 +464,7 @@ test.describe('Agendamentos - Cadastro', () => {
       console.log('✅ Agendamento criado com sucesso!');
       await capturarRequisicoesApi(page); 
       await page.waitForTimeout(4000);    
+      console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
     } else {
       console.log('⚠️ Deve cadastrar o horário do profissional!');
     }

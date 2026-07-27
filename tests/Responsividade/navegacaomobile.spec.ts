@@ -1,5 +1,6 @@
 import { test, devices } from '@playwright/test';
 import { loginCompletomobile } from '../../utils/logincompletomobile';
+import { formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
 
 test.describe('Navegação de Menus - Mobile', () => {
@@ -83,6 +84,7 @@ test.describe('Navegação de Menus - Mobile', () => {
 
     await capturarRequisicoesApi(page);
     await page.waitForTimeout(2000);
+    console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
     console.log('✅ Navegação mobile concluída com sucesso!');
   });
 });
