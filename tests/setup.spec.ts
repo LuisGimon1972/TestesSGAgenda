@@ -4,7 +4,6 @@ import { capturarRequisicoesApi } from '../utils/capturaApi';
 
 test('Setup login', async ({ page }) => {  
   await loginCompleto(page);    
-  console.log('AUTENTICAÇÃO OK');  
-
+  console.log('✅ Autenticação feita com sucesso!');  
   await capturarRequisicoesApi(page);   
 });
