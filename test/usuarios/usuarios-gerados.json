@@ -504,5 +504,38 @@
     "fantasia": "Fantasia Theo",
     "documento": "80015541",
     "slug": "site-theofernandes1784902677930"
+  },
+  {
+    "dataCriacao": "2026-07-27T17:22:28.106Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Arthur Pereira Almeida",
+    "emailUsuario": "arthur.1785172925848@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Arthur Pereira Almeida",
+    "fantasia": "Fantasia Arthur",
+    "documento": "17.367.615/0001-53",
+    "slug": "site-arthurpereira1785172925848"
+  },
+  {
+    "dataCriacao": "2026-07-27T18:57:06.421Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Isabella Soares Andrade",
+    "emailUsuario": "isabella.1785178607012@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Isabella Soares Andrade",
+    "fantasia": "Fantasia Isabella",
+    "documento": "53.988.609/0001-87",
+    "slug": "site-isabellasoares1785178607012"
+  },
+  {
+    "dataCriacao": "2026-07-27T18:57:39.302Z",
+    "pais": "Paraguai",
+    "nomeUsuario": "Gabriel Dias Mendes",
+    "emailUsuario": "gabriel.1785178639669@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Gabriel Dias Mendes",
+    "fantasia": "Fantasia Gabriel",
+    "documento": "80077187",
+    "slug": "site-gabrieldias1785178639669"
   }
 ]
