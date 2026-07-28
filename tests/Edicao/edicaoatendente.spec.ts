@@ -25,10 +25,10 @@ test.describe('Atendentes - Editar atendente aleatório da lista', () => {
     const menuAtendentes = page.getByText(/Atendentes/i).first();
     await expect(menuAtendentes).toBeVisible({ timeout: 30000 });
     await menuAtendentes.scrollIntoViewIfNeeded();
-    await menuAtendentes.click({ force: true });
-    await page.waitForTimeout(1000);   
+    await menuAtendentes.click({ force: true });   
 
     await expect(page.getByText(/Listagem de atendentes/i).first()).toBeVisible({ timeout: 30000 });
+    await page.waitForTimeout(2000);   
   });
 
   test('Deve selecionar aleatoriamente um atendente da lista e abrir edição.', async ({ page }) => {
@@ -80,15 +80,15 @@ const preencherCampo = async (index: number, texto: string, nomeCampo: string) =
       console.log(`${nomeCampo} ${texto}`);
     }
   } catch (e) {
-    console.error(`⚠️ Falha ao preencher ${nomeCampo}`);
+    
   }
 };
 
 const nomeAtendenteLimpo = (nomeAtendente || '').trim();
-
+await preencherCampo(1, '', '');
 await preencherCampo(1, nomeAtendenteLimpo, '✅ Nome do Atendente Alterado:');
-await preencherCampo(2, '4500', 'Comissão Serviços Alterado:');
-await preencherCampo(3, '5600', 'Comissão Produtos Alterado:');
+await preencherCampo(2, '4500', 'Comissão Serviços Alterado');
+await preencherCampo(3, '5600', 'Comissão Produtos Alterado');
 
     await page.waitForTimeout(2000);       
     
@@ -110,8 +110,6 @@ await preencherCampo(3, '5600', 'Comissão Produtos Alterado:');
 
     await capturarRequisicoesApi(page); 
     await page.waitForTimeout(4000);    
-    console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
-
-    console.log('✅ Tela de edição do atendente aberta com sucesso!');
+    console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);       
   });
 });
