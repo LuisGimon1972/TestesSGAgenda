@@ -9,6 +9,19 @@ function gerarTelefoneAleatorio(): string {
   return `${ddd}${primeiroDigito}${numero}`;
 }
 
+function gerarCPFValido(): string {
+  const rand = () => Math.floor(Math.random() * 9);
+  const n = Array.from({ length: 9 }, rand);
+
+  const d1 = 11 - (n.reduce((acc, value, index) => acc + value * (10 - index), 0) % 11);
+  n.push(d1 >= 10 ? 0 : d1);
+
+  const d2 = 11 - (n.reduce((acc, value, index) => acc + value * (11 - index), 0) % 11);
+  n.push(d2 >= 10 ? 0 : d2);
+
+  return n.join('');
+}
+
 test.describe('Clientes - Editar cliente aleatório da lista', () => {
 
   async function fecharCookiesSeAparecer(page: Page) {
@@ -59,6 +72,7 @@ test.describe('Clientes - Editar cliente aleatório da lista', () => {
 
     const timestamp = Date.now();
     const nomeCliente = obterNomePessoaAleatorio();
+    const documento = gerarCPFValido();
     const telefone = gerarTelefoneAleatorio();    
     const email = `cliente_email.${timestamp}@teste.com`;
     
@@ -83,6 +97,7 @@ test.describe('Clientes - Editar cliente aleatório da lista', () => {
     
     await preencherCampo(0, nomeCliente, 'Nome Completo Alterado');
     await preencherCampo(1, telefone, 'Telefone Alterado');
+    await preencherCampo(2, documento, 'Documento Alterado');
     await preencherCampo(3, email, 'Email Alterado');
     await preencherCampo(4, '1990-05-20', 'Data de Nascimento Alterada');
 
