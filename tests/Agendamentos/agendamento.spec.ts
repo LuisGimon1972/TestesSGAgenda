@@ -284,32 +284,42 @@ test.describe('Agendamentos - Cadastro', () => {
     console.log(`✅ Horário escolhido: ${horarioEscolhido}`);
   }
 
-  async function selecionarCliente(page: Page) {
-    await expect(page.locator('body')).toHaveText(
-      /Nome do cliente|Nombre del cliente|Cliente|Selecione o cliente/i, 
-      { timeout: 30000 }
-    );
+async function selecionarCliente(page: Page) {
+  await expect(page.locator('body')).toHaveText(
+    /Nome do cliente|Nombre del cliente|Cliente|Selecione o cliente/i, 
+    { timeout: 30000 }
+  );
 
-    const inputNome = page.locator('input:visible').nth(1);
-    await inputNome.scrollIntoViewIfNeeded();  
-    await inputNome.click({ force: true });
-    
-    await page.waitForTimeout(1000);
-    
-    const primeiraOpcao = page.locator('.q-menu:visible .q-item, .q-virtual-scroll__content .q-item, [role="option"]')
-      .filter({ hasNotText: /Nenhum resultado|Sin resultados/i }).first();
-          
-    const nomeClienteText = await primeiraOpcao.innerText();
-    const nomeClienteLimpo = nomeClienteText?.replace(/\s+/g, ' ').trim();
-    
-    await primeiraOpcao.click({ force: true });    
-    
-    console.log(`✅ Selecionou o primeiro cliente da lista: ${nomeClienteLimpo}`);
-    
-    await page.waitForTimeout(500);
- 
-    console.log('📝 FIM DE DADOS ENVIADOS PRA API');
+  const inputNome = page.locator('input:visible').nth(1);
+  await inputNome.scrollIntoViewIfNeeded();  
+  await inputNome.click({ force: true });
+  
+  await page.waitForTimeout(1000);
+  
+  const opcoes = page.locator(
+    '.q-menu:visible .q-item, .q-virtual-scroll__content .q-item, [role="option"]'
+  ).filter({ hasNotText: /Nenhum resultado|Sin resultados/i });
+
+  const count = await opcoes.count();
+
+  if (count === 0) {
+    console.log('⚠️ Nenhum cliente disponível para seleção!');
+    return; 
   }
+
+  const primeiraOpcao = opcoes.first();
+  const nomeClienteText = await primeiraOpcao.innerText();
+  const nomeClienteLimpo = nomeClienteText?.replace(/\s+/g, ' ').trim();
+  
+  await primeiraOpcao.click({ force: true });    
+  
+  console.log(`✅ Selecionou o primeiro cliente da lista: ${nomeClienteLimpo}`);
+  
+  await page.waitForTimeout(500);
+
+  console.log('📝 FIM DE DADOS ENVIADOS PRA API');
+}
+
   
   test('Deve cadastrar um agendamento com horário futuro.', async ({ page }) => {
     test.setTimeout(120000);     

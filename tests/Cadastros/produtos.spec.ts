@@ -41,7 +41,7 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
 
     console.log('📝 DADOS ENVIADOS PRA API');    
     const nomeProduto = `${obterProdutoAleatorio().nome} ${Date.now()}`;
-    const valor = Math.floor(Math.random() * 1000) + 1;
+    const valor = Math.floor(Math.random() * 1001) + 2000;   
     const quantidade = '10';
     const comissao = '2000';
         
