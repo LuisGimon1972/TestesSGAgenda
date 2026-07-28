@@ -74,7 +74,7 @@ test.describe('Clientes - Editar cliente aleatório da lista', () => {
     const nomeCliente = obterNomePessoaAleatorio();
     const documento = gerarCPFValido();
     const telefone = gerarTelefoneAleatorio();    
-    const email = `cliente_email.${timestamp}@teste.com`;
+    const email = `cliente_email.${timestamp}@sgbr.com`;
     
     // Função infalível para limpar e preencher campos
     const preencherCampo = async (index: number, texto: string, nomeCampo: string) => {
