@@ -242,7 +242,7 @@ test.describe('Agendamentos - Busca de serviços no cadastro', () => {
     await limparBusca(page);
     await capturarRequisicoesApi(page); 
    
-    const servicoInexistente = `SERVICO_INEXISTENTE_AGENDAMENTO}`;
+    const servicoInexistente = `SERVICO_INEXISTENTE_AGENDAMENTO`;
     await buscarServico(page, servicoInexistente);
     await validarFiltroInexistente(page);
 
