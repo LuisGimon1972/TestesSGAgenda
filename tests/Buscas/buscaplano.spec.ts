@@ -2,7 +2,7 @@ import { test, expect, Page } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
 
-test.describe('Categorias - Busca', () => {
+test.describe('Planos - Busca', () => {
 
   async function fecharCookiesSeAparecer(page: Page) {
     const bodyText = await page.locator('body').innerText().catch(() => '');
@@ -15,21 +15,21 @@ test.describe('Categorias - Busca', () => {
     }
   }
 
-  async function abrirCategorias(page: Page) {
-    const menuCategorias = page.getByText(/Categorias|Categorías/i).first();
-    await expect(menuCategorias).toBeVisible({ timeout: 30000 });
-    await menuCategorias.scrollIntoViewIfNeeded();
-    await menuCategorias.click({ force: true });
+  async function abrirPlanos(page: Page) {
+    const menuPlanos = page.getByText(/Planos|Planes/i).first();
+    await expect(menuPlanos).toBeVisible({ timeout: 30000 });
+    await menuPlanos.scrollIntoViewIfNeeded();
+    await menuPlanos.click({ force: true });
 
     await expect(page.locator('body')).toHaveText(
-      /Listagem de categorias|Listado de categorías|Categorias|Categorías/i,
+      /Listagem de planos|Listado de planes|Planos|Planes/i,
       { timeout: 30000 }
     );
 
     await page.waitForTimeout(1500);
   }
 
-  async function buscarCategoria(page: Page, texto: string) {
+  async function buscarPlano(page: Page, texto: string) {
     const inputBusca = page.locator('input:visible').first();
     await expect(inputBusca).toBeVisible({ timeout: 30000 });
     await inputBusca.click({ force: true });
@@ -66,11 +66,11 @@ test.describe('Categorias - Busca', () => {
     await page.waitForTimeout(1500);
   }
 
-  async function obterCategoriaExistenteDaGrade(page: Page): Promise<string | null> {
+  async function obterPlanoExistenteDaGrade(page: Page): Promise<string | null> {
     const bodyText = (await page.locator('body').innerText().catch(() => '')).replace(/\s+/g, ' ').trim();
 
     const telaSemRegistros =
-      /nenhuma categoria encontrada|nenhum registro encontrado|nenhum resultado|no hay registros|sin registros|no se encontraron|no encontrado/i.test(
+      /nenhum plano encontrado|nenhum registro encontrado|nenhum resultado|no hay registros|sin registros|no se encontraron|no encontrado/i.test(
         bodyText
       );
 
@@ -93,7 +93,7 @@ test.describe('Categorias - Busca', () => {
     }
 
     if (telaSemRegistros || linhasValidasIndex.length === 0) {
-      console.log('⚠️ Nenhuma categoria encontrada na grade. Teste interrompido sem erro.');
+      console.log('⚠️ Nenhum plano encontrado na grade. Teste interrompido sem erro.');
       return null;
     }
 
@@ -111,7 +111,7 @@ test.describe('Categorias - Busca', () => {
       }
     }
 
-    const nomeCategoria =
+    const nomePlano =
       textosColunas.find((texto) => {
         return (
           texto.length >= 2 &&
@@ -121,52 +121,52 @@ test.describe('Categorias - Busca', () => {
         );
       }) || textosColunas[0];
 
-    if (!nomeCategoria) {
-      console.log('⚠️ Nenhum nome de categoria válido encontrado. Teste interrompido sem erro.');
+    if (!nomePlano) {
+      console.log('⚠️ Nenhum nome de plano válido encontrado. Teste interrompido sem erro.');
       return null;
     }
 
-    console.log(`✅ Categoria escolhida: ${nomeCategoria}`);
-    return nomeCategoria;
+    console.log(`✅ Plano escolhido: ${nomePlano}`);
+    return nomePlano;
   }
 
   test.beforeEach(async ({ page }) => {
     await loginCompleto(page);
     await fecharCookiesSeAparecer(page);
-    await abrirCategorias(page);
+    await abrirPlanos(page);
   });
 
-  test('Deve buscar primeiro uma categoria existente e depois uma inexistente.', async ({ page }) => {
+  test('Deve buscar primeiro um plano existente e depois um inexistente.', async ({ page }) => {
     await capturarRequisicoesApi(page);
 
-    const nomeCategoriaExistente = await obterCategoriaExistenteDaGrade(page);
+    const nomePlanoExistente = await obterPlanoExistenteDaGrade(page);
 
-    if (!nomeCategoriaExistente) {
-      console.log('⚠️ Busca de categorias não executada porque não existem categorias cadastradas.');
+    if (!nomePlanoExistente) {
+      console.log('⚠️ Busca de planos não executada porque não existem planos cadastrados.');
       return;
     }
 
-    await buscarCategoria(page, nomeCategoriaExistente);
+    await buscarPlano(page, nomePlanoExistente);
 
     const bodyTextExistente = await page.locator('body').innerText();
-    expect(bodyTextExistente).toContain(nomeCategoriaExistente);
-    console.log(`✅ Busca por categoria existente (${nomeCategoriaExistente}) validada com sucesso`);
+    expect(bodyTextExistente).toContain(nomePlanoExistente);
+    console.log(`✅ Busca por plano existente (${nomePlanoExistente}) validada com sucesso`);
 
     await limparBusca(page);
     await capturarRequisicoesApi(page);
 
-    const categoriaInexistente = `CATEGORIA_INEXISTENTE_E2E_${Date.now()}`;
-    await buscarCategoria(page, categoriaInexistente);
+    const planoInexistente = `PLANO_INEXISTENTE_E2E_${Date.now()}`;
+    await buscarPlano(page, planoInexistente);
 
     const linhasVisiveis = page.locator('tbody tr:visible');
     const countLinhas = await linhasVisiveis.count();
 
     if (countLinhas > 0) {
       const textoTabela = await linhasVisiveis.innerText().catch(() => '');
-      expect(textoTabela).not.toContain(categoriaInexistente);
+      expect(textoTabela).not.toContain(planoInexistente);
     }
 
-    console.log(`✅ Busca por categoria inexistente (${categoriaInexistente}) validada com sucesso`);
+    console.log(`✅ Busca por plano inexistente (${planoInexistente}) validada com sucesso`);
     console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);
   });
 

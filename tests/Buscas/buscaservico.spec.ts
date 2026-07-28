@@ -1,5 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
+import { capturarRequisicoesApi } from '../../utils/capturaApi';
 
 test.describe('Serviços - Busca', () => {
 
@@ -136,6 +137,7 @@ test.describe('Serviços - Busca', () => {
   });
 
   test('Deve buscar primeiro um serviço existente e depois um inexistente.', async ({ page }) => {
+    await capturarRequisicoesApi(page); 
     const nomeServicoExistente = await obterServicoExistenteDaGrade(page);
 
     if (!nomeServicoExistente) {
@@ -150,6 +152,7 @@ test.describe('Serviços - Busca', () => {
     console.log(`✅ Busca por serviço existente (${nomeServicoExistente}) validada com sucesso`);
 
     await limparBusca(page);
+    await capturarRequisicoesApi(page); 
 
     // 3. Busca por serviço inexistente
     const servicoInexistente = `SERVICO_INEXISTENTE_E2E_${Date.now()}`;

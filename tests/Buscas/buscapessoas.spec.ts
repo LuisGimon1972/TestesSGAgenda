@@ -1,5 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
+import { capturarRequisicoesApi } from '../../utils/capturaApi';
 
 test.describe('Clientes - Busca', () => {
 
@@ -94,6 +95,7 @@ test.describe('Clientes - Busca', () => {
   });
 
   test('Deve buscar primeiro um cliente existente e depois um inexistente.', async ({ page }) => {
+    await capturarRequisicoesApi(page); 
     const nomeClienteExistente = await obterClienteExistenteDaGrade(page);
 
     if (!nomeClienteExistente) {
@@ -109,6 +111,7 @@ test.describe('Clientes - Busca', () => {
 
    
     await limparBusca(page);
+    await capturarRequisicoesApi(page); 
 
     const clienteInexistente = `CLIENTE_INEXISTENTE_E2E_${Date.now()}`;
     await buscarCliente(page, clienteInexistente);
