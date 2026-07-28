@@ -17,9 +17,7 @@ test.describe('Atendentes - Editar atendente aleatório da lista', () => {
   }
 
   test.beforeEach(async ({ page }) => {
-
     await loginCompleto(page);    
-
     await fecharCookiesSeAparecer(page);
 
     const menuAtendentes = page.getByText(/Atendentes/i).first();
@@ -33,7 +31,6 @@ test.describe('Atendentes - Editar atendente aleatório da lista', () => {
 
   test('Deve selecionar aleatoriamente um atendente da lista e abrir edição.', async ({ page }) => {
     const linhas = page.locator('tbody tr');
-
     await expect(linhas.first()).toBeVisible({ timeout: 30000 });
 
     const totalLinhas = await linhas.count();
@@ -58,37 +55,37 @@ test.describe('Atendentes - Editar atendente aleatório da lista', () => {
     
     const opcaoEditar = page.getByText(/Editar atendente/i).first();
     await expect(opcaoEditar).toBeVisible({ timeout: 10000 });
-    await opcaoEditar.click({ force: true });    
+    await opcaoEditar.click({ force: true });        
+
+    await page.waitForTimeout(1000); 
+    
     const nomeAtendente = obterNomePessoaAleatorio();        
+    const nomeAtendenteLimpo = (nomeAtendente || '').trim();
     
-const preencherCampo = async (index: number, texto: string, nomeCampo: string) => {
-  try {
-    const campo = page.locator('input:visible').nth(index);
-    await campo.scrollIntoViewIfNeeded();
-    await campo.click({ force: true });
-    
-    await campo.press('Control+A');
-    await campo.press('Backspace');
-    
-    if (texto) {
-      await campo.pressSequentially(texto, { delay: 50 });
-    }
+    const preencherCampo = async (index: number, texto: string, nomeCampo: string) => {
+      try {
+        const campo = page.locator('input:visible').nth(index);       
+        await campo.waitFor({ state: 'visible', timeout: 10000 });                              
+        await campo.clear();        
+        await page.waitForTimeout(100);
+        
+        if (texto) {        
+          await campo.fill(texto); 
+        }
 
-    if (index === 2 || index === 3) {
-      console.log(`✅ ${nomeCampo}: ${Number(texto) / 100}%`);
-    } else if (nomeCampo) {
-      console.log(`${nomeCampo} ${texto}`);
-    }
-  } catch (e) {
-    
-  }
-};
+        if (index === 2 || index === 3) {
+          console.log(`✅ ${nomeCampo}: ${Number(texto) / 100}%`);
+        } else if (nomeCampo) {
+          console.log(`✅ ${nomeCampo}: ${texto}`);
+        }
+      } catch (e) {
+        console.error(`❌ Falha ao tentar preencher o campo: ${nomeCampo}`, e);
+      }
+    };
 
-const nomeAtendenteLimpo = (nomeAtendente || '').trim();
-await preencherCampo(1, '', '');
-await preencherCampo(1, nomeAtendenteLimpo, '✅ Nome do Atendente Alterado:');
-await preencherCampo(2, '4500', 'Comissão Serviços Alterado');
-await preencherCampo(3, '5600', 'Comissão Produtos Alterado');
+    await preencherCampo(1, nomeAtendenteLimpo, 'Nome do Atendente Alterado');
+    await preencherCampo(2, '4500', 'Comissão Serviços Alterado');
+    await preencherCampo(3, '5600', 'Comissão Produtos Alterado');
 
     await page.waitForTimeout(2000);       
     
