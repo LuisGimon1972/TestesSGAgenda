@@ -52,8 +52,28 @@ test('Navegação de menus', async ({ page }) => {
 
     await page.waitForTimeout(500);
 
-        await page.locator('.q-item').filter({ hasText: 'Configurações' }).click();
+    await page.locator('.q-item').filter({ hasText: 'Configurações' }).click();
     console.log('✅ Clicou em Configurações');           
+
+    await page.waitForTimeout(200);
+
+    await page.getByText('WhatsApp', { exact: true }).click();
+    console.log('     ✅ Clicou na Aba WhatsApp');           
+
+    await page.waitForTimeout(200);
+
+    await page.getByText('Informações da empresa', { exact: true }).click();
+    console.log('     ✅ Clicou na Aba Informações da empresa');           
+
+    await page.waitForTimeout(200);
+
+    await page.getByText('Personalização', { exact: true }).click();
+    console.log('     ✅ Clicou na Aba Personalização');           
+
+    await page.waitForTimeout(200);
+
+    await page.getByText('Pagamentos', { exact: true }).click();
+    console.log('     ✅ Clicou na Aba Pagamentos');          
 
     await capturarRequisicoesApi(page);            
     await page.waitForTimeout(2000);
