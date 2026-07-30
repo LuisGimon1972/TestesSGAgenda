@@ -296,6 +296,12 @@ async function selecionarComboPorLabel(
   }
 
   async function preencherConfiguracaoSite(page: Page) {
+    const salvarEmpresaPromise = page.waitForResponse((response) =>
+      (response.url().includes('/api/') || response.url().includes('/companies') || response.url().includes('/companies')) &&
+      ['POST', 'PUT'].includes(response.request().method()) &&
+      response.status() >= 200 &&
+      response.status() < 300
+    ).catch(() => null);
 
     await expect(page.locator('body')).toHaveText(
       /Configura[çc][aã]o do site|Configuraci[oó]n del sitio|URL do site|URL del sitio/i,
@@ -331,6 +337,54 @@ async function selecionarComboPorLabel(
     
     await clicarBotaoGravarAtual(page);
     console.log('✅ Clicou em Gravar (Configuração do site)');
+
+    let respostaJson: any = null;
+    const salvarResponse = await salvarEmpresaPromise;    
+
+    if (salvarResponse) {
+      console.log('🌐 A URL capturada do POST é:', salvarResponse.url());
+      console.log(`✅ Status da resposta API: ${salvarResponse.status()}`);
+
+      try {        
+        respostaJson = await salvarResponse.json();               
+        console.log('📦 JSON de resposta:', JSON.stringify(respostaJson, null, 2));        
+      } catch (e) {
+        console.log('⚠️ A resposta da API não contém um JSON válido ou veio vazia.');
+      }
+    }
+    
+    const idEmpresa = respostaJson?.data?.id?.toString()?.trim() || respostaJson?.id?.toString()?.trim();
+
+    if (salvarResponse && idEmpresa) {     
+      const urlPost = salvarResponse.url().replace(/\/$/, '');
+      const urlRegistroCriado = `${urlPost}/${idEmpresa}`;      
+      const headersGetRegistro = { ...salvarResponse.request().headers() };      
+      delete headersGetRegistro['content-type'];
+      delete headersGetRegistro['content-length'];
+      delete headersGetRegistro[':method'];
+      delete headersGetRegistro[':path'];
+      delete headersGetRegistro[':authority'];
+      delete headersGetRegistro[':scheme'];      
+      const getCriadoResponse = await page.request.get(urlRegistroCriado, {
+        headers: headersGetRegistro,
+      });
+
+      console.log('🌐 URL do registro criado:', urlRegistroCriado);
+      console.log('✅ RESPOSTA DA API AO CONSULTAR O NOVO REGISTRO');
+      console.log('✅ Novo ID:', idEmpresa);    
+      console.log(`✅ Status GET: ${getCriadoResponse.status()}`);
+
+      try {
+        const dadosCriado = await getCriadoResponse.json();
+        console.log('📦 JSON do Registro Consultado:\n', JSON.stringify(dadosCriado, null, 2));
+      } catch (error) {
+        console.error('⚠️ Erro ao converter resposta para JSON:', error);
+        const corpoBruto = await getCriadoResponse.text();
+        console.log('Corpo bruto da resposta:', corpoBruto);
+      }
+    } else {
+      console.log('⚠️ Não foi possível obter o ID do salvamento para consultar o registro.');
+    }
   }
 
   test('Deve cadastrar usuário, empresa e configuração inicial do site (suporte Paraguai).', async ({ page }) => {

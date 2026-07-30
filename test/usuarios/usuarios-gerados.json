@@ -581,5 +581,49 @@
     "fantasia": "Fantasia Maria",
     "documento": "86.384.317/0001-94",
     "slug": "site-mariaeduarda1785270764031"
+  },
+  {
+    "dataCriacao": "2026-07-30T19:20:16.320Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Laura Almeida Dias",
+    "emailUsuario": "laura.1785439196545@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Laura Almeida Dias",
+    "fantasia": "Fantasia Laura",
+    "documento": "44.169.952/0001-09",
+    "slug": "site-lauraalmeida1785439196545"
+  },
+  {
+    "dataCriacao": "2026-07-30T19:23:20.720Z",
+    "pais": "Paraguai",
+    "nomeUsuario": "Beatriz Rodrigues Almeida",
+    "emailUsuario": "beatriz.1785439377541@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Beatriz Rodrigues Almeida",
+    "fantasia": "Fantasia Beatriz",
+    "documento": "80127546",
+    "slug": "site-beatrizrodrigues1785439377541"
+  },
+  {
+    "dataCriacao": "2026-07-30T19:43:31.332Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Elias Almeida Costa",
+    "emailUsuario": "elias.1785440588939@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Elias Almeida Costa",
+    "fantasia": "Fantasia Elias",
+    "documento": "87.736.203/0001-29",
+    "slug": "site-eliasalmeida1785440588939"
+  },
+  {
+    "dataCriacao": "2026-07-30T19:47:13.113Z",
+    "pais": "Paraguai",
+    "nomeUsuario": "Nicolas Santos Lima",
+    "emailUsuario": "nicolas.1785440811634@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Nicolas Santos Lima",
+    "fantasia": "Fantasia Nicolas",
+    "documento": "80067706",
+    "slug": "site-nicolassantos1785440811634"
   }
 ]

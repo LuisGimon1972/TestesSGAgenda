@@ -178,6 +178,12 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
   }
   
   async function preencherConfiguracaoSite(page: Page) {
+    const salvarPessoaPromise = page.waitForResponse((response) =>
+      (response.url().includes('/api/') || response.url().includes('/companies') || response.url().includes('/companies')) &&
+      ['POST', 'PUT'].includes(response.request().method()) &&
+      response.status() >= 200 &&
+      response.status() < 300
+    ).catch(() => null);
     await expect(page.getByText(/Configura[çc][ão] do site|URL do site/i).first()).toBeVisible({ timeout: 30000 });
     console.log('✅ Abriu tela de Configuração do site');
     await page.waitForTimeout(1500);
@@ -202,6 +208,54 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
     
     await page.getByText(/^Gravar$/i).first().click({ force: true });
     console.log('✅ Clicou em Gravar (Configuração do site)');
+
+     let respostaJson: any = null;
+    const salvarResponse = await salvarPessoaPromise;    
+
+    if (salvarResponse) {
+      console.log('🌐 A URL capturada do POST é:', salvarResponse.url());
+      console.log(`✅ Status da resposta API: ${salvarResponse.status()}`);
+
+      try {        
+        respostaJson = await salvarResponse.json();               
+        console.log('📦 JSON de resposta:', JSON.stringify(respostaJson, null, 2));        
+      } catch (e) {
+        console.log('⚠️ A resposta da API não contém um JSON válido ou veio vazia.');
+      }
+    }
+    
+    const idPessoa = respostaJson?.data?.id?.toString()?.trim() || respostaJson?.id?.toString()?.trim();
+
+    if (salvarResponse && idPessoa) {     
+      const urlPost = salvarResponse.url().replace(/\/$/, '');
+      const urlRegistroCriado = `${urlPost}/${idPessoa}`;      
+      const headersGetRegistro = { ...salvarResponse.request().headers() };      
+      delete headersGetRegistro['content-type'];
+      delete headersGetRegistro['content-length'];
+      delete headersGetRegistro[':method'];
+      delete headersGetRegistro[':path'];
+      delete headersGetRegistro[':authority'];
+      delete headersGetRegistro[':scheme'];      
+      const getCriadoResponse = await page.request.get(urlRegistroCriado, {
+        headers: headersGetRegistro,
+      });
+
+      console.log('🌐 URL do registro criado:', urlRegistroCriado);
+      console.log('✅ RESPOSTA DA API AO CONSULTAR O NOVO REGISTRO');
+      console.log('✅ Novo ID:', idPessoa);    
+      console.log(`✅ Status GET: ${getCriadoResponse.status()}`);
+
+      try {
+        const dadosCriado = await getCriadoResponse.json();
+        console.log('📦 JSON do Registro Consultado:\n', JSON.stringify(dadosCriado, null, 2));
+      } catch (error) {
+        console.error('⚠️ Erro ao converter resposta para JSON:', error);
+        const corpoBruto = await getCriadoResponse.text();
+        console.log('Corpo bruto da resposta:', corpoBruto);
+      }
+    } else {
+      console.log('⚠️ Não foi possível obter o ID do salvamento para consultar o registro.');
+    }
   }  
 
   test('Deve cadastrar usuário, empresa e configuração inicial do site.', async ({ page }) => {
@@ -252,7 +306,7 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
     await page.getByText(/^Gravar$/i).first().click({ force: true });
     console.log('✅ Clicou em Gravar (Empresa)');
     
-    await preencherConfiguracaoSite(page);
+    await preencherConfiguracaoSite(page); 
     
     await expect(page.getByText(/Dashboard|Agenda|Clientes|Bom dia|Boa tarde/i).first()).toBeVisible({ timeout: 30000 });
     console.log('✅ Acessou com sucesso o Dashboard / Tela Inicial');
