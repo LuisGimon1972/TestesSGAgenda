@@ -2,7 +2,7 @@ import { test, expect, Page } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { obterServicoAleatorio } from '../../utils/listaservicos';
 
-test.describe('Teste de Edição de Serviços', () => {
+test.describe('Teste de Edição de Categorias', () => {
 
   async function fecharCookiesSeAparecer(page: Page) {
     const bodyText = await page.locator('body').innerText().catch(() => '');
@@ -39,8 +39,8 @@ test.describe('Teste de Edição de Serviços', () => {
     const indiceAleatorio = Math.floor(Math.random() * totalLinhas);
     const linhaSelecionada = linhas.nth(indiceAleatorio);
 
-    const nomeServicoee = (await linhaSelecionada.locator('td').first().innerText()).trim();
-    console.log(`✅ Produto selecionado: ${nomeServicoee}`);    
+    const nomeCategorie = (await linhaSelecionada.locator('td').first().innerText()).trim();
+    console.log(`✅ Categoria selecionada: ${nomeCategorie}`);    
     
     const btnEditar = linhaSelecionada
       .locator('button, a, i, .q-btn, .material-icons')
@@ -52,8 +52,8 @@ test.describe('Teste de Edição de Serviços', () => {
 
     await page.waitForTimeout(1000); 
     
-    const salvarServicoPromise = page.waitForResponse((response) =>
-      (response.url().includes('/api/') || response.url().includes('/services') || response.url().includes('/servico')) &&
+    const salvarCategoriaPromise = page.waitForResponse((response) =>
+      (response.url().includes('/api/') || response.url().includes('/categories') || response.url().includes('/categorias') || response.url().includes('/categories')) &&
       ['POST', 'PUT'].includes(response.request().method()) &&
       response.status() >= 200 &&
       response.status() < 300
@@ -81,21 +81,20 @@ test.describe('Teste de Edição de Serviços', () => {
       }
     };
     
-    await preencherCampo(0, nomeCategoria, 'Nome de Serviço Alterado');    
-
-    await page.locator('.q-select').nth(0).click();
-    await page.locator('(//div[contains(@class,"q-menu")]//*[contains(@class,"q-item")])[1]').click();       
+    await preencherCampo(0, nomeCategoria, 'Nome de Categoria Alterada');    
+    
+    await page.locator('.q-select').nth(0).click();    
     const primeiraOpcaoMenu = page.locator('(//div[contains(@class,"q-menu")]//*[contains(@class,"q-item")])[1]');
-    await primeiraOpcaoMenu.waitFor({ state: 'visible' });
-    await primeiraOpcaoMenu.click();
-    const destino = await page.locator('input[aria-label="Categoria pai"]').inputValue();      
-    console.log('✅ Selecionou um Destinatário/Remitente',destino.toUpperCase());      
+    await primeiraOpcaoMenu.waitFor({ state: 'visible', timeout: 5000 });    
+    const nomeOpcaoSelecionada = await primeiraOpcaoMenu.innerText();
+    await primeiraOpcaoMenu.click();       
+    console.log('✅ Selecionou uma Categoria Pai:', nomeOpcaoSelecionada.trim().toUpperCase());      
     
     const campoDescricao = page.locator('textarea:visible').first();
-      await campoDescricao.scrollIntoViewIfNeeded();
-      await campoDescricao.click({ force: true });
-      await campoDescricao.fill(descricao.toUpperCase(), { force: true });
-      console.log('✅ Descrição do Serviço Alterada:', descricao.toUpperCase());
+    await campoDescricao.scrollIntoViewIfNeeded();
+    await campoDescricao.click({ force: true });
+    await campoDescricao.fill(descricao.toUpperCase(), { force: true });
+    console.log('✅ Descrição do Serviço Alterada:', descricao.toUpperCase());
 
     await page.waitForTimeout(500);       
 
@@ -105,7 +104,7 @@ test.describe('Teste de Edição de Serviços', () => {
     console.log('✅ Clicou em Gravar');                 
 
     let respostaJson: any = null;
-    const salvarResponse = await salvarServicoPromise;    
+    const salvarResponse = await salvarCategoriaPromise;    
 
     if (salvarResponse) {
       console.log('🌐 A URL capturada do POST/PUT é:', salvarResponse.url());
@@ -119,26 +118,26 @@ test.describe('Teste de Edição de Serviços', () => {
       }
     }    
     
-    let idServico = respostaJson?.data?.id?.toString()?.trim() || respostaJson?.id?.toString()?.trim();
+    let idCategoria = respostaJson?.data?.id?.toString()?.trim() || respostaJson?.id?.toString()?.trim();
     
-    if (!idServico && salvarResponse) {
+    if (!idCategoria && salvarResponse) {
       const urlInterceptada = salvarResponse.url();      
       const uuidMatch = urlInterceptada.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
       
       if (uuidMatch) {
-        idServico = uuidMatch[0];
+        idCategoria = uuidMatch[0];
       } else {        
         const partes = urlInterceptada.split('?')[0].split('/');
-        idServico = partes[partes.length - 1];
+        idCategoria = partes[partes.length - 1];
       }
     }
     
-    if (salvarResponse && idServico) {     
+    if (salvarResponse && idCategoria) {     
       const urlSemQuery = salvarResponse.url().split('?')[0];
       
-      const urlRegistroCriado = urlSemQuery.endsWith(idServico) 
+      const urlRegistroCriado = urlSemQuery.endsWith(idCategoria) 
         ? urlSemQuery 
-        : `${urlSemQuery}/${idServico}`;      
+        : `${urlSemQuery}/${idCategoria}`;      
         
       const headersGetRegistro = { ...salvarResponse.request().headers() };      
       delete headersGetRegistro['content-type'];
@@ -154,7 +153,7 @@ test.describe('Teste de Edição de Serviços', () => {
 
       console.log('🌐 URL do registro atualizado:', urlRegistroCriado);
       console.log('✅ RESPOSTA DA API AO CONSULTAR O REGISTRO');
-      console.log('✅ ID do Registro:', idServico);    
+      console.log('✅ ID do Registro:', idCategoria);    
       console.log(`✅ Status GET: ${getCriadoResponse.status()}`);
 
       try {
