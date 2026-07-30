@@ -39,8 +39,8 @@ test.describe('Teste de Edição de Planos', () => {
     const indiceAleatorio = Math.floor(Math.random() * totalLinhas);
     const linhaSelecionada = linhas.nth(indiceAleatorio);
 
-    const nomePlanoe = (await linhaSelecionada.locator('td').nth(1).innerText()).trim();
-    console.log(`✅ Serviço selecionado: ${nomePlanoe}`);    
+    const nomePlanoe = (await linhaSelecionada.locator('td').nth(0).innerText()).trim();
+    console.log(`✅ Plano selecionado: ${nomePlanoe}`);    
     
     const btnEditar = linhaSelecionada
       .locator('button, a, i, .q-btn, .material-icons')
