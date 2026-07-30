@@ -14,55 +14,34 @@ test.describe('Navegação de Menus - Mobile', () => {
 
     await page.context().clearCookies();
     await loginCompletomobile(page);
-    await page.waitForTimeout(2000);
+    
+    // Aguarda a rede ficar ociosa em vez de um tempo fixo de 2s
+    await page.waitForLoadState('networkidle');
     
     async function abrirMenuMobile() {
-      const botoesMenu = [
-        page.locator('header button, .q-header button').first(),
-        page.locator('[aria-label*="menu" i]').first(),
-        page.locator('button:has(.q-icon)').first(),
-        page.locator('.q-layout__section--marginal button').first()
-      ];
-
-      for (const btn of botoesMenu) {
-        try {
-          if (await btn.isVisible({ timeout: 1500 })) {
-            await btn.click({ force: true });
-            await page.waitForTimeout(600);
-            return;
-          }
-        } catch (e) {}
+      // Junta todos os seletores em um só, economizando tentativas lentas
+      const btnMenu = page.locator('header button, .q-header button, [aria-label*="menu" i], button:has(.q-icon), .q-layout__section--marginal button').first();
+      
+      if (await btnMenu.isVisible()) {
+        await btnMenu.click({ force: true });
+        // Aguarda qualquer item de menu aparecer para confirmar que o menu abriu
+        await page.locator('.q-item').first().waitFor({ state: 'visible', timeout: 3000 });
       }
     }
     
     async function navegarPara(nomeItem: string) {
       await abrirMenuMobile();
-      await page.waitForTimeout(600);
      
-      const itens = page.locator('.q-item, a, button').filter({ hasText: new RegExp(nomeItem, 'i') });
-      const quantidade = await itens.count();
-      
-      let elementoAlvo = null;
-      for (let i = 0; i < quantidade; i++) {
-        const item = itens.nth(i);
-        if (await item.isVisible()) {
-          const texto = await item.textContent();
-          if (texto && texto.trim().toLowerCase() === nomeItem.toLowerCase()) {
-            elementoAlvo = item;
-            break;
-          }
-        }
-      }
-      
-      if (!elementoAlvo) {
-        elementoAlvo = itens.first();
-      }
+      // Muito mais rápido: Usa o motor do Playwright para buscar texto exato
+      const elementoAlvo = page.locator('.q-item, a, button').getByText(nomeItem, { exact: true }).first();
 
       await elementoAlvo.waitFor({ state: 'visible', timeout: 5000 });
       await elementoAlvo.scrollIntoViewIfNeeded();
       await elementoAlvo.click({ force: true });
       console.log(`✅ Clicou em ${nomeItem}`);
-      await page.waitForTimeout(800);
+      
+      // Pequena pausa apenas para dar tempo da animação do menu fechar no mobile
+      await page.waitForTimeout(800); 
     }
    
     const menus = [
@@ -75,15 +54,32 @@ test.describe('Navegação de Menus - Mobile', () => {
       'Categorias',
       'Comissões',
       'Planos',
-      'Configurações'
+      'Configurações' // O último clique será aqui
     ];
 
     for (const menu of menus) {
       await navegarPara(menu);
     }
 
+    // ==========================================
+    // NAVEGAÇÃO NAS ABAS DE CONFIGURAÇÕES (MOBILE)
+    // ==========================================
+    const abasConfig = [
+      'WhatsApp', 
+      'Informações da empresa', 
+      'Personalização', 
+      'Pagamentos'
+    ];
+
+    for (const aba of abasConfig) {
+      const abaElemento = page.getByText(aba, { exact: true });
+      // Aguarda a aba renderizar na tela antes de clicar
+      await abaElemento.waitFor({ state: 'visible', timeout: 5000 });
+      await abaElemento.click();
+      console.log(`     ✅ Clicou na Aba ${aba}`);
+    }
+
     await capturarRequisicoesApi(page);
-    await page.waitForTimeout(2000);
     console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
     console.log('✅ Navegação mobile concluída com sucesso!');
   });
