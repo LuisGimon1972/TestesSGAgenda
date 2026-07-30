@@ -23,22 +23,22 @@ test.describe('Teste de Edição de Serviços', () => {
     console.log(`✅ Clicou em Serviços`);          
     console.log(`✅ Apareceu Listagem de serviços`);      
 
-    await expect(page.getByText(/Listagem de produtos/i).first()).toBeVisible({ timeout: 30000 });
+    await expect(page.getByText(/Listagem de serviços/i).first()).toBeVisible({ timeout: 30000 });
     await expect(page.locator('tbody tr').first()).toBeVisible({ timeout: 15000 });
   });
 
-  test('Deve selecionar aleatoriamente um produto da lista e abrir edição.', async ({ page }) => {   
+  test('Deve selecionar aleatoriamente um serviço da lista e abrir edição.', async ({ page }) => {   
     
     const linhas = page.locator('tbody tr');
 
     const totalLinhas = await linhas.count();
-    expect(totalLinhas, 'A lista deve possuir ao menos 1 produto').toBeGreaterThan(0);
+    expect(totalLinhas, 'A lista deve possuir ao menos 1 serviço').toBeGreaterThan(0);
     
     const indiceAleatorio = Math.floor(Math.random() * totalLinhas);
     const linhaSelecionada = linhas.nth(indiceAleatorio);
 
-    const nomeProdutoee = (await linhaSelecionada.locator('td').first().innerText()).trim();
-    console.log(`✅ Produto selecionado: ${nomeProdutoee}`);    
+    const nomeServicoee = (await linhaSelecionada.locator('td').first().innerText()).trim();
+    console.log(`✅ Produto selecionado: ${nomeServicoee}`);    
     
     const btnEditar = linhaSelecionada
       .locator('button, a, i, .q-btn, .material-icons')
@@ -50,7 +50,7 @@ test.describe('Teste de Edição de Serviços', () => {
 
     await page.waitForTimeout(1000); 
     
-    const salvarProdutoPromise = page.waitForResponse((response) =>
+    const salvarServicoPromise = page.waitForResponse((response) =>
       (response.url().includes('/api/') || response.url().includes('/services') || response.url().includes('/servico')) &&
       ['POST', 'PUT'].includes(response.request().method()) &&
       response.status() >= 200 &&
@@ -99,7 +99,7 @@ test.describe('Teste de Edição de Serviços', () => {
     console.log('✅ Clicou em Gravar');                 
 
     let respostaJson: any = null;
-    const salvarResponse = await salvarProdutoPromise;    
+    const salvarResponse = await salvarServicoPromise;    
 
     if (salvarResponse) {
       console.log('🌐 A URL capturada do POST/PUT é:', salvarResponse.url());
@@ -113,26 +113,26 @@ test.describe('Teste de Edição de Serviços', () => {
       }
     }    
     
-    let idProduto = respostaJson?.data?.id?.toString()?.trim() || respostaJson?.id?.toString()?.trim();
+    let idServico = respostaJson?.data?.id?.toString()?.trim() || respostaJson?.id?.toString()?.trim();
     
-    if (!idProduto && salvarResponse) {
+    if (!idServico && salvarResponse) {
       const urlInterceptada = salvarResponse.url();      
       const uuidMatch = urlInterceptada.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
       
       if (uuidMatch) {
-        idProduto = uuidMatch[0];
+        idServico = uuidMatch[0];
       } else {        
         const partes = urlInterceptada.split('?')[0].split('/');
-        idProduto = partes[partes.length - 1];
+        idServico = partes[partes.length - 1];
       }
     }
     
-    if (salvarResponse && idProduto) {     
+    if (salvarResponse && idServico) {     
       const urlSemQuery = salvarResponse.url().split('?')[0];
       
-      const urlRegistroCriado = urlSemQuery.endsWith(idProduto) 
+      const urlRegistroCriado = urlSemQuery.endsWith(idServico) 
         ? urlSemQuery 
-        : `${urlSemQuery}/${idProduto}`;      
+        : `${urlSemQuery}/${idServico}`;      
         
       const headersGetRegistro = { ...salvarResponse.request().headers() };      
       delete headersGetRegistro['content-type'];
@@ -148,7 +148,7 @@ test.describe('Teste de Edição de Serviços', () => {
 
       console.log('🌐 URL do registro atualizado:', urlRegistroCriado);
       console.log('✅ RESPOSTA DA API AO CONSULTAR O REGISTRO');
-      console.log('✅ ID do Registro:', idProduto);    
+      console.log('✅ ID do Registro:', idServico);    
       console.log(`✅ Status GET: ${getCriadoResponse.status()}`);
 
       try {
