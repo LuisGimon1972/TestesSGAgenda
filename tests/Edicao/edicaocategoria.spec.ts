@@ -38,8 +38,8 @@ test.describe('Teste de Edição de Categorias', () => {
     
     const indiceAleatorio = Math.floor(Math.random() * totalLinhas);
     const linhaSelecionada = linhas.nth(indiceAleatorio);
-
-    const nomeCategorie = (await linhaSelecionada.locator('td').first().innerText()).trim();
+    
+    const nomeCategorie = (await linhaSelecionada.locator('td').nth(1).innerText()).trim();
     console.log(`✅ Categoria selecionada: ${nomeCategorie}`);    
     
     const btnEditar = linhaSelecionada
@@ -94,7 +94,7 @@ test.describe('Teste de Edição de Categorias', () => {
     await campoDescricao.scrollIntoViewIfNeeded();
     await campoDescricao.click({ force: true });
     await campoDescricao.fill(descricao.toUpperCase(), { force: true });
-    console.log('✅ Descrição do Serviço Alterada:', descricao.toUpperCase());
+    console.log('✅ Descrição da Categoria Alterada:', descricao.toUpperCase());
 
     await page.waitForTimeout(500);       
 

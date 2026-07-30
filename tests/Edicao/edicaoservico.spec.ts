@@ -39,8 +39,8 @@ test.describe('Teste de Edição de Serviços', () => {
     const indiceAleatorio = Math.floor(Math.random() * totalLinhas);
     const linhaSelecionada = linhas.nth(indiceAleatorio);
 
-    const nomeServicoee = (await linhaSelecionada.locator('td').first().innerText()).trim();
-    console.log(`✅ Produto selecionado: ${nomeServicoee}`);    
+    const nomeCategorie = (await linhaSelecionada.locator('td').nth(1).innerText()).trim();
+    console.log(`✅ Serviço selecionado: ${nomeCategorie}`);    
     
     const btnEditar = linhaSelecionada
       .locator('button, a, i, .q-btn, .material-icons')
