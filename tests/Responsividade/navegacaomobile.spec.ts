@@ -13,18 +13,16 @@ test.describe('Navegação de Menus - Mobile', () => {
     console.log('📱 Resolução alterada para Mobile.');    
 
     await page.context().clearCookies();
-    await loginCompletomobile(page);
-    
-    // Aguarda a rede ficar ociosa em vez de um tempo fixo de 2s
+    await loginCompletomobile(page);    
+
     await page.waitForLoadState('networkidle');
     
     async function abrirMenuMobile() {
-      // Junta todos os seletores em um só, economizando tentativas lentas
+      
       const btnMenu = page.locator('header button, .q-header button, [aria-label*="menu" i], button:has(.q-icon), .q-layout__section--marginal button').first();
       
       if (await btnMenu.isVisible()) {
-        await btnMenu.click({ force: true });
-        // Aguarda qualquer item de menu aparecer para confirmar que o menu abriu
+        await btnMenu.click({ force: true });      
         await page.locator('.q-item').first().waitFor({ state: 'visible', timeout: 3000 });
       }
     }
@@ -32,15 +30,13 @@ test.describe('Navegação de Menus - Mobile', () => {
     async function navegarPara(nomeItem: string) {
       await abrirMenuMobile();
      
-      // Muito mais rápido: Usa o motor do Playwright para buscar texto exato
+      
       const elementoAlvo = page.locator('.q-item, a, button').getByText(nomeItem, { exact: true }).first();
-
       await elementoAlvo.waitFor({ state: 'visible', timeout: 5000 });
       await elementoAlvo.scrollIntoViewIfNeeded();
       await elementoAlvo.click({ force: true });
-      console.log(`✅ Clicou em ${nomeItem}`);
+      console.log(`✅ Clicou em ${nomeItem}`);      
       
-      // Pequena pausa apenas para dar tempo da animação do menu fechar no mobile
       await page.waitForTimeout(800); 
     }
    
@@ -54,16 +50,13 @@ test.describe('Navegação de Menus - Mobile', () => {
       'Categorias',
       'Comissões',
       'Planos',
-      'Configurações' // O último clique será aqui
+      'Configurações' 
     ];
 
     for (const menu of menus) {
       await navegarPara(menu);
     }
 
-    // ==========================================
-    // NAVEGAÇÃO NAS ABAS DE CONFIGURAÇÕES (MOBILE)
-    // ==========================================
     const abasConfig = [
       'WhatsApp', 
       'Informações da empresa', 
@@ -72,8 +65,7 @@ test.describe('Navegação de Menus - Mobile', () => {
     ];
 
     for (const aba of abasConfig) {
-      const abaElemento = page.getByText(aba, { exact: true });
-      // Aguarda a aba renderizar na tela antes de clicar
+      const abaElemento = page.getByText(aba, { exact: true });   
       await abaElemento.waitFor({ state: 'visible', timeout: 5000 });
       await abaElemento.click();
       console.log(`     ✅ Clicou na Aba ${aba}`);
