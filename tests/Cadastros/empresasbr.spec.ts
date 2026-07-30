@@ -178,12 +178,13 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
   }
   
   async function preencherConfiguracaoSite(page: Page) {
-    const salvarPessoaPromise = page.waitForResponse((response) =>
+    const salvarEmpresaPromise = page.waitForResponse((response) =>
       (response.url().includes('/api/') || response.url().includes('/companies') || response.url().includes('/companies')) &&
       ['POST', 'PUT'].includes(response.request().method()) &&
       response.status() >= 200 &&
       response.status() < 300
     ).catch(() => null);
+
     await expect(page.getByText(/Configura[çc][ão] do site|URL do site/i).first()).toBeVisible({ timeout: 30000 });
     console.log('✅ Abriu tela de Configuração do site');
     await page.waitForTimeout(1500);
@@ -209,8 +210,8 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
     await page.getByText(/^Gravar$/i).first().click({ force: true });
     console.log('✅ Clicou em Gravar (Configuração do site)');
 
-     let respostaJson: any = null;
-    const salvarResponse = await salvarPessoaPromise;    
+    let respostaJson: any = null;
+    const salvarResponse = await salvarEmpresaPromise;    
 
     if (salvarResponse) {
       console.log('🌐 A URL capturada do POST é:', salvarResponse.url());
@@ -224,11 +225,11 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
       }
     }
     
-    const idPessoa = respostaJson?.data?.id?.toString()?.trim() || respostaJson?.id?.toString()?.trim();
+    const idEmpresa = respostaJson?.data?.id?.toString()?.trim() || respostaJson?.id?.toString()?.trim();
 
-    if (salvarResponse && idPessoa) {     
+    if (salvarResponse && idEmpresa) {     
       const urlPost = salvarResponse.url().replace(/\/$/, '');
-      const urlRegistroCriado = `${urlPost}/${idPessoa}`;      
+      const urlRegistroCriado = `${urlPost}/${idEmpresa}`;      
       const headersGetRegistro = { ...salvarResponse.request().headers() };      
       delete headersGetRegistro['content-type'];
       delete headersGetRegistro['content-length'];
@@ -242,7 +243,7 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
 
       console.log('🌐 URL do registro criado:', urlRegistroCriado);
       console.log('✅ RESPOSTA DA API AO CONSULTAR O NOVO REGISTRO');
-      console.log('✅ Novo ID:', idPessoa);    
+      console.log('✅ Novo ID:', idEmpresa);    
       console.log(`✅ Status GET: ${getCriadoResponse.status()}`);
 
       try {

@@ -22,7 +22,7 @@ export async function loginCompletomobile(page: Page) {
   await page.getByRole('button', { name: /entrar/i }).click();
   console.log('✅ Clicou em Entrar'); 
 
-  const botao1 = page.locator('button:has-text("Acessar")').nth(3);
+  const botao1 = page.locator('button:has-text("Acessar")').nth(0);
   await botao1.highlight();
   await botao1.evaluate((el: any) => {
     el.style.border = '5px solid red';
@@ -31,21 +31,14 @@ export async function loginCompletomobile(page: Page) {
   console.log('✅ Clicou em Acessar Empresa');
 
   await page.waitForTimeout(3000);
-  console.log('🌐 URL:', await page.url()); 
+  console.log('🌐 URL:', await page.url());   
   
-  // Remoção de modais e overlays do Quasar Framework
   await page.evaluate(() => {
     document.querySelectorAll('.q-dialog, .q-dialog__backdrop, .q-overlay').forEach((el: any) => {
       el.remove();
     });
-  });
+  });   
   
-  await page.waitForTimeout(2000);
-  await page.evaluate(() => {
-    document.querySelectorAll('.q-dialog, .q-dialog__backdrop, .q-overlay').forEach((el: any) => {
-      el.remove();
-    });
-  });
 
   console.log('✅ Modal + Overlay Removidos');
 
@@ -58,10 +51,7 @@ export async function loginCompletomobile(page: Page) {
   }
   
   await fecharPopupAtualizacao(page);   
-
-  // ----------------------------------------------------
-  // ABRE O MENU MOBILE COM SEGURANÇA E FALLBACKS MÚLTIPLOS
-  // ----------------------------------------------------
+  
   console.log('🔄 Tentando localizar e abrir o menu mobile...');
 
   const seletoresMenu = [
@@ -83,8 +73,7 @@ export async function loginCompletomobile(page: Page) {
         console.log('✅ Menu mobile clicado com sucesso');
         break;
       }
-    } catch (e) {
-      // Ignora erro e tenta o próximo seletor da lista
+    } catch (e) { 
     }
   }
 
