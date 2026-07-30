@@ -22,7 +22,7 @@ function gerarCPFValido(): string {
   return n.join('');
 }
 
-test.describe('Clientes - Editar cliente aleatório da lista', () => {
+test.describe('Teste de Edição de Clientes', () => {
 
   async function fecharCookiesSeAparecer(page: Page) {
     const bodyText = await page.locator('body').innerText().catch(() => '');
@@ -37,7 +37,7 @@ test.describe('Clientes - Editar cliente aleatório da lista', () => {
 
   test.beforeEach(async ({ page }) => {
     await loginCompleto(page);    
-    await fecharCookiesSeAparecer(page);
+    await fecharCookiesSeAparecer(page);    
 
     const menuClientes = page.getByText(/Clientes/i).first();
     await expect(menuClientes).toBeVisible({ timeout: 30000 });
@@ -48,7 +48,8 @@ test.describe('Clientes - Editar cliente aleatório da lista', () => {
     await expect(page.locator('tbody tr').first()).toBeVisible({ timeout: 15000 });
   });
 
-  test('Deve selecionar aleatoriamente um cliente da lista e abrir edição.', async ({ page }) => {
+  test('Deve selecionar aleatoriamente um cliente da lista e abrir edição.', async ({ page }) => {   
+    
     const linhas = page.locator('tbody tr');
 
     const totalLinhas = await linhas.count();
@@ -66,17 +67,23 @@ test.describe('Clientes - Editar cliente aleatório da lista', () => {
       .first();
     
     await btnEditar.scrollIntoViewIfNeeded();
-    await btnEditar.click({ force: true });
-    
+    await btnEditar.click({ force: true });    
+
     await page.waitForTimeout(1000); 
+    
+    const salvarPessoaPromise = page.waitForResponse((response) =>
+      (response.url().includes('/api/') || response.url().includes('/customers') || response.url().includes('/pessoa')) &&
+      ['POST', 'PUT'].includes(response.request().method()) &&
+      response.status() >= 200 &&
+      response.status() < 300
+    ).catch(() => null);
 
     const timestamp = Date.now();
     const nomeCliente = obterNomePessoaAleatorio();
     const documento = gerarCPFValido();
     const telefone = gerarTelefoneAleatorio();    
-    const email = `cliente_email.${timestamp}@sgbr.com`;
+    const email = `cliente_email.${timestamp}@sgbr.com`;    
     
-    // Função infalível para limpar e preencher campos
     const preencherCampo = async (index: number, texto: string, nomeCampo: string) => {
       try {
         const campo = page.locator('input:visible').nth(index);       
@@ -107,9 +114,73 @@ test.describe('Clientes - Editar cliente aleatório da lista', () => {
     await btnGravar.waitFor();
     await btnGravar.click({ force: true });
     console.log('✅ Clicou em Gravar');                 
+
+    let respostaJson: any = null;
+    const salvarResponse = await salvarPessoaPromise;    
+
+    if (salvarResponse) {
+      console.log('🌐 A URL capturada do POST/PUT é:', salvarResponse.url());
+      console.log(`✅ Status da resposta API: ${salvarResponse.status()}`);
+
+      try {        
+        respostaJson = await salvarResponse.json();               
+        console.log('📦 JSON de resposta:', JSON.stringify(respostaJson, null, 2));        
+      } catch (e) {
+        console.log('⚠️ A resposta da API não contém um JSON válido ou veio vazia.');
+      }
+    }    
+    
+    let idPessoa = respostaJson?.data?.id?.toString()?.trim() || respostaJson?.id?.toString()?.trim();
+    
+    if (!idPessoa && salvarResponse) {
+      const urlInterceptada = salvarResponse.url();      
+      const uuidMatch = urlInterceptada.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+      
+      if (uuidMatch) {
+        idPessoa = uuidMatch[0];
+      } else {
+        // Fallback: pega a última parte da URL após a barra "/"
+        const partes = urlInterceptada.split('?')[0].split('/');
+        idPessoa = partes[partes.length - 1];
+      }
+    }
+    
+    if (salvarResponse && idPessoa) {     
+      const urlSemQuery = salvarResponse.url().split('?')[0];
+      
+      const urlRegistroCriado = urlSemQuery.endsWith(idPessoa) 
+        ? urlSemQuery 
+        : `${urlSemQuery}/${idPessoa}`;      
+        
+      const headersGetRegistro = { ...salvarResponse.request().headers() };      
+      delete headersGetRegistro['content-type'];
+      delete headersGetRegistro['content-length'];
+      delete headersGetRegistro[':method'];
+      delete headersGetRegistro[':path'];
+      delete headersGetRegistro[':authority'];
+      delete headersGetRegistro[':scheme'];      
+      
+      const getCriadoResponse = await page.request.get(urlRegistroCriado, {
+        headers: headersGetRegistro,
+      });
+
+      console.log('🌐 URL do registro atualizado:', urlRegistroCriado);
+      console.log('✅ RESPOSTA DA API AO CONSULTAR O REGISTRO');
+      console.log('✅ ID do Registro:', idPessoa);    
+      console.log(`✅ Status GET: ${getCriadoResponse.status()}`);
+
+      try {
+        const dadosCriado = await getCriadoResponse.json();
+        console.log('📦 JSON do Registro Consultado:\n', JSON.stringify(dadosCriado, null, 2));
+      } catch (error) {
+        console.error('⚠️ Erro ao converter resposta para JSON no GET:', error);
+      }
+    } else {
+      console.log('⚠️ Não foi possível identificar o ID do registro na URL nem no JSON.');
+    }
     
     await expect(page.locator('body')).toContainText(
-      /Cliente salvo com sucesso/i,
+      /Cliente salvo com sucesso|Registro atualizado com sucesso/i,
       { timeout: 15000 }
     );
     

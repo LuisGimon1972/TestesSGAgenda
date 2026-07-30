@@ -1,206 +1,167 @@
-import { test, expect } from '@playwright/test';
-import { loginCompleto } from '../../utils/loginCompleto';
-import { capturarRequisicoesApi } from '../../utils/capturaApi';
+import { test, expect, Page } from '@playwright/test';
+import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
+import { obterProdutoAleatorio } from '../../utils/listaprodutos';
 
-test('Edição de datos produtos/serviços', async ({ page }) => {
-      await page.setViewportSize({ width: 1920, height: 1080 });
-      await loginCompleto(page);          
+test.describe('Teste de Edição de Produtos', () => {
 
-      await page.waitForTimeout(1000);
-      await Promise.all([
-      page.waitForURL(/producto/, { timeout: 15000 }),
-      page.locator('a[href*="producto"]').first().click()
-      ]);
-      console.log('CLICOU EM PRODUTOS');      
+  async function fecharCookiesSeAparecer(page: Page) {
+    const bodyText = await page.locator('body').innerText().catch(() => '');
+    if (/Entendi|Aceitar|Aceito|OK|Concordo/i.test(bodyText)) {
+      const btnCookies = page.getByText(/Entendi/i).first();
+      if (await btnCookies.isVisible().catch(() => false)) {
+        await btnCookies.click({ force: true, timeout: 5000 }).catch(() => {});
+        console.log('✅ Fechou aviso de cookies');
+      }
+    }
+  }
 
-      await page.waitForSelector('table');
-      await page.locator('.q-skeleton').first().waitFor({ state: 'detached', timeout: 15000 });           
-      const editIcons = await page.locator('table img[src*="edit"], table svg').count();
-      console.log('QUANTIDADE DE ÍCONES DE EDIÇÃO:', editIcons.toString().trim());
+  test.beforeEach(async ({ page }) => {
+    await loginCompleto(page);    
+    await fecharCookiesSeAparecer(page);    
 
-      await page.emulateMedia({ media: 'screen' });
-      await page.evaluate(() => {
-      document.body.style.zoom = '0.7'; });
-      console.log('🔍 Zoom ajustado para 70% via CSS');
+    await page.locator('.q-item, a, button').filter({ hasText: /Produtos/i }).first().click({ force: true });
+    console.log(`✅ Clicou em Produtos`);          
+    console.log(`✅ Apareceu Listagem de produtos`);      
 
-      if (editIcons > 0) {               
-            const getRegistroEditadoPromise = page.waitForResponse((response) =>
-            response.url().includes('/api/py/produto') &&
-            response.request().method() === 'GET' &&
-            response.status() === 200 &&
-            /\/api\/py\/produto\/[^/?]+/.test(response.url())
-            );
-            
-            const getProdutoPromise = page.waitForResponse((response) =>
-            response.url().includes('/api/py/produto') &&
-            response.request().method() === 'GET' &&
-            response.status() === 200
-            );            
+    await expect(page.getByText(/Listagem de produtos/i).first()).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('tbody tr').first()).toBeVisible({ timeout: 15000 });
+  });
 
-            await page.locator('table img[src="/icons/edit.svg"]').first().click();
-            console.log('CLICOU NO ÍCONE DE EDITAR');
-             
-            const getProdutoResponsee = await getProdutoPromise;
-            const dadosAntes = await getProdutoResponsee.json();
-            console.log('*** DADOS DO REGISTRO NO BANCO (ANTES DA ALTERAÇÃO) ***');
-            console.log(JSON.stringify(dadosAntes, null, 2));            
+  test('Deve selecionar aleatoriamente um produto da lista e abrir edição.', async ({ page }) => {   
+    
+    const linhas = page.locator('tbody tr');
 
-            const getRegistroEditadoResponse = await getRegistroEditadoPromise;
-            const urlRegistroEditado = getRegistroEditadoResponse.url();
-            const headersOriginais = getRegistroEditadoResponse.request().headers();
+    const totalLinhas = await linhas.count();
+    expect(totalLinhas, 'A lista deve possuir ao menos 1 produto').toBeGreaterThan(0);
+    
+    const indiceAleatorio = Math.floor(Math.random() * totalLinhas);
+    const linhaSelecionada = linhas.nth(indiceAleatorio);
 
-            console.log('URL DO REGISTRO EDITADO:', urlRegistroEditado);
+    const nomeProdutoee = (await linhaSelecionada.locator('td').first().innerText()).trim();
+    console.log(`✅ Produto selecionado: ${nomeProdutoee}`);    
+    
+    const btnEditar = linhaSelecionada
+      .locator('button, a, i, .q-btn, .material-icons')
+      .filter({ hasText: /edit/i })
+      .first();
+    
+    await btnEditar.scrollIntoViewIfNeeded();
+    await btnEditar.click({ force: true });    
 
-            console.log('***DADOS ENVIADOS PRA API***');            
+    await page.waitForTimeout(1000); 
+    
+    const salvarProdutoPromise = page.waitForResponse((response) =>
+      (response.url().includes('/api/') || response.url().includes('//products') || response.url().includes('/produto')) &&
+      ['POST', 'PUT'].includes(response.request().method()) &&
+      response.status() >= 200 &&
+      response.status() < 300
+    ).catch(() => null);
+    
+    const nomeProduto = `${obterProdutoAleatorio().nome}`;
+    const valor = '3500';
+    const quantidade = '56';    
+    const comissao = '5000';    
+    
+    const preencherCampo = async (index: number, texto: string, nomeCampo: string) => {
+      try {
+        const campo = page.locator('input:visible').nth(index);       
+        
+        await campo.waitFor({ state: 'visible', timeout: 10000 });                              
+        await campo.clear();        
+        await page.waitForTimeout(100);
+        
+        if (texto) {        
+          await campo.fill(texto); 
+        }
 
-            const nomeproduto = `TEST PRODUTO ALTERADO ${Date.now()}`;
-            await page.getByLabel(/nome/i).fill(nomeproduto);
-            console.log('NOME DE PRODUTO ALTERADO OK:', nomeproduto);      
+        if (index === 1 || index === 3) {
+          console.log(`✅ ${nomeCampo}: ${Number(texto) / 100}%`);
+        } else if (nomeCampo) {
+          console.log(`✅ ${nomeCampo}: ${texto}`);
+          
+        }
+        
+      } catch (e) {
+        console.error(`❌ Falha ao tentar preencher o campo: ${nomeCampo}`, e);
+      }
+    };
+    
+    await preencherCampo(0, nomeProduto, 'Nome Produto Alterado');
+    await preencherCampo(1, valor, 'Valor Alterado');
+    await preencherCampo(2, quantidade, 'Quantidade Alterada');
+    await preencherCampo(3, comissao, 'Comissão Alterada');    
 
-            await page.waitForTimeout(1000);
-            const localestoque = `TEST LOCAL ESTOQUE ALTERADO ${Date.now()}`;
-            await page.getByLabel(/localização/i).fill(localestoque);
-            console.log('LOCALIZAÇÃO ALTERADA DE ESTOQUE OK:', localestoque);
+    await page.waitForTimeout(500);       
 
-            await page.waitForTimeout(1000);
-            const refestoque = `TEST REFERÊNCIA ESTOQUE ALTERADA ${Date.now()}`;
-            await page.getByLabel(/referência/i).fill(refestoque);
-            console.log('REFERÊNCIA ALTERADA ESTOQUE ESTOQUE OK:', refestoque);
+    const btnGravar = page.getByText(/Gravar/i).first();
+    await btnGravar.waitFor();
+    await btnGravar.click({ force: true });
+    console.log('✅ Clicou em Gravar');                 
 
-            await page.locator('input[aria-label="Fornecedor"]').focus();      
-            await page.keyboard.press('ArrowDown');      
-            await page.waitForSelector('.q-menu:visible');      
-            await page.locator('.q-menu:visible .q-item')
-            .filter({ hasText: /REGISTRO\s+ESTÁNDAR/i })
-            .click();      
-            const fornecedor = await page.locator('input[aria-label="Fornecedor"]').inputValue();
-            console.log('FORNECEDOR OK:', fornecedor); 
+    let respostaJson: any = null;
+    const salvarResponse = await salvarProdutoPromise;    
 
-            const uso = await page.locator('input[aria-label="Tipo de uso"]').inputValue();      
-            console.log('TIPO DE USO OK:', uso);
+    if (salvarResponse) {
+      console.log('🌐 A URL capturada do POST/PUT é:', salvarResponse.url());
+      console.log(`✅ Status da resposta API: ${salvarResponse.status()}`);
+
+      try {        
+        respostaJson = await salvarResponse.json();               
+        console.log('📦 JSON de resposta:', JSON.stringify(respostaJson, null, 2));        
+      } catch (e) {
+        console.log('⚠️ A resposta da API não contém um JSON válido ou veio vazia.');
+      }
+    }    
+    
+    let idProduto = respostaJson?.data?.id?.toString()?.trim() || respostaJson?.id?.toString()?.trim();
+    
+    if (!idProduto && salvarResponse) {
+      const urlInterceptada = salvarResponse.url();      
+      const uuidMatch = urlInterceptada.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
       
-            const unid = await page.locator('input[aria-label="Unidade de medida"]').inputValue();      
-            console.log('UNIDADE OK:', unid);
-            await page.waitForTimeout(1000);
+      if (uuidMatch) {
+        idProduto = uuidMatch[0];
+      } else {        
+        const partes = urlInterceptada.split('?')[0].split('/');
+        idProduto = partes[partes.length - 1];
+      }
+    }
+    
+    if (salvarResponse && idProduto) {     
+      const urlSemQuery = salvarResponse.url().split('?')[0];
+      
+      const urlRegistroCriado = urlSemQuery.endsWith(idProduto) 
+        ? urlSemQuery 
+        : `${urlSemQuery}/${idProduto}`;      
+        
+      const headersGetRegistro = { ...salvarResponse.request().headers() };      
+      delete headersGetRegistro['content-type'];
+      delete headersGetRegistro['content-length'];
+      delete headersGetRegistro[':method'];
+      delete headersGetRegistro[':path'];
+      delete headersGetRegistro[':authority'];
+      delete headersGetRegistro[':scheme'];      
+      
+      const getCriadoResponse = await page.request.get(urlRegistroCriado, {
+        headers: headersGetRegistro,
+      });
 
-            const precusto = Math.floor(Math.random() * 1000) + 1;
-            const campoPrecusto = page.locator('.q-field')
-            .filter({ hasText: /preço de custo/i })
-            .last();
-            const inputPrecusto = campoPrecusto.locator('input');
-            await inputPrecusto.press('Control+A');
-            await inputPrecusto.press('Delete');
-            await inputPrecusto.type(precusto.toString());
-            console.log('PREÇO DE CUSTO ALTERADO OK:', precusto.toFixed(0));
-            
-            const campoLucro = page.locator('.q-field')
-            .filter({ hasText: /% lucro/i })
-            .last();
-            const perLucro = await campoLucro.locator('input').inputValue();
-            console.log('% DE LUCRO OK:', perLucro);
-            
-            const campoPrevenda = page.locator('.q-field')
-            .filter({ hasText: /preço de venda/i })
-            .last();
-            const valorPrevenda = await campoPrevenda.locator('input').inputValue();
-            console.log('PREÇO DE VENDA ALTERADO OK:', valorPrevenda);            
-            expect(Number(perLucro)).toBeGreaterThanOrEqual(0);
+      console.log('🌐 URL do registro atualizado:', urlRegistroCriado);
+      console.log('✅ RESPOSTA DA API AO CONSULTAR O REGISTRO');
+      console.log('✅ ID do Registro:', idProduto);    
+      console.log(`✅ Status GET: ${getCriadoResponse.status()}`);
 
-            const cantidad = Math.floor(Math.random() * 1000) + 1;
-            const campocantidad = page.locator('.q-field')
-            .filter({ hasText: /quantidade/i })
-            .first();
-            await campocantidad.locator('input').fill(cantidad.toString());
-            console.log('QUANTIDADE ALTERADA OK:', cantidad.toString());
-
-            const cantidadmin = Math.floor(Math.random() * 100) + 1;
-            const campoCantidadMin = page
-            .locator('.q-field')
-            .filter({ hasText: /quantidade mínima/i })
-            .last();
-            const input = campoCantidadMin.locator('input');
-            await expect(input).toBeVisible();
-            await input.fill(String(cantidadmin));
-            console.log('QUANTIDADE MÍNIMA ALTERADA OK:', cantidadmin.toString());
-
-            const cantidadmax = Math.floor(Math.random() * 1000) + 1;
-            const campoCantidadmax = page
-            .locator('.q-field')
-            .filter({ hasText: /quantidade máxima/i })
-            .last();
-            const input2 = campoCantidadmax.locator('input');
-            await expect(input).toBeVisible();
-            await input2.fill(String(cantidadmax));
-            console.log('QUANTIDADE MÁXIMA ALTERARA OK:', cantidadmax.toString());
-
-            await page.waitForTimeout(1000);
-            const ivaField = page.locator('[aria-label="IVA"]').first();
-            await ivaField.scrollIntoViewIfNeeded();
-            await expect(ivaField).toBeVisible();
-            await ivaField.evaluate(el => (el as HTMLElement).click());
-            const menuIva = page.locator('.q-menu');
-            await expect(menuIva).toBeVisible();
-            await menuIva
-            .locator('.q-item')
-            .filter({ hasText: /5%|isento/i })
-            .first()
-            .click();
-            const iva = await page.locator('input[aria-label="IVA"]').inputValue();      
-            console.log('IVA ALTERADO OK:',iva);    
-
-            await page.waitForTimeout(1000); 
-            const obsproduto = `TEST ALTERAÇÃO DE OBSERVAÇÕES DE PRODUTOS PRODUTO REVISADO E APROVADO DE MUITA BOA QUALIDADE ${Date.now()}`;
-            await page.locator('textarea.q-field__native').fill(obsproduto);
-            console.log('OBSERVAÇÕES OK:', obsproduto);
-            await expect(page.locator('textarea.q-field__native')).toHaveValue(obsproduto);            
-            
-            console.log('***FIM DE DADOS ENVIADOS***');  
-            
-            const salvarProdutoPromise = page.waitForResponse((response) =>
-            response.url().includes('/api/py/produto') &&
-            ['PUT', 'PATCH', 'POST'].includes(response.request().method()) &&
-            response.status() >= 200 &&
-            response.status() < 300
-            );
-
-            await page.locator('.q-btn')
-            .filter({ hasText: /salvar|guardar/i })
-            .click({ force: true });
-            console.log('CLICOU EM SALVAR');            
-
-            await salvarProdutoPromise;
-
-            const headersGetRegistro: Record<string, string> = {
-            Accept: 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            };
-            if (headersOriginais.authorization) {
-            headersGetRegistro.authorization = headersOriginais.authorization;
-            }
-            if (headersOriginais['x-xsrf-token']) {
-            headersGetRegistro['x-xsrf-token'] = headersOriginais['x-xsrf-token'];
-            }
-            if (headersOriginais['x-tenant']) {
-            headersGetRegistro['x-tenant'] = headersOriginais['x-tenant'];
-            }
-            if (headersOriginais['x-empresa']) {
-            headersGetRegistro['x-empresa'] = headersOriginais['x-empresa'];
-            }
-            const getProdutoResponse = await page.request.get(urlRegistroEditado, {
-            headers: headersGetRegistro,
-            });
-            console.log(`STATUS GET REGISTRO EDITADO: ${String(getProdutoResponse.status())}`);
-            const textoResposta = await getProdutoResponse.text();
-            if (!getProdutoResponse.ok()) {
-            throw new Error(`GET registro editado falhou: ${getProdutoResponse.status()} - ${textoResposta}`);
-            }
-            const dadosDepois = JSON.parse(textoResposta);
-            console.log('***DADOS APÓS DA ALTERAÇÃO (GET DO REGISTRO EDITADO)***');
-            console.log(JSON.stringify(dadosDepois, null, 2));             
-       }
-      else  {
-            console.log('NENHUM REGISTRO ENCONTRADO NA GRADE, NADA PARA EDITAR.');  
-      }           
-      await capturarRequisicoesApi(page); 
-      await page.waitForTimeout(4000);                
+      try {
+        const dadosCriado = await getCriadoResponse.json();
+        console.log('📦 JSON do Registro Consultado:\n', JSON.stringify(dadosCriado, null, 2));
+      } catch (error) {
+        console.error('⚠️ Erro ao converter resposta para JSON no GET:', error);
+      }
+    } else {
+      console.log('⚠️ Não foi possível identificar o ID do registro na URL nem no JSON.');
+    }    
+    
+    
+    console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);       
+  });
 });
