@@ -59,9 +59,9 @@ test.describe('Teste de Edição de Planos', () => {
       response.status() < 300
     ).catch(() => null);
     
-    const nomePlano = `${obterNomePlanoAleatorio()} ${Date.now()}`;
-    const valorPlano = '1850';     
-    const duracao = '3';     
+    const nomePlano = `${obterNomePlanoAleatorio()} ${Date.now()}`;    
+    const valorPlano = (Math.floor(Math.random() * 1201) + 1850).toString();
+    const duracao = (Math.floor(Math.random() * 6) + 1).toString();
     const descricaoPlano = `Plano que oferece recursos essenciais, segurança, suporte e atualizações para uma gestão mais eficiente e produtiva.`;    
     
     const preencherCampo = async (index: number, texto: string, nomeCampo: string) => {
