@@ -21,7 +21,9 @@ test.describe('Teste de Edição de Serviços', () => {
 
     await page.locator('.q-item, a, button').filter({ hasText: /Servi[çc]os/i }).first().click({ force: true });
     console.log(`✅ Clicou em Serviços`);          
-    console.log(`✅ Apareceu Listagem de serviços`);      
+    console.log(`✅ Apareceu Listagem de serviços`);    
+    
+    await page.waitForTimeout(500);       
 
     await expect(page.getByText(/Listagem de serviços/i).first()).toBeVisible({ timeout: 30000 });
     await expect(page.locator('tbody tr').first()).toBeVisible({ timeout: 15000 });
@@ -60,7 +62,8 @@ test.describe('Teste de Edição de Serviços', () => {
     const nomeServico = `${obterServicoAleatorio().nomeServico}`;
     const duracao = '15';
     const valor = '3500';    
-    const comissao = '5000';    
+    const comissao = '5000';      
+    const descricao = `Serviço realizado com técnicas adequadas para atender às preferências e necessidades de cada cliente. O atendimento inclui avaliação do estilo desejado, execução do corte e acabamento, proporcionando um visual renovado, bem cuidado e alinhado.`;
     
     const preencherCampo = async (index: number, texto: string, nomeCampo: string) => {
       try {
@@ -89,7 +92,13 @@ test.describe('Teste de Edição de Serviços', () => {
     await preencherCampo(0, nomeServico, 'Nome de Serviço Alterado');
     await preencherCampo(1, duracao, 'Duração Alterada');
     await preencherCampo(2, valor, 'Valor Alterado');    
-    await preencherCampo(3, comissao, 'Comissão Alterada');    
+    await preencherCampo(3, comissao, 'Comissão Alterada');        
+    
+    const campoDescricao = page.locator('textarea:visible').first();
+      await campoDescricao.scrollIntoViewIfNeeded();
+      await campoDescricao.click({ force: true });
+      await campoDescricao.fill(descricao.toUpperCase(), { force: true });
+      console.log('✅ Descrição do Serviço Alterada:', descricao.toUpperCase());
 
     await page.waitForTimeout(500);       
 
