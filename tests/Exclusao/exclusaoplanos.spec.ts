@@ -2,7 +2,7 @@ import { test, expect, Page } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
 
-test.describe('Teste de Exclusão de Serviços', () => {
+test.describe('Teste de Exclusão de Planos', () => {
 
   async function fecharCookiesSeAparecer(page: Page) {
     const bodyText = await page.locator('body').innerText().catch(() => '');
@@ -19,17 +19,17 @@ test.describe('Teste de Exclusão de Serviços', () => {
     await loginCompleto(page);    
     await fecharCookiesSeAparecer(page);    
 
-    await page.locator('.q-item, a, button').filter({ hasText: /Servi[çc]os/i }).first().click({ force: true });
-    console.log(`✅ Clicou em Serviços`);          
-    console.log(`✅ Apareceu Listagem de serviços`);    
+    await page.locator('.q-item, a, button').filter({ hasText: /Planos/i }).first().click({ force: true });
+    console.log(`✅ Clicou em Planos`);              
+    console.log(`✅ Apareceu Listagem de Planos`);    
     
     await page.waitForTimeout(500);       
 
-    await expect(page.getByText(/Listagem de serviços/i).first()).toBeVisible({ timeout: 30000 });
+    await expect(page.getByText(/Listagem de planos/i).first()).toBeVisible({ timeout: 30000 });
     await expect(page.locator('tbody tr').first()).toBeVisible({ timeout: 15000 });
   });
 
-  test('Deve selecionar aleatoriamente um serviço, excluir e consultar via API.', async ({ page }) => {   
+  test('Deve selecionar aleatoriamente um plano, excluir e consultar via API.', async ({ page }) => {   
     page.on('dialog', async (dialog) => {
       console.log(`💬 Diálogo nativo do navegador: ${dialog.message()}`);
       await dialog.accept();
@@ -39,30 +39,28 @@ test.describe('Teste de Exclusão de Serviços', () => {
     await expect(linhas.first()).toBeVisible({ timeout: 30000 });
 
     const totalLinhas = await linhas.count();
-    expect(totalLinhas, 'A lista deve possuir ao menos 1 serviço').toBeGreaterThan(0);
+    expect(totalLinhas, 'A lista deve possuir ao menos 1 plano').toBeGreaterThan(0);
     
     const indiceAleatorio = Math.floor(Math.random() * totalLinhas);
     const linhaSelecionada = linhas.nth(indiceAleatorio);
 
     console.log(`✅ CAPTURA DO REGISTRO DA GRADE ANTES DE SER REMOVIDO:`);
-    const nomeServico = (await linhaSelecionada.locator('td').nth(1).innerText()).trim();
-    console.log(`✅ Serviço selecionado para exclusão: ${nomeServico}`);        
-    const descricao = (await linhaSelecionada.locator('td').nth(2).innerText()).trim(); 
-    console.log(`✅ Descrição do Serviço: ${descricao}`);    
-    const duracao = (await linhaSelecionada.locator('td').nth(3).innerText()).trim(); 
-    console.log(`✅ Duração do Serviço: ${duracao}`);    
-    const valor = (await linhaSelecionada.locator('td').nth(5).innerText()).trim(); 
-    console.log(`✅ Valor do Serviço: ${valor}`);    
-    const datacad = (await linhaSelecionada.locator('td').nth(8).innerText()).trim(); 
-    console.log(`✅ Data de cadastro: ${datacad}`);          
-    
-    const deletarServicoPromise = page.waitForResponse(
+    const nomePlano = (await linhaSelecionada.locator('td').nth(0).innerText()).trim();
+    console.log(`✅ Plano selecionado para exclusão: ${nomePlano}`);        
+    const valorPlano = (await linhaSelecionada.locator('td').nth(1).innerText()).trim();
+    console.log(`✅ Valor do Plano: ${valorPlano}`);        
+    const periodoPlano = (await linhaSelecionada.locator('td').nth(2).innerText()).trim();
+    console.log(`✅ Periodo do Plano: ${periodoPlano}`);        
+    const descricao = (await linhaSelecionada.locator('td').nth(3).innerText()).trim(); 
+    console.log(`✅ Descrição do Serviço: ${descricao}`);        
+   
+    const deletarPlanoPromise = page.waitForResponse(
       (response) =>
         response.request().method() === 'DELETE' &&
         (response.status() >= 200 && response.status() < 300),
       { timeout: 15000 }
     ).catch(() => null);
-
+    
     const btnExcluir = linhaSelecionada
       .locator('button, a, i, .q-btn, .material-icons')
       .filter({ hasText: /delete|lixeira|excluir|trash|remove/i })
@@ -74,7 +72,7 @@ test.describe('Teste de Exclusão de Serviços', () => {
 
     await botaoAlvo.scrollIntoViewIfNeeded();
     await botaoAlvo.click({ force: true });    
-    console.log('✅ Clicou na opção de excluir do serviço');
+    console.log('✅ Clicou na opção de excluir do plano');
     
     await page.waitForTimeout(1000); 
 
@@ -93,7 +91,7 @@ test.describe('Teste de Exclusão de Serviços', () => {
       console.log('⚠️ Nenhum modal encontrado, verificando se o sistema excluiu direto...');
     }    
     
-    const deletarResponse = await deletarServicoPromise;    
+    const deletarResponse = await deletarPlanoPromise;    
 
     if (deletarResponse) {
       const urlRegistroDeletado = deletarResponse.url();
@@ -106,7 +104,7 @@ test.describe('Teste de Exclusão de Serviços', () => {
       delete headersGet[':path'];
       delete headersGet[':authority'];
       delete headersGet[':scheme'];      
-      
+     
       const consultaResponse = await page.request.get(urlRegistroDeletado, {
         headers: headersGet,
       });
@@ -129,12 +127,10 @@ test.describe('Teste de Exclusão de Serviços', () => {
     }    
     
     await expect(page.locator('body')).toContainText(
-      /Serviço (deletado|excluído) com sucesso|Registro (deletado|excluído)|removido com sucesso/i,
+      /Plano (deletado|excluído) com sucesso|Registro (deletado|excluído)|removido com sucesso/i,
       { timeout: 15000 }
-    );
+    );    
     
-    await capturarRequisicoesApi(page); 
-    await page.waitForTimeout(2000);    
     console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);       
   });
 });

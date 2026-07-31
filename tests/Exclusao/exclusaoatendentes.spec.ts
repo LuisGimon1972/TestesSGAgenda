@@ -98,6 +98,8 @@ test.describe('Teste de Exclusão de Atendentes', () => {
     } else {
       console.log('⚠️ Nenhum modal encontrado, verificando se o sistema excluiu direto...');
     }
+
+    await capturarRequisicoesApi(page);     
     
     const deletarResponse = await deletarAtendentePromise;    
 

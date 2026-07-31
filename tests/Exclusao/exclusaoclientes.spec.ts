@@ -1,5 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
+import { capturarRequisicoesApi } from '../../utils/capturaApi';
 
 test.describe('Teste de Exclusão de Clientes', () => {
 
@@ -68,6 +69,8 @@ test.describe('Teste de Exclusão de Clientes', () => {
       .last(); 
 
     await btnConfirmarModal.waitFor({ state: 'visible', timeout: 5000 });
+
+    await capturarRequisicoesApi(page);     
     
     const deletarPessoaPromise = page.waitForResponse(
       (response) =>

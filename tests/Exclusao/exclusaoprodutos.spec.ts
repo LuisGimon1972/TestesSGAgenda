@@ -88,6 +88,8 @@ test.describe('Teste de Exclusão de Produtos', () => {
     
     const deletarResponse = await deletarProdutoPromise;    
 
+    await capturarRequisicoesApi(page);     
+
     if (deletarResponse) {
       const urlRegistroDeletado = deletarResponse.url();
       console.log('🌐 URL do DELETE capturada:', urlRegistroDeletado);
