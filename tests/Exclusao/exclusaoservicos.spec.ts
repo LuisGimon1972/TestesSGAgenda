@@ -44,10 +44,18 @@ test.describe('Teste de Exclusão de Serviços', () => {
     const indiceAleatorio = Math.floor(Math.random() * totalLinhas);
     const linhaSelecionada = linhas.nth(indiceAleatorio);
 
+    console.log(`✅CAPTURA DO REGISTRO DA GRADE ANTES DE SER REMOVIDO:`)
     const nomeServico = (await linhaSelecionada.locator('td').nth(1).innerText()).trim();
-    console.log(`✅ Serviço selecionado para exclusão: ${nomeServico}`);    
+    console.log(`✅ Serviço selecionado para exclusão: ${nomeServico}`);        
+    const descricao = (await linhaSelecionada.locator('td').nth(1).innerText()).trim(); 
+    console.log(`✅ Descrição do Serviço: ${descricao}`);    
+    const duracao = (await linhaSelecionada.locator('td').nth(2).innerText()).trim(); 
+    console.log(`✅ Duração do Serviço: ${duracao}`);    
+    const valor = (await linhaSelecionada.locator('td').nth(3).innerText()).trim(); 
+    console.log(`✅ Valor do Serviço: ${valor}`);    
+    const datacad = (await linhaSelecionada.locator('td').nth(4).innerText()).trim(); 
+    console.log(`✅ Data de cadastro: ${datacad}`);      
     
-    // Prepara a escuta da requisição DELETE antes de acionar a exclusão
     const deletarServicoPromise = page.waitForResponse(
       (response) =>
         (response.url().includes('/api/') || response.url().includes('/services') || response.url().includes('/servico')) &&
@@ -57,13 +65,12 @@ test.describe('Teste de Exclusão de Serviços', () => {
       { timeout: 15000 }
     ).catch(() => null);
 
-    // Como não há 3 pontos, busca o botão de excluir diretamente na linha (ex: ícone de lixeira, delete ou botão com texto)
+    
     const btnExcluir = linhaSelecionada
       .locator('button, a, i, .q-btn, .material-icons')
       .filter({ hasText: /delete|lixeira|excluir|trash|remove/i })
-      .first();
+      .first();    
     
-    // Fallback caso o botão seja apenas um ícone sem texto claro na filtragem
     const botaoAlvo = (await btnExcluir.isVisible().catch(() => false)) 
       ? btnExcluir 
       : linhaSelecionada.locator('button, .q-btn').last();
@@ -71,8 +78,7 @@ test.describe('Teste de Exclusão de Serviços', () => {
     await botaoAlvo.scrollIntoViewIfNeeded();
     await botaoAlvo.click({ force: true });    
     console.log('✅ Clicou na opção de excluir do serviço');
-
-    // Aguarda o modal de confirmação (se houver)
+    
     await page.waitForTimeout(1000); 
 
     const btnConfirmarModal = page
@@ -87,8 +93,7 @@ test.describe('Teste de Exclusão de Serviços', () => {
     } else {
       console.log('⚠️ Nenhum modal encontrado, verificando se o sistema excluiu direto...');
     }
-
-    // Captura a resposta da API DELETE
+    
     const deletarResponse = await deletarServicoPromise;    
 
     if (deletarResponse) {
