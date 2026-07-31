@@ -69,7 +69,7 @@ test.describe('Agendamentos - Cadastro', () => {
 
         const rect = elemento.getBoundingClientRect();
         const temTamanhoPossivel = rect.width >= 20 && rect.width <= 700 && rect.height >= 10 && rect.height <= 420;
-        const contemPalavraServico = /Corte|Servi|Servi[çc]o|Servicio/i.test(texto);
+        const contemPalavraServico = /Corte|Hidra|Barba|Cabe|Bigo|Cel|Infa|Seca/i.test(texto);
         const contemValorServico = /(?:R\$|\$|₲|G|Gs\.?|G\$)\s*[\d.,]+|[\d.,]+\s*(?:R\$|\$|₲|G|Gs\.?|G\$)/i.test(texto);
         const naoEhMenuOuBusca = !/Escolha o servi[çc]o|Buscar servi[çc]o|Buscar servicio|Exibir mais|Mostrar mais|Dashboard|Agenda|Clientes|Atendentes|Produtos|Configura[çc][õo]es|Termos de uso|Política de privacidade|cookies|Entendi/i.test(texto);
 
@@ -217,11 +217,23 @@ test.describe('Agendamentos - Cadastro', () => {
 
       const agora = new Date();
       const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate()).getTime();
+      const umDiaMs = 24 * 60 * 60 * 1000;
       
       const datasFuturas = datas.filter(item => item.timestamp > hoje);
-      const datasHoje = datas.filter(item => item.timestamp === hoje);      
+      const datasHoje = datas.filter(item => item.timestamp === hoje);            
       
-      const dataEscolhida = datasFuturas[0] || datasHoje[0];
+      const datasEntre1E7Dias = datasFuturas.filter(item => {
+        const diffDias = Math.round((item.timestamp - hoje) / umDiaMs);
+        return diffDias >= 1 && diffDias <= 7;
+      });
+
+      let dataEscolhida = null;
+      if (datasEntre1E7Dias.length > 0) {        
+        const randomIndex = Math.floor(Math.random() * datasEntre1E7Dias.length);
+        dataEscolhida = datasEntre1E7Dias[randomIndex];
+      } else {        
+        dataEscolhida = datasFuturas[0] || datasHoje[0];
+      }
       
       if (!dataEscolhida) return null;
       
@@ -235,7 +247,7 @@ test.describe('Agendamentos - Cadastro', () => {
     });
     
     if (!dadosData) {
-      dataselecta = false  
+      dataselecta = false;  
       console.log('⚠️ AVISO: Nenhuma data futura ou de hoje foi encontrada na tela de agendamento.');
       return false; 
     }
@@ -244,7 +256,7 @@ test.describe('Agendamentos - Cadastro', () => {
     console.log(`✅ Data escolhida: ${dadosData.texto}`);    
     
     return true; 
-  }
+}
 
   async function selecionarHorarioMaiorQueAgora(page: Page) {
     await page.waitForTimeout(1000);    
