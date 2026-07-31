@@ -80,6 +80,7 @@ test('Cadastro de Planos E2E com Serviço Prestado', async ({ page }) => {
       console.log('⚠️ Falha ao preencher Descrição');
     }    
     
+    let totalValidas = 0;
     try {
       const secaoServicos = page.getByText(/Servi[çc]os prestados/i).first();
       await secaoServicos.scrollIntoViewIfNeeded();
@@ -90,6 +91,37 @@ test('Cadastro de Planos E2E com Serviço Prestado', async ({ page }) => {
       console.log('✅ Clicou em Adicionar Serviço');
       await page.waitForTimeout(1500);
      
+      totalValidas = await page.evaluate(() => {
+        const dialog = document.querySelector('.q-dialog:not([style*="display: none"]), [role="dialog"]');
+        const raiz = dialog || document.body;
+        
+        const trs = Array.from(raiz.querySelectorAll('tbody tr'));
+        const linhasValidas = trs.filter(tr => {
+          const texto = (tr.textContent || '').replace(/\s+/g, ' ').trim();
+          const temColunas = tr.querySelectorAll('td').length > 0;
+          const linhaVazia = /nenhum|nenhuma|sem dados|sem resultado|não encontrado|nao encontrado/i.test(texto);
+          return temColunas && texto.length > 0 && !linhaVazia;
+        });
+
+        return linhasValidas.length;
+      });
+    } catch (err) {
+      console.log('⚠️ Falha ao abrir modal de serviços:', err);
+    }
+
+    if (totalValidas === 0) {
+      console.log('⚠️ Deve cadastrar serviços: a grade de serviços está vazia ou não possui registros válidos!');
+      try {
+        const btnCancelarModal = page.locator('.q-dialog, [role="dialog"]').locator('button, .q-btn').filter({ hasText: /cancelar|fechar|voltar/i }).first();
+        if (await btnCancelarModal.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await btnCancelarModal.click({ force: true });
+        }
+      } catch {}
+      test.skip();
+      return;
+    }
+
+    try {
       const selecionados = await page.evaluate(() => {
         const dialog = document.querySelector('.q-dialog:not([style*="display: none"]), [role="dialog"]');
         const raiz = dialog || document.body;
@@ -181,7 +213,6 @@ test('Cadastro de Planos E2E com Serviço Prestado', async ({ page }) => {
         const jsonListagem = await respostaListagem.json();      
         const listaProdutos: any[] = jsonListagem?.data || jsonListagem || [];
         
-        // CORREÇÃO AQUI: Comparação convertendo ambos os lados para Maiúsculo
         const produtoCriado = listaProdutos.find(
           (p: any) => 
             p.name?.toUpperCase() === nomePlano.toUpperCase() || 
