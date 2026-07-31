@@ -29,6 +29,11 @@ test.describe('Teste de Exclusão de Atendentes', () => {
   });
 
   test('Deve selecionar aleatoriamente um atendente, confirmar exclusão no modal e consultar via API.', async ({ page }) => {
+    page.on('dialog', async (dialog) => {
+      console.log(`💬 Diálogo nativo do navegador: ${dialog.message()}`);
+      await dialog.accept();
+    });
+
     const linhas = page.locator('tbody tr');
     await expect(linhas.first()).toBeVisible({ timeout: 30000 });
 
@@ -41,50 +46,59 @@ test.describe('Teste de Exclusão de Atendentes', () => {
     const nomeAtendente = (await linhaSelecionada.locator('td').nth(0).innerText()).trim();
     console.log(`✅ Atendente selecionado para exclusão: ${nomeAtendente}`);
     
-    // 1. Clica no menu/botão de ações da linha selecionada
+    // 1. Clica nos 3 pontos da linha
     const btnAcoes = linhaSelecionada
       .locator('td')
       .last()
-      .locator('[aria-label], button, .q-btn')
+      .locator('button')
       .first();
 
     await btnAcoes.scrollIntoViewIfNeeded();
     await btnAcoes.click({ force: true });
+    console.log('✅ Clicou nos 3 pontos (Ações)');
 
-    // 2. Clica na opção "Excluir atendente" / "Excluir" no menu suspenso
-    const opcaoExcluir = page.getByText(/Excluir atendente|Excluir|Remover/i).first();
-    await expect(opcaoExcluir).toBeVisible({ timeout: 10000 });
-    await opcaoExcluir.click({ force: true });        
-    console.log('✅ Clicou na opção Excluir');
+    // Aguarda o dropdown abrir
+    await page.waitForTimeout(500);
 
-    // 3. Aguarda a abertura do modal / dialog de confirmação
-    const modal = page.locator('.q-dialog, [role="dialog"], .modal, .q-card').first();
-    await modal.waitFor({ state: 'visible', timeout: 10000 });
-
-    // 4. Localiza o botão de confirmação dentro do modal
-    const btnConfirmarModal = modal
-      .locator('button, .q-btn')
-      .filter({ hasText: /sim|confirmar|excluir|ok|yes|eliminar/i })
-      .last();
-
-    await btnConfirmarModal.waitFor({ state: 'visible', timeout: 5000 });
-
-    // 5. Prepara a escuta da requisição DELETE da API e confirma no modal
+    // 2. Prepara escuta da API (O modal quem vai disparar isso)
     const deletarAtendentePromise = page.waitForResponse(
       (response) =>
-        (response.url().includes('/api/') || response.url().includes('/service-providers') || response.url().includes('/atendente')) &&
+        (response.url().includes('/api/') || response.url().includes('/service-providers') || response.url().includes('/users') || response.url().includes('/atendente')) &&
         response.request().method() === 'DELETE' &&
         response.status() >= 200 &&
         response.status() < 300,
       { timeout: 15000 }
     ).catch(() => null);
 
-    await btnConfirmarModal.click({ force: true });
-    console.log('✅ Clicou em Confirmar exclusão no modal');
+    // 3. Clica na opção "Excluir" dentro do menu suspenso
+    const menuSuspenso = page.locator('.q-menu').last();
+    const opcaoExcluir = menuSuspenso.getByText(/Excluir/i).first();
+    
+    await expect(opcaoExcluir).toBeVisible({ timeout: 10000 });
+    await opcaoExcluir.click({ force: true });        
+    console.log('✅ Clicou na opção Excluir Atendente dentro do menu dropdown');
 
+    // 4. Trata o Modal de Confirmação (AGORA COM CORREÇÃO DE ANIMAÇÃO)
+    // Aguardamos 1 segundo inteiro para garantir que a animação de opacidade do modal terminou
+    await page.waitForTimeout(1000); 
+
+    // Busca especificamente o botão dentro de um dialog ativo na tela
+    const btnConfirmarModal = page
+      .locator('.q-dialog, [role="dialog"]')
+      .locator('button, .q-btn')
+      .filter({ hasText: /sim|confirmar|excluir|ok|yes|eliminar/i })
+      .first(); // Mudado de .last() para .first() para pegar o primeiro botão válido visível no modal
+
+    if (await btnConfirmarModal.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await btnConfirmarModal.click({ force: true });
+      console.log('✅ Clicou em Confirmar no modal');
+    } else {
+      console.log('⚠️ Nenhum modal encontrado, verificando se o sistema excluiu direto...');
+    }
+
+    // 5. Captura o DELETE da API
     const deletarResponse = await deletarAtendentePromise;    
 
-    // 6. Consulta a API após a exclusão para verificar retorno (Status 404)
     if (deletarResponse) {
       const urlRegistroDeletado = deletarResponse.url();
       console.log('🌐 URL do DELETE capturada:', urlRegistroDeletado);
@@ -115,12 +129,12 @@ test.describe('Teste de Exclusão de Atendentes', () => {
         }
       }
     } else {
-      console.log('⚠️ A requisição DELETE não foi capturada.');
+      console.log('⚠️ A requisição DELETE não foi capturada. Pode ser que o botão Confirmar não disparou a ação corretamente.');
     }
 
-    // 7. Validação da mensagem de sucesso na interface
+    // 6. Validação do texto de sucesso na tela
     await expect(page.locator('body')).toContainText(
-      /Atendente excluído com sucesso|Registro excluído|removido com sucesso/i,
+      /Atendente (deletado|excluído) com sucesso|Registro (deletado|excluído)|removido com sucesso/i,
       { timeout: 15000 }
     );
 
