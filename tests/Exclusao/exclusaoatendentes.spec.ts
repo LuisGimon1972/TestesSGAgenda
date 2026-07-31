@@ -34,19 +34,28 @@ test.describe('Teste de Exclusão de Atendentes', () => {
       await dialog.accept();
     });
 
-    const linhas = page.locator('tbody tr');
+    const linhas = page.locator('tbody tr');        
     await expect(linhas.first()).toBeVisible({ timeout: 30000 });
-
-    const totalLinhas = await linhas.count();
-    expect(totalLinhas, 'A lista deve possuir ao menos 1 atendente').toBeGreaterThan(0);
+    const totalLinhas = await linhas.count();        
+    if(totalLinhas === 1) {
+      console.log(`⚠️ Não é possivel excluir o atendente padrão (único na lista)!`);
+      test.skip(); 
+      return;
+    }
+    expect(totalLinhas, 'A lista deve possuir ao menos 2 atendentes').toBeGreaterThan(1);        
+    const indiceAleatorio = Math.floor(Math.random() * (totalLinhas - 1)) + 1;
+    const linhaSelecionada = linhas.nth(indiceAleatorio);    
     
-    const indiceAleatorio = Math.floor(Math.random() * totalLinhas);
-    const linhaSelecionada = linhas.nth(indiceAleatorio);
-
+    console.log(`✅CAPTURA DO REGISTRO DA GRADE ANTES DE SER REMOVIDO:`)
     const nomeAtendente = (await linhaSelecionada.locator('td').nth(0).innerText()).trim();
-    console.log(`✅ Atendente selecionado para exclusão: ${nomeAtendente}`);
+    console.log(`✅ Atendente selecionado para exclusão: ${nomeAtendente}`);        
+    const email = (await linhaSelecionada.locator('td').nth(1).innerText()).trim(); // Coluna 7 (PARAGUAY)
+    console.log(`✅ E-mail: ${email}`);        
+    const funcao = (await linhaSelecionada.locator('td').nth(2).innerText()).trim(); // Coluna 4 (PROVEEDOR)
+    console.log(`✅ Função: ${funcao}`);        
+    const datacad = (await linhaSelecionada.locator('td').nth(3).innerText()).trim(); // Coluna 7 (PARAGUAY)
+    console.log(`✅ Data de cadastro: ${datacad}`);      
     
-    // 1. Clica nos 3 pontos da linha
     const btnAcoes = linhaSelecionada
       .locator('td')
       .last()
@@ -56,11 +65,9 @@ test.describe('Teste de Exclusão de Atendentes', () => {
     await btnAcoes.scrollIntoViewIfNeeded();
     await btnAcoes.click({ force: true });
     console.log('✅ Clicou nos 3 pontos (Ações)');
-
-    // Aguarda o dropdown abrir
+    
     await page.waitForTimeout(500);
-
-    // 2. Prepara escuta da API (O modal quem vai disparar isso)
+    
     const deletarAtendentePromise = page.waitForResponse(
       (response) =>
         (response.url().includes('/api/') || response.url().includes('/service-providers') || response.url().includes('/users') || response.url().includes('/atendente')) &&
@@ -69,25 +76,21 @@ test.describe('Teste de Exclusão de Atendentes', () => {
         response.status() < 300,
       { timeout: 15000 }
     ).catch(() => null);
-
-    // 3. Clica na opção "Excluir" dentro do menu suspenso
+    
     const menuSuspenso = page.locator('.q-menu').last();
     const opcaoExcluir = menuSuspenso.getByText(/Excluir/i).first();
     
     await expect(opcaoExcluir).toBeVisible({ timeout: 10000 });
     await opcaoExcluir.click({ force: true });        
     console.log('✅ Clicou na opção Excluir Atendente dentro do menu dropdown');
-
-    // 4. Trata o Modal de Confirmação (AGORA COM CORREÇÃO DE ANIMAÇÃO)
-    // Aguardamos 1 segundo inteiro para garantir que a animação de opacidade do modal terminou
+    
     await page.waitForTimeout(1000); 
-
-    // Busca especificamente o botão dentro de um dialog ativo na tela
+    
     const btnConfirmarModal = page
       .locator('.q-dialog, [role="dialog"]')
       .locator('button, .q-btn')
       .filter({ hasText: /sim|confirmar|excluir|ok|yes|eliminar/i })
-      .first(); // Mudado de .last() para .first() para pegar o primeiro botão válido visível no modal
+      .first(); 
 
     if (await btnConfirmarModal.isVisible({ timeout: 3000 }).catch(() => false)) {
       await btnConfirmarModal.click({ force: true });
@@ -95,8 +98,7 @@ test.describe('Teste de Exclusão de Atendentes', () => {
     } else {
       console.log('⚠️ Nenhum modal encontrado, verificando se o sistema excluiu direto...');
     }
-
-    // 5. Captura o DELETE da API
+    
     const deletarResponse = await deletarAtendentePromise;    
 
     if (deletarResponse) {
@@ -131,8 +133,7 @@ test.describe('Teste de Exclusão de Atendentes', () => {
     } else {
       console.log('⚠️ A requisição DELETE não foi capturada. Pode ser que o botão Confirmar não disparou a ação corretamente.');
     }
-
-    // 6. Validação do texto de sucesso na tela
+   
     await expect(page.locator('body')).toContainText(
       /Atendente (deletado|excluído) com sucesso|Registro (deletado|excluído)|removido com sucesso/i,
       { timeout: 15000 }
