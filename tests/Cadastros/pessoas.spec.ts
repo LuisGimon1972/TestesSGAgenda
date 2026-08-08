@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
 import { obterNomePessoaAleatorio } from '../../utils/nomescompletos';
+import { navegarPara } from '../../utils/navegar';
 
 function gerarCPFValido(): string {
   const rand = () => Math.floor(Math.random() * 9);
@@ -29,9 +30,9 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
     await loginCompleto(page);    
 
     await page.waitForTimeout(2000);       
-
-    await page.locator('.q-item').filter({ hasText: 'Clientes' }).first().click({ force: true });
-    console.log(`✅ Clicou em Clientes`);          
+    
+    await navegarPara(page, 'Clientes', 'Clientes');
+  
     console.log(`✅ Apareceu Listagem de Clientes`);      
 
     await page.waitForTimeout(2000);       
@@ -206,7 +207,7 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
 
     console.log('📝 FIM DE DADOS ENVIADOS');           
     
-    const btnGravar = page.getByText(/Gravar/i).first();
+    const btnGravar = page.getByText(/Cadastrar cliente/i).first();
     await btnGravar.waitFor();
     await btnGravar.click({ force: true });
     console.log('✅ Clicou em Gravar');          

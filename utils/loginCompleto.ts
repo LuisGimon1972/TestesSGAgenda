@@ -34,14 +34,14 @@ export async function loginCompleto(page: Page) {
   await page.getByRole('button', { name: /entrar/i }).click();
   console.log('✅ Clicou em Entrar'); 
 
-  const botao1 = page.locator('button:has-text("Acessar")').nth(0);
+/* const botao1 = page.locator('button:has-text("Acessar")').nth(0);
   //const botao = page.locator('button:has-text("ENTRAR")').first();
   await botao1.highlight();
   await botao1.evaluate((el: any) => {
     el.style.border = '5px solid red';
     el.click();
   });
-  console.log('✅ Clicou em Acessar Empresa');
+  console.log('✅ Clicou em Acessar Empresa');*/
 
   await page.waitForTimeout(3000);
   console.log('🌐 URL:', await page.url()); 
