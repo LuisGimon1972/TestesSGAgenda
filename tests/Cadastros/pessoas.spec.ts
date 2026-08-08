@@ -205,7 +205,8 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
       console.log('⚠️ Etapa de inclusão de endereço executada com observações');
     }
 
-    console.log('📝 FIM DE DADOS ENVIADOS');           
+    console.log('📝 FIM DE DADOS ENVIADOS');   
+            
     
     const btnGravar = page.getByText(/Cadastrar cliente/i).first();
     await btnGravar.waitFor();
