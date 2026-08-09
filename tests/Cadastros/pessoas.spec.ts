@@ -108,22 +108,22 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
     try {
       const campoData = page.locator('input:visible').nth(4);
       await campoData.click({ force: true });
-      await campoData.fill('1990-05-20', { force: true });
+      await campoData.fill('20-05-1995', { force: true });
       console.log('✅ Data de Nascimento: 1990-05-20');
     } catch (e) {
       console.log('⚠️ Falha ao preencher Data de Nascimento');
     }
 
+    const btnAdicionar = page.getByText(/Adicionar/i).first();
+      await btnAdicionar.waitFor();
+      await btnAdicionar.click({ force: true });
+      console.log('✅ Clicou em Adicionar Endereço');
+
     try {
       const timestampEndereco = Date.now();
       const nomeEndereco = `Endereço ${timestampEndereco}`;
       const cepValido = '89710150';
-      const numero = `${Math.floor(100 + Math.random() * 900)}`;
-
-      const btnAdicionar = page.getByText(/Adicionar/i).first();
-      await btnAdicionar.waitFor();
-      await btnAdicionar.click({ force: true });
-      console.log('✅ Clicou em Adicionar Endereço');
+      const numero = `${Math.floor(100 + Math.random() * 900)}`;      
 
       const dialog = page.locator('.q-dialog');
       await dialog.waitFor();
