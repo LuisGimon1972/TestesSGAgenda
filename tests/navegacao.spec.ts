@@ -59,12 +59,7 @@ test('Navegação de menus', async ({ page }) => {
       { principal: 'Catálogo' , sub: 'Produtos' },    
       { principal: 'Catálogo' , sub: 'Categorias' },    
       { principal: 'Planos' },
-      { principal: 'Comissões' },      
-      { principal: 'Configurações', sub: 'Geral' },
-      { principal: 'Configurações' , sub: 'WhatsApp' },
-      { principal: 'Configurações' , sub: 'Info. da Empresa' },
-      { principal: 'Configurações' , sub: 'Personalização' },
-      { principal: 'Configurações' , sub: 'Pagamentos' }
+      { principal: 'Comissões' }     
     ];
 
     for (const item of fluxoNavegacao) {

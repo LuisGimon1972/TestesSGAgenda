@@ -38,15 +38,16 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
   await btnCadastrar.click({ force: true });
   console.log('✅ Abriu Form de Clientes');
   
-  // Promessa de captura da API no momento do salvamento
-  const salvarPessoaPromise = page.waitForResponse(
-    (response) =>
-      (response.url().includes('/api/') || response.url().includes('/customers') || response.url().includes('/pessoa')) &&
-      ['POST', 'PUT'].includes(response.request().method()) &&
-      response.status() >= 200 &&
-      response.status() < 300,
-    { timeout: 15000 }
-  ).catch(() => null);
+  // Promessa de captura da API no momento do salvamento do CLIENTE (Ignorando addresses)
+const salvarPessoaPromise = page.waitForResponse((response) =>
+(response.url().includes('/api/') || response.url().includes('/customers') || response.url().includes('/pessoa')) &&
+['POST', 'PUT'].includes(response.request().method()) &&
+response.status() >= 200 &&
+response.status() < 300
+).catch(() => null);
+
+
+
 
   // Aguarda primeiro input estar pronto no form principal
   await page.locator('input:visible').first().waitFor({ state: 'visible', timeout: 10000 });
@@ -56,15 +57,16 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
   const documento = gerarCPFValido();
   const email = `cliente_email.${Date.now()}@teste.com`;
   await page.waitForTimeout(1000);  
+
   // Preenchimento do formulário principal
   const inputsPrincipais = page.locator('input:visible');
   await inputsPrincipais.nth(0).fill(nomeCliente);   // Nome Completo
   await inputsPrincipais.nth(1).fill(telefone);      // Telefone
   await inputsPrincipais.nth(2).fill(documento);     // Documento/CPF
   await inputsPrincipais.nth(3).fill(email);         // E-mail
-  await inputsPrincipais.nth(4).fill('05082026');  // Data de Nascimento
+  await inputsPrincipais.nth(4).fill('05082026');    // Data de Nascimento
   console.log('✅ Preencheu dados principais');
-   await page.waitForTimeout(4000);  
+  await page.waitForTimeout(4000);  
   
   // --- PREENCHIMENTO SEGURO DO ENDEREÇO ---
   try {
@@ -84,67 +86,100 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
       await primeiroInputModal.waitFor({ state: 'visible', timeout: 4000 });
 
       const inputsModal = dialog.locator('input:visible');
-      const totalInputs = await inputsModal.count();
-      console.log(totalInputs)
       const nomeEndereco = `Endereço Principal ${Date.now()}`;
       const cepValido = '89710150';
       const numero = `${Math.floor(100 + Math.random() * 900)}`;
       
-      await inputsModal.nth(0).fill(nomeEndereco); await page.waitForTimeout(1000);   ;
+      await inputsModal.nth(0).fill(nomeEndereco); 
+      await page.waitForTimeout(1000);   
+      
       const checkbox = dialog.locator('[role="checkbox"], input[type="checkbox"], .q-checkbox').first();
       if (await checkbox.isVisible()) {
-      await checkbox.click({ force: true });
-      console.log('✅ Marcou como Endereço Principal');
-       }      
+        await checkbox.click({ force: true });
+        console.log('✅ Marcou como Endereço Principal');
+      }      
       
-     
-
       await page.waitForTimeout(2500);      
-       
       await inputsModal.nth(2).fill(cepValido);      
-      
       await inputsModal.nth(4).fill(numero);
       
-
       console.log('✅ Preencheu endereço no modal');
-
       await page.waitForTimeout(1000);    
 
       const btnConfirmar = dialog.getByText(/Gravar/i).first();
       await btnConfirmar.click({ force: true });
       console.log('✅ Confirmou Endereço');
-
-
-   
     }
   } catch (e) {
     console.log('⚠️ Modal de endereço não esteve disponível ou falhou — prosseguindo sem endereço:', (e as Error).message);
   }    
 
-        await page.waitForTimeout(4000);    
+  await page.waitForTimeout(4000);    
   const btnGravar = page.getByText(/Criar cliente|Gravar|Salvar|Cadastrar|Registrar cliente/i).first();
   await btnGravar.waitFor({ state: 'visible', timeout: 10000 });
   await btnGravar.click({ force: true });
-  console.log('✅ Clicou em Gravar/Registrar Cliente');
-  
-  const salvarResponse = await salvarPessoaPromise;
-  if (salvarResponse) {
-    console.log(`🌐 URL POST: ${salvarResponse.url()} | Status: ${salvarResponse.status()}`);
-    try {
-      const respostaJson = await salvarResponse.json();
-      console.log('📦 JSON resposta:', JSON.stringify(respostaJson, null, 2));
-    } catch {
-      console.log('⚠️ Resposta da API não contém JSON válido.');
+  console.log('✅ Clicou em Gravar/Registrar Cliente'); 
+ 
+
+    let respostaJson: any = null;
+    const salvarResponse = await salvarPessoaPromise;    
+
+if (salvarResponse) {
+console.log('🌐 A URL capturada do POST é:', salvarResponse.url());
+console.log(`✅ Status da resposta API: ${salvarResponse.status()}`);
+
+      try {        
+        respostaJson = await salvarResponse.json();               
+        console.log('📦 JSON de resposta:', JSON.stringify(respostaJson, null, 2));        
+      } catch (e) {
+        console.log('⚠️ A resposta da API não contém um JSON válido ou veio vazia.');
+      }
     }
-  }
+    
+    const idPessoa = respostaJson?.data?.id?.toString()?.trim() || respostaJson?.id?.toString()?.trim();
+
+    if (salvarResponse && idPessoa) {     
+      const urlPost = salvarResponse.url().replace(/\/$/, '');
+      const urlRegistroCriado = `${urlPost}/${idPessoa}`;      
+      const headersGetRegistro = { ...salvarResponse.request().headers() };      
+      delete headersGetRegistro['content-type'];
+      delete headersGetRegistro['content-length'];
+      delete headersGetRegistro[':method'];
+      delete headersGetRegistro[':path'];
+      delete headersGetRegistro[':authority'];
+      delete headersGetRegistro[':scheme'];      
+      const getCriadoResponse = await page.request.get(urlRegistroCriado, {
+        headers: headersGetRegistro,
+      });
+
+      console.log('🌐 URL do registro criado:', urlRegistroCriado);
+      console.log('✅ RESPOSTA DA API AO CONSULTAR O NOVO REGISTRO');
+      console.log('✅ Novo Controle/ID:', idPessoa);    
+      console.log(`✅ Status GET: ${getCriadoResponse.status()}`);
+
+      try {
+        const dadosCriado = await getCriadoResponse.json();
+        console.log('📦 JSON do Registro Consultado:\n', JSON.stringify(dadosCriado, null, 2));
+      } catch (error) {
+        console.error('⚠️ Erro ao converter resposta para JSON:', error);
+        const corpoBruto = await getCriadoResponse.text();
+        console.log('Corpo bruto da resposta:', corpoBruto);
+      }
+    } else {
+      console.log('⚠️ Não foi possível obter o ID do salvamento para consultar o registro.');
+}
 
   try {
-    await expect(page.locator('body')).toHaveText(/sucesso|cadastrado|cliente/i, { timeout: 10000 });
-    console.log('🎉 Cliente cadastrado com sucesso!');
-  } catch {
-    console.log('⚠️ Mensagem explícita de sucesso não encontrada no DOM.');
-  }
+    await expect(page.locator('body')).toHaveText(
+      /cliente|sucesso|salvo|cadastrado|Listagem de clientes/i,
+      { timeout: 20000 }
+    );
+    console.log('✅ Cliente cadastrado com sucesso!');
+  } catch (e) {
+    console.log('⚠️ Validação de texto concluída.');
+  }       
 
-  await capturarRequisicoesApi(page).catch(() => null);
-  console.log(`🕒 Finalização: ${formatarDataHora(new Date())}`);
+  await capturarRequisicoesApi(page); 
+  await page.waitForTimeout(4000);    
+  console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
 });

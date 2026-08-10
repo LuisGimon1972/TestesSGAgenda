@@ -18,7 +18,7 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
     console.log(`✅ Clicou em Serviços`);          
     console.log(`✅ Apareceu Listagem de serviços`);         
     
-    const btnCadastrar = page.getByText(/Cadastrar serviço/i).first();
+    const btnCadastrar = page.getByText(/Novo serviço/i).first();
     await btnCadastrar.waitFor();
     await btnCadastrar.click({ force: true });      
     console.log(`✅ Clicou em Cadastrar produto`);  
@@ -170,8 +170,8 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
       await page.waitForTimeout(500);
     } catch (e) {}
 
-    const btnGravar = page.getByText(/Gravar/i).first();
-    await btnGravar.waitFor();
+    const btnGravar = page.getByText(/Criar serviço|Gravar|Salvar|Cadastrar|Registrar cliente/i).first();
+    await btnGravar.waitFor({ state: 'visible', timeout: 10000 });
     await btnGravar.click({ force: true });
     console.log('✅ Clicou em Gravar');             
     
@@ -191,7 +191,7 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
     }
     
     const idServico = respostaJson?.data?.id?.toString()?.trim() || respostaJson?.id?.toString()?.trim();
-
+        console.log(idServico) 
     if (salvarResponse && idServico) {     
       const urlPost = salvarResponse.url().replace(/\/$/, '');
       const urlRegistroCriado = `${urlPost}/${idServico}`;      
