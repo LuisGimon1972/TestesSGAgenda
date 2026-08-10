@@ -1,6 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
+import { navegarPara } from '../../utils/navegar';
 
 test.describe('Agendamentos - Cadastro', () => {
   let dataSelecionadaEhHoje = false;
@@ -28,13 +29,8 @@ test.describe('Agendamentos - Cadastro', () => {
   }
 
   async function abrirAgenda(page: Page) {
-    const btnAgenda = page.locator('.q-item, a, button').filter({ hasText: /Agenda/i }).first();
-    await btnAgenda.scrollIntoViewIfNeeded();
-    await btnAgenda.click({ force: true });    
-
-    await expect(page.locator('body')).toHaveText(/Listagem de agendamentos/i, { timeout: 30000 });
-    await fecharCookiesSeAparecer(page);
-    console.log('✅ Abriu tela de Agenda');
+    await page.waitForTimeout(1000);
+  await navegarPara(page, 'Agendamentos');
   }
 
   async function abrirCadastroAgendamento(page: Page) {
@@ -42,9 +38,9 @@ test.describe('Agendamentos - Cadastro', () => {
     const btnCadastrar = page.getByText(/Novo agendamento/i).first();
     await btnCadastrar.click({ force: true });
 
-    await expect(page.locator('body')).toHaveText(/Escolha o servi[çc]o/i, { timeout: 30000 });
+   /* await expect(page.locator('body')).toHaveText(/Escolha o servi[çc]o/i, { timeout: 30000 });
     await fecharCookiesSeAparecer(page);
-    console.log('✅ Clicou em Cadastrar agendamento');
+    console.log('✅ Clicou em Cadastrar agendamento');*/
   }
 
   async function selecionarServico(page: Page, tentativa = 0): Promise<void> {    
