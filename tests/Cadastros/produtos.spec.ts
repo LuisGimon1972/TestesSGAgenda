@@ -2,21 +2,21 @@ import { test, expect } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
 import { obterProdutoAleatorio } from '../../utils/listaprodutos';
+import { navegarPara } from '../../utils/navegar';
 
 test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
     test.setTimeout(90000);
 
-    await loginCompleto(page);    
+    await loginCompleto(page);        
 
-    await page.waitForTimeout(2000);       
-
-    await page.locator('.q-item, a, button').filter({ hasText: /Produtos/i }).first().click({ force: true });
+    await page.waitForTimeout(2000);
+    await navegarPara(page, 'Catálogo', 'Produtos');    
     console.log(`✅ Clicou em Produtos`);          
     console.log(`✅ Apareceu Listagem de produtos`);      
 
     await page.waitForTimeout(2000);             
     
-    const btnCadastrar = page.getByText(/Cadastrar produto/i).first();
+    const btnCadastrar = page.getByText(/Novo produto/i).first();
     await btnCadastrar.waitFor();
     await btnCadastrar.click({ force: true });      
     console.log(`✅ Clicou em Cadastrar produto`);  

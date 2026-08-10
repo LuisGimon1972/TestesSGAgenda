@@ -39,7 +39,7 @@ test.describe('Agendamentos - Cadastro', () => {
 
   async function abrirCadastroAgendamento(page: Page) {
     await page.waitForTimeout(1000);
-    const btnCadastrar = page.getByText(/Cadastrar agendamento/i).first();
+    const btnCadastrar = page.getByText(/Novo agendamento/i).first();
     await btnCadastrar.click({ force: true });
 
     await expect(page.locator('body')).toHaveText(/Escolha o servi[çc]o/i, { timeout: 30000 });

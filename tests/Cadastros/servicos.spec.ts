@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
 import { obterServicoAleatorio } from '../../utils/listaservicos';
+import { navegarPara } from '../../utils/navegar';
 
 test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) => {
     test.setTimeout(70000);
@@ -12,17 +13,16 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
 
     const servico = obterServicoAleatorio();  
 
-    await page.locator('.q-item, a, button').filter({ hasText: /Servi[çc]os/i }).first().click({ force: true });
+    await page.waitForTimeout(2000);
+    await navegarPara(page, 'Catálogo', '');    
     console.log(`✅ Clicou em Serviços`);          
-    console.log(`✅ Apareceu Listagem de serviços`);      
-
-    await page.waitForTimeout(2000);             
+    console.log(`✅ Apareceu Listagem de serviços`);         
     
-    const btnCadastrar = page.getByText(/Cadastrar servi[çc]o/i).first();
+    const btnCadastrar = page.getByText(/Cadastrar serviço/i).first();
     await btnCadastrar.waitFor();
     await btnCadastrar.click({ force: true });      
-    console.log(`✅ Clicou em Cadastrar serviço`);  
-    console.log(`✅ Abriu Form de Serviços`);          
+    console.log(`✅ Clicou em Cadastrar produto`);  
+    console.log(`✅ Abriu Form de Produtos`);        
     
     const salvarServicoPromise = page.waitForResponse((response) =>
       (response.url().includes('/api/') || response.url().includes('/services') || response.url().includes('/servico')) &&
@@ -43,13 +43,13 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
 
     console.log('📝 DADOS ENVIADOS PRA API');        
     const nomeServico = servico.nomeServico.toUpperCase();
-    const duracao = servico.duracaoMinutos.toFixed();    
-    const valor = (servico.precoSugerido * 100).toFixed();
-    const comissao = '3000';
+    const comissao = '1390';    
+    const valor = (servico.precoSugerido * 100).toFixed();    
+    const duracao = '1320';    
     const descricao = `Serviço realizado por profissional qualificado, utilizando técnicas adequadas para atender às preferências e necessidades de cada cliente. O atendimento inclui avaliação do estilo desejado, execução do corte e acabamento, proporcionando um visual renovado, bem cuidado e alinhado.`;
     
     try {
-      const campoNome = page.locator('input:visible').nth(0);
+      const campoNome = page.locator('input:visible').nth(2);
       await campoNome.scrollIntoViewIfNeeded();
       await campoNome.click({ force: true });
       await campoNome.fill(nomeServico, { force: true });
@@ -57,18 +57,19 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
     } catch (e) {
       console.log('⚠️ Falha ao preencher Nome do Serviço');
     }
+    await page.waitForTimeout(1000);    
     
     try {
-      const campoDuracao = page.locator('input:visible').nth(1);
+      const campoDuracao = page.locator('input:visible').nth(3);
       await campoDuracao.click({ force: true });
       await campoDuracao.fill(duracao, { force: true });
       console.log('✅ Duração:', duracao);
     } catch (e) {
       console.log('⚠️ Falha ao preencher Duração');
     }
-    
+    await page.waitForTimeout(1000);    
     try {
-     const campoValor = page.locator('input:visible').nth(2);
+     const campoValor = page.locator('input:visible').nth(4);
       await campoValor.scrollIntoViewIfNeeded();
       await campoValor.click({ force: true });
       await campoValor.press('Control+A');
@@ -83,7 +84,7 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
     }
     
     try {
-      const campoComissao = page.locator('input:visible').nth(3);
+      const campoComissao = page.locator('input:visible').nth(5);
       await campoComissao.scrollIntoViewIfNeeded();
       await campoComissao.click({ force: true });
       await campoComissao.press('Control+A');
