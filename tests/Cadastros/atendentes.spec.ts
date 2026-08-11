@@ -8,9 +8,8 @@ test('Cadastro de Atendentes com Comissões', async ({ page }) => {
     test.setTimeout(90000);
     
     await loginCompleto(page);    
-    await page.waitForTimeout(2000);       
+    await page.waitForTimeout(2000);           
     
-    await page.waitForTimeout(1000);
     await navegarPara(page, 'Profissionais');
     console.log(`✅ Clicou em Profissionais`);          
     await page.waitForTimeout(2000);                 

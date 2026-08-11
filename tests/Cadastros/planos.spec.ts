@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
 import { obterNomePlanoAleatorio } from '../../utils/listagemplanos';
+import { navegarPara } from '../../utils/navegar';
 
 test('Cadastro de Planos E2E com Serviço Prestado', async ({ page }) => {
     test.setTimeout(900000);
@@ -11,16 +12,16 @@ test('Cadastro de Planos E2E com Serviço Prestado', async ({ page }) => {
     
     await page.emulateMedia({ media: 'screen' });
     await page.evaluate(() => { document.body.style.zoom = '0.9'; });
-    console.log('🔍 Zoom ajustado para 90% via CSS');
-    
-    await page.locator('.q-item, a, button').filter({ hasText: /Planos/i }).first().click({ force: true });
+    console.log('🔍 Zoom ajustado para 90% via CSS');   
+        
+    await navegarPara(page, 'Planos');
     console.log(`✅ Clicou em Planos`);          
     await page.waitForTimeout(2000);                 
     
-    const btnCadastrar = page.getByText(/Cadastrar plano/i).first();
+    const btnCadastrar = page.getByText(/Novo plano/i).first();
     await btnCadastrar.waitFor();
     await btnCadastrar.click({ force: true });      
-    console.log(`✅ Clicou em Cadastrar Plano`);  
+    console.log(`✅ Clicou em Novo Plano`);  
     console.log(`✅ Abriu Form de Planos`);              
     
     const salvarPlanoPromise = page.waitForResponse((response) =>
@@ -82,11 +83,11 @@ test('Cadastro de Planos E2E com Serviço Prestado', async ({ page }) => {
     
     let totalValidas = 0;
     try {
-      const secaoServicos = page.getByText(/Servi[çc]os prestados/i).first();
+      const secaoServicos = page.getByText(/Itens do plano/i).first();
       await secaoServicos.scrollIntoViewIfNeeded();
       await page.waitForTimeout(500);
 
-      const btnAdicionar = page.locator('button, .q-btn, [role="button"]').filter({ hasText: /Adicionar/i }).first();
+      const btnAdicionar = page.locator('button, .q-btn, [role="button"]').filter({ hasText: /Adicionar serviços/i }).first();
       await btnAdicionar.click({ force: true });
       console.log('✅ Clicou em Adicionar Serviço');
       await page.waitForTimeout(1500);
@@ -173,7 +174,7 @@ test('Cadastro de Planos E2E com Serviço Prestado', async ({ page }) => {
       await page.waitForTimeout(1000);
     } catch (e) {}
     
-    const btnGravar = page.getByText(/Gravar/i).first();
+    const btnGravar = page.getByText(/Criar plano/i).first();
     await btnGravar.waitFor();
     await btnGravar.click({ force: true });
     console.log('✅ Clicou em Gravar');              

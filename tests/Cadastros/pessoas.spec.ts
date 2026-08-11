@@ -29,7 +29,7 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
   
   await loginCompleto(page);
   await page.waitForTimeout(1000);
-  await navegarPara(page, 'Clientes', 'Clientes');
+  await navegarPara(page, 'Clientes');
   console.log('✅ Navegou para Clientes');
 
   // Botão para abrir o formulário
