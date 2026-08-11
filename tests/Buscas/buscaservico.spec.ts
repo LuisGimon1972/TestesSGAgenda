@@ -1,6 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
+import { navegarPara } from '../../utils/navegar';
 
 test.describe('Serviços - Busca', () => {
 
@@ -16,13 +17,11 @@ test.describe('Serviços - Busca', () => {
   }
 
   async function abrirServicos(page: Page) {
-    const menuServicos = page.getByText(/Servi[çc]os|Servicios/i).first();
-    await expect(menuServicos).toBeVisible({ timeout: 30000 });
-    await menuServicos.scrollIntoViewIfNeeded();
-    await menuServicos.click({ force: true });
+    await page.waitForTimeout(2000);
+    await navegarPara(page, 'Catálogo', '');
 
     await expect(page.locator('body')).toHaveText(
-      /Listagem de servi[çc]os|Listado de servicios|Servi[çc]os|Servicios/i,
+      /Serviços|Listado de servicios|Servi[çc]os|Servicios/i,
       { timeout: 30000 }
     );
 

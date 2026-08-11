@@ -1,6 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
+import { navegarPara } from '../../utils/navegar';
 
 test.describe('Categorias - Busca', () => {
 
@@ -16,13 +17,11 @@ test.describe('Categorias - Busca', () => {
   }
 
   async function abrirCategorias(page: Page) {
-    const menuCategorias = page.getByText(/Categorias|Categorías/i).first();
-    await expect(menuCategorias).toBeVisible({ timeout: 30000 });
-    await menuCategorias.scrollIntoViewIfNeeded();
-    await menuCategorias.click({ force: true });
+    await page.waitForTimeout(2000);
+    await navegarPara(page, 'Catálogo', 'Categorias');    
 
     await expect(page.locator('body')).toHaveText(
-      /Listagem de categorias|Listado de categorías|Categorias|Categorías/i,
+      /Listagem de categorias|Categorías|Categorias|Categorías/i,
       { timeout: 30000 }
     );
 

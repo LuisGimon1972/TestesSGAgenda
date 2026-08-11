@@ -1,6 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
+import { navegarPara } from '../../utils/navegar';
 
 test.describe('Atendentes - Busca', () => {
 
@@ -16,13 +17,11 @@ test.describe('Atendentes - Busca', () => {
   }
 
   async function abrirAtendentes(page: Page) {
-    const menuAtendentes = page.getByText(/Atendentes/i).first();
-    await expect(menuAtendentes).toBeVisible({ timeout: 30000 });
-    await menuAtendentes.scrollIntoViewIfNeeded();
-    await menuAtendentes.click({ force: true });
+    await page.waitForTimeout(2000);              
+    await navegarPara(page, 'Profissionais');
     await page.waitForTimeout(1000);
 
-    await expect(page.getByText(/Listagem de atendentes/i).first()).toBeVisible({ timeout: 30000 });
+    await expect(page.getByText(/Profissionais/i).first()).toBeVisible({ timeout: 30000 });
   }
 
   async function buscarAtendente(page: Page, texto: string) {

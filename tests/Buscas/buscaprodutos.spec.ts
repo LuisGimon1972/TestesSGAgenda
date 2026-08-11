@@ -1,8 +1,9 @@
 import { test, expect, Page } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
+import { navegarPara } from '../../utils/navegar';
 
-test.describe('Categorias - Busca', () => {
+test.describe('Produtos - Busca', () => {
 
   async function fecharCookiesSeAparecer(page: Page) {
     const bodyText = await page.locator('body').innerText().catch(() => '');
@@ -15,21 +16,20 @@ test.describe('Categorias - Busca', () => {
     }
   }
 
-  async function abrirCategorias(page: Page) {
-    const menuCategorias = page.getByText(/Categorias|Categorías/i).first();
-    await expect(menuCategorias).toBeVisible({ timeout: 30000 });
-    await menuCategorias.scrollIntoViewIfNeeded();
-    await menuCategorias.click({ force: true });
+  async function abrirProdutos(page: Page) {
+    await page.waitForTimeout(2000);
+    // Alterado para navegar para a tela de Produtos
+    await navegarPara(page, 'Catálogo', 'Produtos');
 
     await expect(page.locator('body')).toHaveText(
-      /Listagem de categorias|Listado de categorías|Categorias|Categorías/i,
+      /Produtos|Productos|Products|Listado de productos/i,
       { timeout: 30000 }
     );
 
     await page.waitForTimeout(1500);
   }
 
-  async function buscarCategoria(page: Page, texto: string) {
+  async function buscarProduto(page: Page, texto: string) {
     const inputBusca = page.locator('input:visible').first();
     await expect(inputBusca).toBeVisible({ timeout: 30000 });
     await inputBusca.click({ force: true });
@@ -66,11 +66,11 @@ test.describe('Categorias - Busca', () => {
     await page.waitForTimeout(1500);
   }
 
-  async function obterCategoriaExistenteDaGrade(page: Page): Promise<string | null> {
+  async function obterProdutoExistenteDaGrade(page: Page): Promise<string | null> {
     const bodyText = (await page.locator('body').innerText().catch(() => '')).replace(/\s+/g, ' ').trim();
 
     const telaSemRegistros =
-      /nenhuma categoria encontrada|nenhum registro encontrado|nenhum resultado|no hay registros|sin registros|no se encontraron|no encontrado/i.test(
+      /nenhum produto encontrado|nenhum registro encontrado|nenhum resultado|no hay registros|sin registros|no se encontraron|no encontrado/i.test(
         bodyText
       );
 
@@ -93,7 +93,7 @@ test.describe('Categorias - Busca', () => {
     }
 
     if (telaSemRegistros || linhasValidasIndex.length === 0) {
-      console.log('⚠️ Nenhuma categoria encontrada na grade. Teste interrompido sem erro.');
+      console.log('⚠️ Nenhum produto encontrado na grade. Teste interrompido sem erro.');
       return null;
     }
 
@@ -111,62 +111,62 @@ test.describe('Categorias - Busca', () => {
       }
     }
 
-    const nomeCategoria =
+    const nomeProduto =
       textosColunas.find((texto) => {
         return (
           texto.length >= 2 &&
-          !/^\d+$/.test(texto) &&
+          !/^\d+$/.test(texto) && // Ignora colunas que são só números (ex: ID, Quantidade)
           !/^\+?\d/.test(texto) &&
-          !/R\$|BRL|₲|\$|PYG/i.test(texto)
+          !/R\$|BRL|₲|\$|PYG/i.test(texto) // Ignora colunas de preço
         );
       }) || textosColunas[0];
 
-    if (!nomeCategoria) {
-      console.log('⚠️ Nenhum nome de categoria válido encontrado. Teste interrompido sem erro.');
+    if (!nomeProduto) {
+      console.log('⚠️ Nenhum nome de produto válido encontrado. Teste interrompido sem erro.');
       return null;
     }
 
-    console.log(`✅ Categoria escolhida: ${nomeCategoria}`);
-    return nomeCategoria;
+    console.log(`✅ Produto escolhido: ${nomeProduto}`);
+    return nomeProduto;
   }
 
   test.beforeEach(async ({ page }) => {
     await loginCompleto(page);
     await fecharCookiesSeAparecer(page);
-    await abrirCategorias(page);
+    await abrirProdutos(page);
   });
 
-  test('Deve buscar primeiro uma categoria existente e depois uma inexistente.', async ({ page }) => {
-    await capturarRequisicoesApi(page);
+  test('Deve buscar primeiro um produto existente e depois um inexistente.', async ({ page }) => {
+    await capturarRequisicoesApi(page); 
+    const nomeProdutoExistente = await obterProdutoExistenteDaGrade(page);
 
-    const nomeCategoriaExistente = await obterCategoriaExistenteDaGrade(page);
-
-    if (!nomeCategoriaExistente) {
-      console.log('⚠️ Busca de categorias não executada porque não existem categorias cadastradas.');
+    if (!nomeProdutoExistente) {
+      console.log('⚠️ Busca de produtos não executada porque não existem produtos cadastrados.');
       return;
     }
-
-    await buscarCategoria(page, nomeCategoriaExistente);
+    
+    await buscarProduto(page, nomeProdutoExistente);
 
     const bodyTextExistente = await page.locator('body').innerText();
-    expect(bodyTextExistente).toContain(nomeCategoriaExistente);
-    console.log(`✅ Busca por categoria existente (${nomeCategoriaExistente}) validada com sucesso`);
+    expect(bodyTextExistente).toContain(nomeProdutoExistente);
+    console.log(`✅ Busca por produto existente (${nomeProdutoExistente}) validada com sucesso`);
 
     await limparBusca(page);
-    await capturarRequisicoesApi(page);
+    await capturarRequisicoesApi(page); 
 
-    const categoriaInexistente = `CATEGORIA_INEXISTENTE_E2E_${Date.now()}`;
-    await buscarCategoria(page, categoriaInexistente);
+    // 3. Busca por produto inexistente
+    const produtoInexistente = `PRODUTO_INEXISTENTE_E2E_${Date.now()}`;
+    await buscarProduto(page, produtoInexistente);
 
     const linhasVisiveis = page.locator('tbody tr:visible');
     const countLinhas = await linhasVisiveis.count();
 
     if (countLinhas > 0) {
       const textoTabela = await linhasVisiveis.innerText().catch(() => '');
-      expect(textoTabela).not.toContain(categoriaInexistente);
+      expect(textoTabela).not.toContain(produtoInexistente);
     }
 
-    console.log(`✅ Busca por categoria inexistente (${categoriaInexistente}) validada com sucesso`);
+    console.log(`✅ Busca por produto inexistente (${produtoInexistente}) validada com sucesso`);
     console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);
   });
 

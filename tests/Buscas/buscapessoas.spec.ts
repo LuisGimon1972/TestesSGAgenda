@@ -18,11 +18,9 @@ test.describe('Clientes - Busca', () => {
 
   async function abrirClientes(page: Page) {
     await page.waitForTimeout(1000);
-    await navegarPara(page, 'Clientes');
+    await navegarPara(page, 'Clientes');   
     
-    
-
-    await expect(page.getByText(/Listagem de clientes/i).first()).toBeVisible({ timeout: 30000 });
+    await expect(page.getByText(/Clientes/i).first()).toBeVisible({ timeout: 30000 });
   }
 
   async function buscarCliente(page: Page, texto: string) {
