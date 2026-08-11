@@ -19,6 +19,7 @@ test.describe('Produtos - Busca', () => {
   async function abrirProdutos(page: Page) {
     await page.waitForTimeout(2000);
     // Alterado para navegar para a tela de Produtos
+    await navegarPara(page, 'Profissionais');
     await navegarPara(page, 'Catálogo', 'Produtos');
 
     await expect(page.locator('body')).toHaveText(
