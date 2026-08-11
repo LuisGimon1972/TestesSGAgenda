@@ -185,7 +185,7 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
       response.status() < 300
     ).catch(() => null);
 
-    await expect(page.getByText(/Configura[çc][ão] do site|URL do site/i).first()).toBeVisible({ timeout: 30000 });
+    await expect(page.getByText(/Configuração do site/i).first()).toBeVisible({ timeout: 30000 });
     console.log('✅ Abriu tela de Configuração do site');
     await page.waitForTimeout(1500);
    
@@ -207,8 +207,8 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
     
     await selecionarComboPorLabel(page, /Segmento/i, /Barbearia/i, 'Segmento');
     
-    await page.getByText(/^Gravar$/i).first().click({ force: true });
-    console.log('✅ Clicou em Gravar (Configuração do site)');
+    await page.getByText(/^Criar aplicação$/i).first().click({ force: true });
+    console.log('✅ Clicou em Criar Aplicação');
 
     let respostaJson: any = null;
     const salvarResponse = await salvarEmpresaPromise;    
@@ -277,8 +277,8 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
       else { await page.context().clearCookies(); await page.goto('/'); }
     }
    
-    await page.getByText(/Cadastre-se/i).first().waitFor({ state: 'visible', timeout: 30000 });
-    await page.getByText(/Cadastre-se/i).first().click({ force: true });
+    await page.getByText(/Criar conta/i).first().waitFor({ state: 'visible', timeout: 30000 });
+    await page.getByText(/Criar conta/i).first().click({ force: true });
     console.log('✅ Clicou em Cadastre-se');
     
     console.log(`✅ E-mail criado para cadastro: ${emailUsuario}`);
@@ -287,8 +287,8 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
     await preencherInputVisivel(page, 2, senhaUsuario, 'Senha do Usuário');
     await preencherInputVisivel(page, 3, senhaUsuario, 'Confirmar Senha');
 
-    await page.getByText(/^Gravar$/i).first().click({ force: true });
-    console.log('✅ Clicou em Gravar (Cadastro de Usuário)');
+    await page.getByText(/^Cadastrar$/i).first().click({ force: true });
+    console.log('✅ Clicou em Gravar (Cadastrar Usuário)');
     
     await expect(page.getByText(/Informa[çc][õo]es da empresa|Raz[aã]o social|Fantasia/i).first()).toBeVisible({ timeout: 30000 });
     console.log('✅ Abriu tela de Informações da Empresa');
@@ -304,8 +304,8 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
         await preencherCampoProximoAoLabel(page, /CNPJ/i, cnpjValido, 'CNPJ');
     }
 
-    await page.getByText(/^Gravar$/i).first().click({ force: true });
-    console.log('✅ Clicou em Gravar (Empresa)');
+    await page.getByText(/^Adicionar empresa$/i).first().click({ force: true });
+    console.log('✅ Clicou em Adicionar Empresa');
     
     await preencherConfiguracaoSite(page); 
     

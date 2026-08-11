@@ -1,6 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
+import { navegarPara } from '../../utils/navegar';
 
 test.describe('Clientes - Busca', () => {
 
@@ -16,11 +17,10 @@ test.describe('Clientes - Busca', () => {
   }
 
   async function abrirClientes(page: Page) {
-    const menuClientes = page.getByText(/Clientes/i).first();
-    await expect(menuClientes).toBeVisible({ timeout: 30000 });
-    await menuClientes.scrollIntoViewIfNeeded();
-    await menuClientes.click({ force: true });
     await page.waitForTimeout(1000);
+    await navegarPara(page, 'Clientes');
+    
+    
 
     await expect(page.getByText(/Listagem de clientes/i).first()).toBeVisible({ timeout: 30000 });
   }
