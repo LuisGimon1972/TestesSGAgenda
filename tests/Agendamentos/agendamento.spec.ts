@@ -44,7 +44,7 @@ test.describe('Agendamentos - Cadastro', () => {
   }
 
   async function selecionarServico(page: Page, tentativa = 0): Promise<void> {    
-    await expect(page.locator('body')).toHaveText(/Escolha o servi[çc]o/i, { timeout: 30000 });
+    await expect(page.locator('body')).toHaveText(/Serviços/i, { timeout: 30000 });
     await fecharCookiesSeAparecer(page);
     await page.waitForTimeout(1000);
 
@@ -67,7 +67,7 @@ test.describe('Agendamentos - Cadastro', () => {
         const temTamanhoPossivel = rect.width >= 20 && rect.width <= 700 && rect.height >= 10 && rect.height <= 420;
         const contemPalavraServico = /Corte|Hidra|Barba|Cabe|Bigo|Cel|Infa|Seca/i.test(texto);
         const contemValorServico = /(?:R\$|\$|₲|G|Gs\.?|G\$)\s*[\d.,]+|[\d.,]+\s*(?:R\$|\$|₲|G|Gs\.?|G\$)/i.test(texto);
-        const naoEhMenuOuBusca = !/Escolha o servi[çc]o|Buscar servi[çc]o|Buscar servicio|Exibir mais|Mostrar mais|Dashboard|Agenda|Clientes|Atendentes|Produtos|Configura[çc][õo]es|Termos de uso|Política de privacidade|cookies|Entendi/i.test(texto);
+        const naoEhMenuOuBusca = !/Serviço|Buscar servi[çc]o|Buscar servicio|Exibir mais|Mostrar mais|Dashboard|Agenda|Clientes|Atendentes|Produtos|Configura[çc][õo]es|Termos de uso|Política de privacidade|cookies|Entendi/i.test(texto);
 
         if (!temTamanhoPossivel || !naoEhMenuOuBusca || (!contemPalavraServico && !contemValorServico)) return;
 
@@ -108,7 +108,7 @@ test.describe('Agendamentos - Cadastro', () => {
     await page.waitForTimeout(1500);
 
     const textoDepois = await page.locator('body').innerText();
-    if (/Escolha o profissional/i.test(textoDepois)) {
+    if (/Atendente/i.test(textoDepois)) {
       return;
     }
 
@@ -120,74 +120,68 @@ test.describe('Agendamentos - Cadastro', () => {
     }
   }
 
-  async function selecionarProfissional(page: Page) {
-    await expect(page.locator('body')).toHaveText(/Escolha o profissional/i, { timeout: 30000 });
-    await fecharCookiesSeAparecer(page);
-    await page.waitForTimeout(1000);
+  async function selecionarProfissional(page: Page) {  
+  await expect(page.locator('body')).toHaveText(/Atendente|Profesional|Profissional/i, { timeout: 30000 });
+  await fecharCookiesSeAparecer(page);
+  await page.waitForTimeout(1000);
 
-    const resultadoClique = await page.evaluate(() => {
-      function limparTexto(t: string | null) { return (t || '').replace(/\s+/g, ' ').trim(); }
-      const els = Array.from(document.body.querySelectorAll('*:not(script, style, link, meta)'));
+  const resultadoClique = await page.evaluate(() => {
+    function limparTexto(t: string | null) { return (t || '').replace(/\s+/g, ' ').trim(); }
+    const els = Array.from(document.body.querySelectorAll('*:not(script, style, link, meta)'));
+    
+    const tituloEl = els.find(el => /^(Atendente|Profesional|Profissional)$/i.test(limparTexto(el.textContent)));
+    const topTitulo = tituloEl ? tituloEl.getBoundingClientRect().top : 0;
 
-      const tituloEl = els.find(el => /^Escolha o profissional$/i.test(limparTexto(el.textContent)));
-      const topTitulo = tituloEl ? tituloEl.getBoundingClientRect().top : 0;
+    const profEls = Array.from(document.body.querySelectorAll('.q-card, .q-item, div, button, [role="button"]')).filter(el => {
+      const style = window.getComputedStyle(el);
+      if (style.display === 'none' || style.visibility === 'hidden') return false;
 
-      const profEls = Array.from(document.body.querySelectorAll('.q-card, .q-item, div, button, [role="button"]')).filter(el => {
-        const style = window.getComputedStyle(el);
-        if (style.display === 'none' || style.visibility === 'hidden') return false;
-
-        const texto = limparTexto(el.textContent);
-        const rect = el.getBoundingClientRect();
-        
-        const depoisDoTitulo = rect.top >= (topTitulo - 5);
-        const temTamanhoPossivel = rect.width >= 40 && rect.width <= 800 && rect.height >= 20 && rect.height <= 400;
-        const pareceProfissional = /Usuario Paraguai|E2E\s+Atendente|Atendente|Barbeiro|Peluquero|person/i.test(texto);
-        const naoEhMenuOuTitulo = !/Escolha o profissional|Escolha o servi[çc]o|Corte|Barba|Cejas|Servi[çc]o|Servicio|R\$|₲|\$|Dashboard|Agenda|Clientes|Atendentes|Produtos|Configura[çc][õo]es|Termos de uso|Política de privacidade|cookies|Entendi/i.test(texto);
-
-        return depoisDoTitulo && temTamanhoPossivel && pareceProfissional && naoEhMenuOuTitulo;
-      });
-
-      if (profEls.length === 0) return { sucesso: false };
-
-      const profPref = profEls.find(el => /Usuario Paraguai|E2E\s+Atendente|Atendente|Barbeiro|Peluquero/i.test(limparTexto(el.textContent)));
-      const card = profPref || profEls[0];
-      const clicavel = card.closest('.q-card, .q-item, button, [role="button"]') || card;
+      const texto = limparTexto(el.textContent);
+      const rect = el.getBoundingClientRect();      
       
-      clicavel.scrollIntoView();
-      (clicavel as HTMLElement).click();
+      const depoisDoTitulo = topTitulo > 0 ? rect.top >= (topTitulo - 5) : true;
+      const temTamanhoPossivel = rect.width >= 40 && rect.width <= 800 && rect.height >= 20 && rect.height <= 400;
       
-      return { sucesso: true, textoClicado: limparTexto(card.textContent) };
+      const ehNavegacaoOuMenu = /Volver|Voltar|Escolha|Servi[çc]o|Servicio|Dashboard|Agenda|Clientes|Atendentes|Produtos|Configura[çc][õo]es|Termos|Política|cookies|Entendi/i.test(texto);
+      const ehApenasTitulo = /^(Profesional|Profissional|Atendente|Servicios|Serviços)$/i.test(texto);      
+      const temTextoValido = texto.length >= 2;
+      return depoisDoTitulo && temTamanhoPossivel && !ehNavegacaoOuMenu && !ehApenasTitulo && temTextoValido;
     });
 
-    if (!resultadoClique.sucesso) {
-      throw new Error('Nenhum card de profissional foi encontrado após selecionar o serviço.');
-    }
+    if (profEls.length === 0) return { sucesso: false, textoClicado: '' };
 
-    const profissionalLimpo = resultadoClique.textoClicado
+    const card = profEls[0];
+    const clicavel = (card.closest('.q-card, .q-item, button, [role="button"]') || card) as HTMLElement;
+    
+    clicavel.scrollIntoView();
+    clicavel.click();
+    
+    return { sucesso: true, textoClicado: limparTexto(card.textContent) };
+  });
+
+  if (!resultadoClique.sucesso) {
+    throw new Error('Nenhum card de profissional foi encontrado após selecionar o serviço.');
+  }
+
+  const profissionalLimpo = resultadoClique.textoClicado
     ?.replace(/^person|person/gi, '') 
     ?.replace(/\s+/g, ' ')            
     ?.trim();
-    console.log(`✅ Profissional escolhido: ${profissionalLimpo}`);
-    await page.waitForTimeout(1500);
-
-    const textoBody = await page.locator('body').innerText();    
     
-    if (/Escolha o profissional/i.test(textoBody) && !/\d{2}\/\d{2}/.test(textoBody)) {
-      console.log('⚠️ Ainda na etapa profissional. Tentando clicar diretamente no nome.');
-      await page.evaluate(() => {
-        const els = Array.from(document.body.querySelectorAll('*:visible'));
-        const profPorTexto = els.find(el => /Usuario Paraguai|E2E\s+Atendente|Atendente|Barbeiro|Peluquero/i.test((el.textContent||'').trim()));
-        if (profPorTexto) {
-          const clicavel = profPorTexto.closest('.q-card, .q-item, button, [role="button"], div') || profPorTexto;
-          clicavel.scrollIntoView();
-          (clicavel as HTMLElement).click();
-        }
-      });
-      await page.waitForTimeout(1500);
-    }
+  console.log(`✅ Profissional escolhido: ${profissionalLimpo}`);
+  await page.waitForTimeout(1500);
 
-    await expect(page.locator('body')).toHaveText(/Selecione o dia da semana|Selecione o dia|Escolha o dia|\d{2}\/\d{2}/i, { timeout: 30000 });
-  }
+  const textoBody = await page.locator('body').innerText();    
+  if (/Atendente|Profesional/i.test(textoBody) && !/\d{2}\/\d{2}|Horario|Seleccione/i.test(textoBody)) {
+    console.log('⚠️ Ainda na etapa profissional. Tentando clicar no primeiro card novamente.');
+    await page.evaluate(() => {
+      const primeiroCard = document.querySelector('h3:has-text("Profesional") + div *, h3 + div *') as HTMLElement;
+      if (primeiroCard) primeiroCard.click();
+    });
+    await page.waitForTimeout(1500);
+  }  
+  await expect(page.locator('body')).toHaveText(/Selecione o dia|Escolha o dia|Horario|\d{2}\/\d{2}/i, { timeout: 30000 });
+}
 
   async function selecionarDataFuturaOuHoje(page: Page) {
     await page.waitForTimeout(2000);    

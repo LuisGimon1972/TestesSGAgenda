@@ -213,46 +213,8 @@ async function selecionarComboPorLabel(
   }
 
   throw new Error(`Falha ao selecionar ${nomeComboDescricao}: ${lastError?.message || lastError}`);
-} 
- 
- async function selecionarComboPorIndice(page: Page, index: number, opcao: RegExp): Promise<string> {
-  const combo = page.locator('.q-field:visible').nth(index);
-  await combo.waitFor({ state: 'visible', timeout: 30000 });
-  await combo.click({ force: true });
-
-  await page.waitForTimeout(800);
-
-  const opcoes = page.locator('.q-menu:visible .q-item, .q-virtual-scroll__content .q-item, [role="option"]:visible, .q-portal .q-item');
-  const count = await opcoes.count();
-
-  let encontrada = false;
-  let selecionadoTexto = '';
-
-  for (let i = 0; i < count; i++) {
-    const item = opcoes.nth(i);
-    const textoRaw = await item.innerText().catch(() => '');
-    const texto = textoRaw.replace(/\s+/g, ' ').trim();
-    if (opcao.test(texto)) {      
-      await item.scrollIntoViewIfNeeded().catch(() => {});
-      await item.click({ force: true });
-      selecionadoTexto = texto;
-      encontrada = true;
-      break;
-    }
-  }
-
-  if (!encontrada) {
-    console.error(`❌ Opção não encontrada no combo índice ${index}: ${opcao}`);
-    throw new Error(`Opção não encontrada no combo: ${opcao}`);
-  }
-  
-  await page.waitForTimeout(800);
-  let texto = ''  
-  texto = index === 2 ? 'País' : 'Moeda';
-  console.log('✅' + ' ' +  texto, 'Selecionado(a):',selecionadoTexto);
-  return selecionadoTexto;
 }
-  
+   
   async function preencherRucParaguai(page: Page, rucValor?: string) {
     const valor = gerarRUC();
     rucValido = valor
