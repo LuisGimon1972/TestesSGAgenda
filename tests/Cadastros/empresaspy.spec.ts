@@ -57,7 +57,7 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
     for (let i = 0; i < count; i++) {
       const botao = botoes.nth(i);
       const texto = (await botao.innerText()).replace(/\s+/g, ' ').trim();
-      if (/Guardar|Gravar|Salvar|Confirmar|Continuar/i.test(texto)) {
+      if (/Adicionar empresa|Criar aplicação|Salvar|Confirmar|Continuar/i.test(texto)) {
         await botao.scrollIntoViewIfNeeded();
         await expect(botao).toBeVisible();
         await botao.click({ force: true });
@@ -406,9 +406,9 @@ async function selecionarComboPorLabel(
       else { await page.context().clearCookies(); await page.goto('/'); }
     }
 
-    await page.getByText(/Cadastre-se/i).first().waitFor({ state: 'visible', timeout: 30000 });
-    await page.getByText(/Cadastre-se/i).first().click({ force: true });
-    console.log('✅ Clicou em Cadastre-se');
+    await page.getByText(/Criar conta/i).first().waitFor({ state: 'visible', timeout: 30000 });
+    await page.getByText(/Criar conta/i).first().click({ force: true });
+    console.log('✅ Clicou em Criar conta');
 
     console.log(`✅ E-mail criado para cadastro: ${emailUsuario}`);
     await preencherInputVisivel(page, 0, nomeUsuario, 'Nome do Usuário');
@@ -416,8 +416,8 @@ async function selecionarComboPorLabel(
     await preencherInputVisivel(page, 2, senhaUsuario, 'Senha do Usuário');
     await preencherInputVisivel(page, 3, senhaUsuario, 'Confirmar Senha');
 
-    await page.getByText(/^Gravar$/i).first().click({ force: true });
-    console.log('✅ Clicou em Gravar (Cadastro de Usuário)');
+    await page.getByText(/^Cadastrar$/i).first().click({ force: true });
+    console.log('✅ Clicou em Cadastrar Usuário');
 
     await expect(page.getByText(/Informa[çc][õo]es da empresa|Raz[aã]o social|Fantasia/i).first()).toBeVisible({ timeout: 30000 });
     console.log('✅ Abriu tela de Informações da Empresa');
@@ -426,8 +426,29 @@ async function selecionarComboPorLabel(
     await preencherCampoProximoAoLabel(page, /Raz[aã]o social/i, razaoSocial, 'Razão Social');
     await preencherCampoProximoAoLabel(page, /Fantasia/i, fantasia, 'Nome Fantasia');    
     
-    await selecionarComboPorIndice(page, 2, /Paraguay|Paraguai/i);
-    await selecionarComboPorIndice(page, 3, /Guarani|Guaran[ií]s|PYG|₲|G\./i);
+    
+    const comboPais = page.locator('.p-select-label').nth(1);
+    await comboPais.waitFor({ state: 'visible' });
+    await comboPais.click();    
+
+    const opcaoParaguai = page.getByRole('option', { name: 'Paraguay', exact: false });
+    await opcaoParaguai.waitFor({ state: 'visible' });
+    await opcaoParaguai.click();    
+    const paisSelecionado = await comboPais.textContent();
+    console.log('✅ Selecionou um Pais:', paisSelecionado?.trim().toUpperCase());
+    await page.waitForTimeout(1000);
+
+    const comboMoeda = page.locator('.p-select-label').nth(2);
+    await comboMoeda.waitFor({ state: 'visible' });
+    await comboMoeda.click();    
+
+    const opcaoGuarani = page.getByRole('option', { name: 'Guarani', exact: false });
+    await opcaoGuarani.waitFor({ state: 'visible' });
+    await opcaoGuarani.click();    
+
+    const moedaSelecionada = await comboMoeda.textContent();
+    console.log('✅ Selecionou uma Moeda:', moedaSelecionada?.trim().toUpperCase());    
+
     
     const checkDocumento = await page.locator('body').innerText().catch(() => '');
     if (/Paraguai/i.test(checkDocumento) || /RUC/i.test(checkDocumento) || /Registro Unico/i.test(checkDocumento) || /Registro Único/i.test(checkDocumento)) {         
