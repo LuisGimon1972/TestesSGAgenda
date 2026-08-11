@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
 import { obterNomePessoaAleatorio } from '../../utils/nomescompletos';
+import { navegarPara } from '../../utils/navegar';
 
 test('Cadastro de Atendentes E2E com Comissões', async ({ page }) => {
     test.setTimeout(90000);
@@ -9,11 +10,12 @@ test('Cadastro de Atendentes E2E com Comissões', async ({ page }) => {
     await loginCompleto(page);    
     await page.waitForTimeout(2000);       
     
-    await page.locator('.q-item, a, button').filter({ hasText: /Atendentes/i }).first().click({ force: true });
-    console.log(`✅ Clicou em Atendentes`);          
+    await page.waitForTimeout(1000);
+    await navegarPara(page, 'Profissionais');
+    console.log(`✅ Clicou em Profissionais`);          
     await page.waitForTimeout(2000);                 
     
-    const btnCadastrar = page.getByText(/Cadastrar atendente/i).first();
+    const btnCadastrar = page.getByText(/Novo profissional/i).first();
     await btnCadastrar.waitFor();
     await btnCadastrar.click({ force: true });      
     console.log(`✅ Clicou em Cadastrar Atendente`);  
@@ -75,7 +77,7 @@ test('Cadastro de Atendentes E2E com Comissões', async ({ page }) => {
     } catch (e) {}
     console.log('📝 FIM DE DADOS ENVIADOS PRA API');
     
-    const btnGravar = page.getByText(/Gravar/i).first();
+    const btnGravar = page.getByText(/Criar profissional/i).first();
     await btnGravar.waitFor();
     await btnGravar.click({ force: true });
     console.log('✅ Clicou em Gravar');              
