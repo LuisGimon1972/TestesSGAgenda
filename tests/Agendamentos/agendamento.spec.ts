@@ -268,10 +268,9 @@ test.describe('Agendamentos - Cadastro', () => {
     if (horarios.length === 0) return null;
 
     const agora = new Date();
-    // CORREÇÃO: Margem de +5 minutos para não escolher horários "expirando" no exato momento
-    const minutosAgora = (agora.getHours() * 60) + agora.getMinutes() + 5; 
     
-    // 3. Filtra apenas horários futuros se for o dia de hoje
+    const minutosAgora = (agora.getHours() * 60) + agora.getMinutes() + 5;     
+    
     const horariosValidos = isHoje ? horarios.filter(h => h.minutos > minutosAgora) : horarios;
 
     if (horariosValidos.length === 0) return null;
@@ -360,7 +359,7 @@ async function selecionarCliente(page: Page) {
     await page.waitForTimeout(3000);
     await expect(page.locator('body')).toHaveText(/Hor[aá]rios dispon[ií]veis|Horarios disponibles/i, { timeout: 30000 });
 
-    await selecionarHorarioMaiorQueAgora(page, true);
+    await selecionarHorarioMaiorQueAgora(page, false);
     await page.waitForTimeout(1000);
 
     await selecionarCliente(page);
