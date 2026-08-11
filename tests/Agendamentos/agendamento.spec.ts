@@ -248,43 +248,47 @@ test.describe('Agendamentos - Cadastro', () => {
     return true; 
 }
 
-  async function selecionarHorarioMaiorQueAgora(page: Page) {
-    await page.waitForTimeout(1000);    
-    const horarioEscolhido = await page.evaluate((isHoje) => {
-      const els = Array.from(document.querySelectorAll('*')).filter(el => {
-        const style = window.getComputedStyle(el);
-        if (style.display === 'none' || style.visibility === 'hidden') return false;
-        return /^\d{1,2}:\d{2}h$/i.test((el.textContent || '').trim());
-      });
+  async function selecionarHorarioMaiorQueAgora(page: Page, dataSelecionadaEhHoje: boolean) {
+  
+  await page.waitForTimeout(1000);    
 
-      const horarios = els.map((el, index) => {
-        const texto = (el.textContent || '').trim();
-        const match = texto.match(/(\d{1,2}):(\d{2})h/i);
-        if (!match) return null;
-        return { index, texto, minutos: (Number(match[1]) * 60) + Number(match[2]) };
-      }).filter(item => item !== null) as Array<{ index: number, texto: string, minutos: number }>;
+  const horarioEscolhido = await page.evaluate((isHoje) => {  
+    const els = Array.from(document.querySelectorAll('*')).filter(el => {
+      const style = window.getComputedStyle(el);
+      if (style.display === 'none' || style.visibility === 'hidden') return false;           
+      return /^\d{1,2}:\d{2}(?:h)?$/i.test((el.textContent || '').trim());
+    });    
+    const horarios = els.map((el, index) => {
+      const texto = (el.textContent || '').trim();
+      const match = texto.match(/(\d{1,2}):(\d{2})/);
+      if (!match) return null;
+      return { index, texto, minutos: (Number(match[1]) * 60) + Number(match[2]) };
+    }).filter(item => item !== null) as Array<{ index: number, texto: string, minutos: number }>;
 
-      if (horarios.length === 0) return null;
+    if (horarios.length === 0) return null;
 
-      const agora = new Date();
-      const minutosAgora = (agora.getHours() * 60) + agora.getMinutes();
-      const horariosValidos = isHoje ? horarios.filter(h => h.minutos > minutosAgora) : horarios;
+    const agora = new Date();
+    // CORREÇÃO: Margem de +5 minutos para não escolher horários "expirando" no exato momento
+    const minutosAgora = (agora.getHours() * 60) + agora.getMinutes() + 5; 
+    
+    // 3. Filtra apenas horários futuros se for o dia de hoje
+    const horariosValidos = isHoje ? horarios.filter(h => h.minutos > minutosAgora) : horarios;
 
-      if (horariosValidos.length === 0) return null;
+    if (horariosValidos.length === 0) return null;
+    
+    const escolhido = horariosValidos[0];
+    const elementoAlvo = els[escolhido.index] as HTMLElement;
+    
+    elementoAlvo.scrollIntoView();
+    elementoAlvo.click();
 
-      const escolhido = horariosValidos[0];
-      const elementoAlvo = els[escolhido.index] as HTMLElement;
-      
-      elementoAlvo.scrollIntoView();
-      elementoAlvo.click();
+    return escolhido.texto;
+  }, dataSelecionadaEhHoje); 
 
-      return escolhido.texto;
-    }, dataSelecionadaEhHoje);
+  if (!horarioEscolhido) throw new Error('Não existe horário disponível maior que a hora atual para a data selecionada.');
 
-    if (!horarioEscolhido) throw new Error('Não existe horário disponível maior que a hora atual para a data selecionada.');
-
-    console.log(`✅ Horário escolhido: ${horarioEscolhido}`);
-  }
+  console.log(`✅ Horário escolhido: ${horarioEscolhido}`);
+}
 
 async function selecionarCliente(page: Page) {
   await expect(page.locator('body')).toHaveText(
@@ -356,7 +360,7 @@ async function selecionarCliente(page: Page) {
     await page.waitForTimeout(3000);
     await expect(page.locator('body')).toHaveText(/Hor[aá]rios dispon[ií]veis|Horarios disponibles/i, { timeout: 30000 });
 
-    await selecionarHorarioMaiorQueAgora(page);
+    await selecionarHorarioMaiorQueAgora(page, true);
     await page.waitForTimeout(1000);
 
     await selecionarCliente(page);
