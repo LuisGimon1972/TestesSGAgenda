@@ -56,16 +56,7 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
     }
 
     try {
-      const campoValor = page.locator('input:visible').nth(1);
-      await campoValor.click({ force: true });
-      await campoValor.fill(valor.toFixed(), { force: true });
-      console.log('✅ Valor:', valor);
-    } catch (e) {
-      console.log('⚠️ Falha ao preencher Valor');
-    }
-    
-    try {
-      const campoQuantidade = page.locator('input:visible').nth(2);
+      const campoQuantidade = page.locator('input:visible').nth(1);
       await campoQuantidade.click({ force: true });
       await campoQuantidade.fill(quantidade, { force: true });
       console.log('✅ Quantidade:', quantidade);
@@ -73,6 +64,15 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
       console.log('⚠️ Falha ao preencher Quantidade');
     }
 
+    try {
+      const campoValor = page.locator('input:visible').nth(2);
+      await campoValor.click({ force: true });
+      await campoValor.fill(valor.toFixed(), { force: true });
+      console.log('✅ Valor:', valor);
+    } catch (e) {
+      console.log('⚠️ Falha ao preencher Valor');
+    }   
+    
     try {
       const campoComissao = page.locator('input:visible').nth(3);
       await campoComissao.click({ force: true });
@@ -84,7 +84,7 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
 
     console.log('📝 FIM DE DADOS ENVIADOS');           
     
-    const btnGravar = page.getByText(/Gravar/i).first();
+    const btnGravar = page.getByText(/Criar produto/i).first();
     await btnGravar.waitFor();
     await btnGravar.click({ force: true });
     console.log('✅ Clicou em Gravar');              

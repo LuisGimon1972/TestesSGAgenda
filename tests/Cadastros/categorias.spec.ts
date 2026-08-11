@@ -2,21 +2,22 @@ import { test, expect } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
 import { obterServicoAleatorio } from '../../utils/listaservicos';
+import { navegarPara } from '../../utils/navegar';
 
 test('Cadastro de Categorias', async ({ page }) => {
     test.setTimeout(1200000);
     
     await loginCompleto(page);    
     
-    await page.waitForTimeout(2000);               
-    await page.locator('.q-item, a, button').filter({ hasText: /Categorias/i }).first().click({ force: true });
+    await page.waitForTimeout(2000);
+    await navegarPara(page, 'Catálogo', 'Categorias');    
     console.log(`✅ Clicou em Categorias`);          
     
     await page.waitForTimeout(2000);                
-    const btnCadastrar = page.getByText(/Cadastrar categoria/i).first();
+    const btnCadastrar = page.getByText(/Nova categoria/i).first();
     await btnCadastrar.waitFor();
     await btnCadastrar.click({ force: true });      
-    console.log(`✅ Clicou em Cadastrar Categoria`);  
+    console.log(`✅ Clicou em Nova Categoria`);  
     console.log(`✅ Abriu Form de Categorias`);              
     
     const salvarCategoriaPromise = page.waitForResponse((response) =>
@@ -78,7 +79,7 @@ try {
       await page.waitForTimeout(1000);
     } catch (e) {}
     
-    const btnGravar = page.getByText(/Gravar/i).first();
+    const btnGravar = page.getByText(/Criar categoria/i).first();
     await btnGravar.waitFor();
     await btnGravar.click({ force: true });
     console.log('✅ Clicou em Gravar');              
