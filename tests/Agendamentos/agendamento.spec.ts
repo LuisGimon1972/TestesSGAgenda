@@ -435,8 +435,7 @@ async function selecionarCliente(page: Page) {
       { timeout: 30000 }
     );
     console.log('✅ Agendamento criado com sucesso!');
-    await capturarRequisicoesApi(page); 
-    await page.waitForTimeout(4000);    
+    await capturarRequisicoesApi(page);    
     console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
     }
     else{
