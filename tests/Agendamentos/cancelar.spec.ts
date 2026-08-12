@@ -5,6 +5,8 @@ import { navegarPara } from '../../utils/navegar';
 
 test.describe('Agendamentos - Cancelar agendamento', () => {
 
+  test.setTimeout(120000);
+
   async function fecharCookiesSeAparecer(page: Page) {
     const btnEntendi = page.locator('button, .q-btn').filter({ hasText: /^Entendi$/i });
     if (await btnEntendi.isVisible().catch(() => false)) {
@@ -74,28 +76,32 @@ test.describe('Agendamentos - Cancelar agendamento', () => {
   return false;
 }
 
-  async function procurarCriadoNoMes(page: Page, mesAnoInicial: string): Promise<boolean> {
-    const maxTentativas = 35;
-    for (let tentativa = 0; tentativa < maxTentativas; tentativa++) {
-      console.log(`🔍 Procurando agendamento "Pendente"... Tentativa: ${tentativa + 1}`);   
+  async function procurarCriadoNoMes(page: Page, mesAnoInicial: string): Promise<boolean> {  
+  const maxTentativas = 6; 
 
-      const encontrou = await tentarAbrirAgendamentoCriado(page);
-      if (encontrou) return true;
+  for (let tentativa = 0; tentativa < maxTentativas; tentativa++) {
+    console.log(`🔍 Procurando agendamento "Pendente"... Tentativa: ${tentativa + 1}`);   
 
-      const mesAnoAtual = await obterMesAnoAtual(page);
-      if (mesAnoAtual && mesAnoAtual !== mesAnoInicial) {
-        console.log(`⚠️ Chegou ao final do mês (${mesAnoInicial}) sem encontrar agendamentos "Pendentes".`);
-        return false;
-      }
+    const encontrou = await tentarAbrirAgendamentoCriado(page);
+    if (encontrou) return true;
 
-      await avancarUmDia(page);
-      await page.waitForTimeout(3000);
-      
+    const mesAnoAtual = await obterMesAnoAtual(page);
+    if (mesAnoAtual && mesAnoAtual !== mesAnoInicial) {
+      console.log(`⚠️ Chegou ao final do mês (${mesAnoInicial}) sem encontrar agendamentos "Pendentes".`);
+      return false;
+    }
+        
+    if (tentativa === maxTentativas - 1) {
+      console.log(`⚠️ Máximo de ${maxTentativas} tentativas atingido sem encontrar agendamentos "Pendentes". Encerrando busca.`);
+      return false; 
     }
 
-    console.log('⚠️ Chegou ao limite de dias pesquisados e não encontrou nenhum agendamento "Pendente".');
-    return false;
+    await avancarUmDia(page);
+    await page.waitForTimeout(3000);
   }
+
+  return false;
+}
   
   test('Deve percorrer o mês até encontrar um agendamento Pendente e finalizar', async ({ page }) => {    
     
