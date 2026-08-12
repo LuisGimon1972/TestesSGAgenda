@@ -43,18 +43,18 @@ test.describe('Agendamentos - Cancelar agendamento', () => {
   }
 
   async function tentarAbrirAgendamentoCriado(page: Page): Promise<boolean> {
-  const linhas = page.locator('div').filter({ hasText: /Corte \+ Barba|Pendente/i });
+  const linhas = page.locator('div').filter({ hasText: /Corte \+ Barba|Pendente|Atrasado/i });
   const totalLinhas = await linhas.count();
 
   for (let i = 0; i < totalLinhas; i++) {
     const linha = linhas.nth(i);
     const textoLinha = (await linha.innerText().catch(() => '')).replace(/\s+/g, ' ').trim();
 
-    if (/pendente/i.test(textoLinha)) {
+    if (/pendente|atrasado/i.test(textoLinha)) {
       await linha.scrollIntoViewIfNeeded();
   
       const spanPendente = linha.locator('span.inline-block.whitespace-nowrap.rounded-md.text-accent')
-        .filter({ hasText: /^Pendente$/i })
+        .filter({ hasText: /^Pendente|Atrasado$/i })
         .first();
 
       if (await spanPendente.isVisible().catch(() => false)) {
@@ -63,7 +63,7 @@ test.describe('Agendamentos - Cancelar agendamento', () => {
         return true;
       }
       
-      const qualquerPendente = linha.locator('span, button, .q-btn, td').filter({ hasText: /Pendente/i }).first();
+      const qualquerPendente = linha.locator('span, button, .q-btn, td').filter({ hasText: /Pendente|Atrasado/i }).first();
       if (await qualquerPendente.isVisible().catch(() => false)) {
         await qualquerPendente.click({ force: true });
         console.log(`✅ Clique alternativo em "Pendente" realizado na linha ${i}`);
