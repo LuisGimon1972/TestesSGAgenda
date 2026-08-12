@@ -290,41 +290,39 @@ test.describe('Agendamentos - Cadastro', () => {
 }
 
 async function selecionarCliente(page: Page) {
+  // 1. Aguarda o contexto da tela carregar
   await expect(page.locator('body')).toHaveText(
     /Nome do cliente|Nombre del cliente|Cliente|Selecione o cliente/i, 
     { timeout: 30000 }
   );
 
-  const inputNome = page.locator('input:visible').nth(1);
+  const inputNome = page.getByPlaceholder('Busque por nome ou telefone, ou digite um nome novo');
+  
+  await inputNome.waitFor({ state: 'visible' });
   await inputNome.scrollIntoViewIfNeeded();  
   await inputNome.click({ force: true });
   
-  await page.waitForTimeout(1000);
+  await inputNome.pressSequentially('a', { delay: 100 }); 
   
   const opcoes = page.locator(
-    '.q-menu:visible .q-item, .q-virtual-scroll__content .q-item, [role="option"]'
-  ).filter({ hasNotText: /Nenhum resultado|Sin resultados/i });
-
-  const count = await opcoes.count();
-
-  if (count === 0) {
-    console.log('⚠️ Nenhum cliente disponível para seleção!');
-    return; 
-  }
+    '.p-autocomplete-option, .p-autocomplete-item, .p-autocomplete-overlay li[role="option"], ul[role="listbox"] li[role="option"]:not(.iti__country)'
+  ).filter({ hasNotText: /Nenhum resultado|Sin resultados|Não encontrado/i });
 
   const primeiraOpcao = opcoes.first();
+  
+  await primeiraOpcao.waitFor({ state: 'visible', timeout: 10000 });
+  
   const nomeClienteText = await primeiraOpcao.innerText();
   const nomeClienteLimpo = nomeClienteText?.replace(/\s+/g, ' ').trim();
-  
+
   await primeiraOpcao.click({ force: true });    
   
-  console.log(`✅ Selecionou o primeiro cliente da lista: ${nomeClienteLimpo}`);
+  console.log(`✅ Selecionou o cliente da lista: ${nomeClienteLimpo}`);
   
   await page.waitForTimeout(500);
 
   console.log('📝 FIM DE DADOS ENVIADOS PRA API');
 }
-
   
   test('Deve cadastrar um agendamento com horário futuro.', async ({ page }) => {
     test.setTimeout(120000);     
@@ -365,7 +363,7 @@ async function selecionarCliente(page: Page) {
     await selecionarCliente(page);
 
     const btnAgendar = page.locator('button:visible, .q-btn:visible, [role="button"]:visible')
-      .filter({ hasText: /Agendar|To Schedule|Guardar/i }).first();
+      .filter({ hasText: /Criar agendamento|To Schedule|Guardar/i }).first();
     
     await btnAgendar.scrollIntoViewIfNeeded();
     await btnAgendar.click({ force: true });
