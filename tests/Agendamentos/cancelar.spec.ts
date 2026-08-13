@@ -103,7 +103,7 @@ test.describe('Agendamentos - Cancelar agendamento', () => {
   return false;
 }
   
-  test('Deve percorrer o mês até encontrar um agendamento Pendente e finalizar', async ({ page }) => {    
+  test('Deve percorrer o mês até encontrar um agendamentos Pendentes ou Atrasados e Cancelar', async ({ page }) => {    
     
     await loginCompleto(page);
     await page.waitForTimeout(2000);
