@@ -18,7 +18,6 @@ test.describe('Teste de Exclusão de Atendentes', () => {
   test.beforeEach(async ({ page }) => {
     await loginCompleto(page);    
     await fecharCookiesSeAparecer(page);
-
     const menuAtendentes = page.getByText(/Profissionais/i).first();
     await expect(menuAtendentes).toBeVisible({ timeout: 30000 });
     await menuAtendentes.scrollIntoViewIfNeeded();
@@ -143,7 +142,7 @@ test.describe('Teste de Exclusão de Atendentes', () => {
     }  
     
     await capturarRequisicoesApi(page); 
-    await page.waitForTimeout(2000);    
+    await page.waitForTimeout(4000);    
     console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);       
   });
 });
