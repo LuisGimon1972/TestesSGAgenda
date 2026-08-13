@@ -1,6 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
+import { navegarPara } from '../../utils/navegar';
 
 test.describe('Teste de Exclusão de Atendentes', () => {
 
@@ -18,10 +19,10 @@ test.describe('Teste de Exclusão de Atendentes', () => {
   test.beforeEach(async ({ page }) => {
     await loginCompleto(page);    
     await fecharCookiesSeAparecer(page);
-    const menuAtendentes = page.getByText(/Profissionais/i).first();
-    await expect(menuAtendentes).toBeVisible({ timeout: 30000 });
-    await menuAtendentes.scrollIntoViewIfNeeded();
-    await menuAtendentes.click({ force: true });   
+    await page.waitForTimeout(2000);                 
+    await navegarPara(page, 'Profissionais');
+    console.log(`✅ Clicou em Profissionais`);          
+    await page.waitForTimeout(2000);                 
 
     await expect(page.getByText(/Profissionais/i).first()).toBeVisible({ timeout: 30000 });
     await page.waitForTimeout(2000);   
