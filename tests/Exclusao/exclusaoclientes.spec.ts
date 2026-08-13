@@ -1,6 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
+import { navegarPara } from '../../utils/navegar';
 
 test.describe('Teste de Exclusão de Clientes', () => {
 
@@ -19,10 +20,9 @@ test.describe('Teste de Exclusão de Clientes', () => {
     await loginCompleto(page);    
     await fecharCookiesSeAparecer(page);    
 
-    const menuClientes = page.getByText(/Clientes/i).first();
-    await expect(menuClientes).toBeVisible({ timeout: 30000 });
-    await menuClientes.scrollIntoViewIfNeeded();
-    await menuClientes.click({ force: true });   
+    await page.waitForTimeout(1000);
+    await navegarPara(page, 'Clientes');
+    console.log('✅ Navegou para Clientes');
 
     await expect(page.getByText(/Clientes/i).first()).toBeVisible({ timeout: 30000 });
     await page.waitForTimeout(1000); 
