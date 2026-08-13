@@ -185,15 +185,13 @@ test.describe('Agendamentos - Cancelar agendamento', () => {
 
       if (respostaGet.status() === 200) {
         try {
-          const jsonConsulta = await respostaGet.json();
-          // Garante o mapeamento do objeto correto, esteja ele dentro de "data" ou direto na raiz
+          const jsonConsulta = await respostaGet.json();          
           const agendamentoEncontrado = jsonConsulta?.data || jsonConsulta;
           
           console.log('✅ REGISTRO ENCONTRADO COM SUCESSO!');
           console.log('🆔 ID do Agendamento:', agendamentoEncontrado?.id || agendamentoEncontrado?.iid || 'Desconhecido');
-          console.log('📦 JSON do Registro Consultado:\n', JSON.stringify(agendamentoEncontrado, null, 2));
+          console.log('📦 JSON do Registro Consultado:\n', JSON.stringify(agendamentoEncontrado, null, 2));          
           
-          // Validação simples de segurança que o status realmente mudou
           if(agendamentoEncontrado?.status?.toLowerCase().includes('cancel')) {
              console.log('✅ Status de cancelamento confirmado no JSON!');
           }
