@@ -80,7 +80,7 @@ test.describe('Agendamentos - Finalizar agendamento Pendente no mês', () => {
   const maxTentativas = 6; 
 
   for (let tentativa = 0; tentativa < maxTentativas; tentativa++) {
-      console.log(`🔍 Procurando agendamento "Pendente"... Tentativa: ${tentativa + 1}`);   
+      console.log(`🔍 Procurando agendamento "Pendente ou Atrasado"... Tentativa: ${tentativa + 1}`);   
 
       const encontrou = await tentarAbrirAgendamentoCriado(page);
       if (encontrou) return true;
@@ -92,7 +92,7 @@ test.describe('Agendamentos - Finalizar agendamento Pendente no mês', () => {
       }
       
       if (tentativa === maxTentativas - 1) {
-        console.log(`⚠️ Máximo de ${maxTentativas} tentativas atingido sem encontrar agendamentos "Pendentes". Encerrando busca.`);
+        console.log(`⚠️ Máximo de ${maxTentativas} tentativas atingido sem encontrar agendamentos "Pendentes ou Atrasados". Encerrando busca.`);
         return false; 
       }
 
@@ -127,7 +127,7 @@ test.describe('Agendamentos - Finalizar agendamento Pendente no mês', () => {
     const encontrouAgendamento = await procurarCriadoNoMes(page, mesAnoInicial);
 
     if (!encontrouAgendamento) {
-      console.log('⏹️ Teste encerrado: Nenhum agendamento "Pendente" foi localizado no mês.');
+      console.log('⏹️ Teste encerrado: Nenhum agendamento "Pendente ou Atrasado" foi localizado no mês.');
       return; 
     }
     
