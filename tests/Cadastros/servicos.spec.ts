@@ -21,8 +21,8 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
     const btnCadastrar = page.getByText(/Novo serviço/i).first();
     await btnCadastrar.waitFor();
     await btnCadastrar.click({ force: true });      
-    console.log(`✅ Clicou em Cadastrar produto`);  
-    console.log(`✅ Abriu Form de Produtos`);        
+    console.log(`✅ Clicou em Cadastrar serviço`);  
+    console.log(`✅ Abriu Form de Serviços`);        
     
     const salvarServicoPromise = page.waitForResponse((response) =>
       (response.url().includes('/api/') || response.url().includes('/services') || response.url().includes('/servico')) &&
@@ -106,10 +106,11 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
       console.log('⚠️ Falha ao preencher Descrição');
     }
     
-    await page.waitForTimeout(2000);       
+    await page.waitForTimeout(2000);      
+    await page.getByRole('tab', { name: /^Atendentes$/i }).first().click();     
     
     try {
-        const secaoAtendentes = page.getByText(/Sele[çc][aã]o de Atendentes/i).first();
+        const secaoAtendentes = page.getByText(/Atendentes/i).first();
         if (await secaoAtendentes.isVisible({ timeout: 5000 })) {
             await secaoAtendentes.scrollIntoViewIfNeeded();
             await page.waitForTimeout(1000);

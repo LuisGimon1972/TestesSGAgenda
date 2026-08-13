@@ -10,6 +10,7 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
     await loginCompleto(page);        
 
     await page.waitForTimeout(2000);
+    await navegarPara(page, 'Profissionais');
     await navegarPara(page, 'Catálogo', 'Produtos');    
     console.log(`✅ Clicou em Produtos`);          
     console.log(`✅ Apareceu Listagem de produtos`);      
