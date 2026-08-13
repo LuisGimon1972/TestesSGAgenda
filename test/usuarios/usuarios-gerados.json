@@ -669,5 +669,38 @@
     "fantasia": "Fantasia Debora",
     "documento": "80097566",
     "slug": "site-deboragomes1786531815014"
+  },
+  {
+    "dataCriacao": "2026-08-13T13:00:37.937Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Mauricio Oliveira Gomes",
+    "emailUsuario": "mauricio.1786626018018@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Mauricio Oliveira Gomes",
+    "fantasia": "Fantasia Mauricio",
+    "documento": "73.986.926/0001-71",
+    "slug": "site-mauriciooliveira1786626018018"
+  },
+  {
+    "dataCriacao": "2026-08-13T13:17:22.870Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Wallace Santos Ribeiro",
+    "emailUsuario": "wallace.1786627022799@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Wallace Santos Ribeiro",
+    "fantasia": "Fantasia Wallace",
+    "documento": "26.913.674/0001-70",
+    "slug": "site-wallacesantos1786627022799"
+  },
+  {
+    "dataCriacao": "2026-08-13T13:23:45.267Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Henrique Almeida Costa",
+    "emailUsuario": "henrique.1786627404494@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Henrique Almeida Costa",
+    "fantasia": "Fantasia Henrique",
+    "documento": "96.998.188/0001-88",
+    "slug": "site-henriquealmeida1786627404494"
   }
 ]
