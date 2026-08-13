@@ -147,7 +147,7 @@ test.describe('Teste de Exclusão de Clientes', () => {
         headers: headersGet,
       });
 
-      console.log('*** RESPOSTA DA API AO CONSULTAR REGISTRO EXCLUÍDO ***');
+      console.log('✅ RESPOSTA DA API AO CONSULTAR REGISTRO EXCLUÍDO');
       console.log(`✅ Status GET pós-exclusão: ${consultaResponse.status()}`);
 
       if (consultaResponse.status() === 404 || consultaResponse.status() === 400 || consultaResponse.status() === 500) {
