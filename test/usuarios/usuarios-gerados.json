@@ -702,5 +702,71 @@
     "fantasia": "Fantasia Henrique",
     "documento": "96.998.188/0001-88",
     "slug": "site-henriquealmeida1786627404494"
+  },
+  {
+    "dataCriacao": "2026-08-13T17:00:02.228Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Beatriz Soares Silva",
+    "emailUsuario": "beatriz.1786640381803@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Beatriz Soares Silva",
+    "fantasia": "Fantasia Beatriz",
+    "documento": "11.374.805/0001-11",
+    "slug": "site-beatrizsoares1786640381803"
+  },
+  {
+    "dataCriacao": "2026-08-13T17:03:13.573Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Julio Oliveira Gomes",
+    "emailUsuario": "julio.1786640573250@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Julio Oliveira Gomes",
+    "fantasia": "Fantasia Julio",
+    "documento": "16.355.937/0001-10",
+    "slug": "site-juliooliveira1786640573250"
+  },
+  {
+    "dataCriacao": "2026-08-13T17:11:05.822Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Lorenzo Lopes Nascimento",
+    "emailUsuario": "lorenzo.1786641044334@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Lorenzo Lopes Nascimento",
+    "fantasia": "Fantasia Lorenzo",
+    "documento": "22.039.680/0001-90",
+    "slug": "site-lorenzolopes1786641044334"
+  },
+  {
+    "dataCriacao": "2026-08-13T17:18:30.127Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Matheus Nunes Oliveira",
+    "emailUsuario": "matheus.1786641487782@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Matheus Nunes Oliveira",
+    "fantasia": "Fantasia Matheus",
+    "documento": "12.611.606/0001-42",
+    "slug": "site-matheusnunes1786641487782"
+  },
+  {
+    "dataCriacao": "2026-08-13T17:28:27.302Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Heloísa Nascimento Freitas",
+    "emailUsuario": "heloisa.1786642086181@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Heloísa Nascimento Freitas",
+    "fantasia": "Fantasia Heloísa",
+    "documento": "48.329.170/0001-40",
+    "slug": "site-heloísanascimento1786642086181"
+  },
+  {
+    "dataCriacao": "2026-08-13T17:50:44.079Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Heloísa Nascimento Freitas",
+    "emailUsuario": "heloisa.1786643423528@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Heloísa Nascimento Freitas",
+    "fantasia": "Fantasia Heloísa",
+    "documento": "55.668.675/0001-03",
+    "slug": "site-heloísanascimento1786643423528"
   }
 ]

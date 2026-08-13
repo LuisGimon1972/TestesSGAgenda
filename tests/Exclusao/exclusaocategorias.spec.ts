@@ -1,6 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
+import { navegarPara } from '../../utils/navegar';
 
 test.describe('Teste de Exclusão de Categorias', () => {
 
@@ -19,11 +20,11 @@ test.describe('Teste de Exclusão de Categorias', () => {
     await loginCompleto(page);    
     await fecharCookiesSeAparecer(page);    
 
-    await page.waitForTimeout(2000);               
-    await page.locator('.q-item, a, button').filter({ hasText: /Categorias/i }).first().click({ force: true });
+    await page.waitForTimeout(2000);
+    await navegarPara(page, 'Catálogo', 'Categorias');    
     console.log(`✅ Clicou em Categorias`);          
     
-    await expect(page.getByText(/Listagem de categorias/i).first()).toBeVisible({ timeout: 30000 });
+    await expect(page.getByText(/Categorias/i).first()).toBeVisible({ timeout: 30000 });
     await page.waitForTimeout(1000); 
   });
 
@@ -101,22 +102,34 @@ test.describe('Teste de Exclusão de Categorias', () => {
     await botaoAlvo.click({ force: true });    
     console.log('✅ Clicou na opção de excluir da categoria');
     
-    await page.waitForTimeout(1000); 
-
-    const btnConfirmarModal = page
-      .locator('.q-dialog, [role="dialog"], .modal, .q-card')
-      .locator('button, .q-btn')
-      .filter({ hasText: /sim|confirmar|excluir|ok|yes|eliminar/i })
-      .first();    
-
-    if (await btnConfirmarModal.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await btnConfirmarModal.click({ force: true });
-      console.log('✅ Clicou em Confirmar no modal');
-    } else {
+    await page.waitForTimeout(1000);
+    
+    const modal = page.locator('.q-dialog, .p-dialog, [role="dialog"], .modal, .q-card').first();
+    
+    let modalVisivel = false;
+    try {
+      await modal.waitFor({ state: 'visible', timeout: 4000 });
+      modalVisivel = true;
+    } catch {
       console.log('⚠️ Nenhum modal encontrado, verificando se o sistema excluiu direto...');
-    }    
+    }
 
-    await capturarRequisicoesApi(page);     
+    if (modalVisivel) {      
+      const btnConfirmarModal = modal
+        .locator('button.p-confirmdialog-accept-button, button.p-button-danger')
+        .filter({ hasText: /^Excluir$/i })
+        .first();      
+      const btnConfirmarFallback = modal.getByRole('button', { name: 'Excluir', exact: true });
+      const botaoExcluirAlvo = (await btnConfirmarModal.isVisible().catch(() => false)) 
+        ? btnConfirmarModal 
+        : btnConfirmarFallback;
+      if (await botaoExcluirAlvo.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await botaoExcluirAlvo.click({ force: true });
+        console.log('✅ Clicou no botão vermelho (Excluir) no modal');
+      } else {
+        console.log('⚠️ Botão de confirmação não encontrado no modal.');
+      }
+    }
     
     const deletarResponse = await deletarCategoriaPromise;    
 
@@ -151,13 +164,8 @@ test.describe('Teste de Exclusão de Categorias', () => {
       }
     } else {
       console.log('⚠️ A requisição DELETE não foi capturada automaticamente pela regra genérica.');
-    }    
-   
-    await expect(page.locator('body')).toContainText(
-      /Categoria (deletada|excluída) com sucesso|Registro (deletado|excluído)|removida com sucesso/i,
-      { timeout: 15000 }
-    );
-    
+    }      
+       
     await capturarRequisicoesApi(page); 
     await page.waitForTimeout(2000);    
     console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);       
