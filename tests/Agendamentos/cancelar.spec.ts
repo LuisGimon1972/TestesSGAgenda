@@ -24,7 +24,7 @@ test.describe('Agendamentos - Cancelar agendamento', () => {
     return `${mes}-${ano}`;
   }
 
-  async function avancarUmDia(page: Page) {
+  async function avancarUmaSemana(page: Page) {
     const btnAvancar = page.locator('button:visible').filter({ has: page.locator('.pi-chevron-right') }).first();
     if (await btnAvancar.isVisible().catch(() => false)) {
       await Promise.all([
@@ -96,7 +96,7 @@ test.describe('Agendamentos - Cancelar agendamento', () => {
       return false; 
     }
 
-    await avancarUmDia(page);
+    await avancarUmaSemana(page);
     await page.waitForTimeout(3000);
   }
 
@@ -116,9 +116,9 @@ test.describe('Agendamentos - Cancelar agendamento', () => {
 
     await expect(page.locator('body')).toHaveText(/Agendamentos/i, { timeout: 30000 });
     
-    const btnDia = page.locator('button, .q-btn, [role="button"]').filter({ hasText: /^Esta semana$/i }).first();
-    await expect(btnDia).toBeVisible({ timeout: 30000 });
-    await btnDia.click({ force: true });
+    const btnSemana = page.locator('button, .q-btn, [role="button"]').filter({ hasText: /^Esta semana$/i }).first();
+    await expect(btnSemana).toBeVisible({ timeout: 30000 });
+    await btnSemana.click({ force: true });
     await page.waitForTimeout(2000);
 
     const mesAnoInicial = await obterMesAnoAtual(page);
