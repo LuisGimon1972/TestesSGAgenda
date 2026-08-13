@@ -24,7 +24,7 @@ test.describe('Teste de Exclusão de Atendentes', () => {
     await menuAtendentes.scrollIntoViewIfNeeded();
     await menuAtendentes.click({ force: true });   
 
-    await expect(page.getByText(/Listagem de atendentes/i).first()).toBeVisible({ timeout: 30000 });
+    await expect(page.getByText(/Profissionais/i).first()).toBeVisible({ timeout: 30000 });
     await page.waitForTimeout(2000);   
   });
 
@@ -89,7 +89,7 @@ test.describe('Teste de Exclusão de Atendentes', () => {
     const btnConfirmarModal = page
       .locator('.q-dialog, [role="dialog"]')
       .locator('button, .q-btn')
-      .filter({ hasText: /sim|confirmar|excluir|ok|yes|eliminar/i })
+      .filter({ hasText: /Excluir|sim|confirmar|excluir|ok|yes|eliminar/i })
       .first(); 
 
     if (await btnConfirmarModal.isVisible({ timeout: 3000 }).catch(() => false)) {
