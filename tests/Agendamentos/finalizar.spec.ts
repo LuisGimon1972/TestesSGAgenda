@@ -215,7 +215,7 @@ test.describe('Agendamentos - Finalizar agendamento Pendente no mês', () => {
 
     console.log('✅ Agendamento finalizado com sucesso!');
     await capturarRequisicoesApi(page); 
-    await page.waitForTimeout(4000);   
+    await page.waitForTimeout(1000);   
     console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);    
   });
 });
