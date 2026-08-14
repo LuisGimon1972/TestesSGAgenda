@@ -42,8 +42,7 @@ test.describe('Teste de Edição de Clientes', () => {
     
     await navegarPara(page, 'Clientes');
 
-    await expect(page.getByText(/Clientes/i).first()).toBeVisible({ timeout: 30000 });
-    // Aguarda o tbody renderizar sem forçar erro caso a linha não exista
+    await expect(page.getByText(/Clientes/i).first()).toBeVisible({ timeout: 30000 });    
     await page.waitForSelector('tbody', { state: 'visible', timeout: 15000 }).catch(() => {});
   });
 
@@ -54,23 +53,20 @@ test.describe('Teste de Edição de Clientes', () => {
 
     const linhas = page.locator('tbody tr');
     const totalLinhas = await linhas.count();
-
-    // 1. Validação de Grade Completamente Vazia (0 linhas)
+    
     if (totalLinhas === 0) {
       console.log('⚠️ A grade de clientes não possui registros (0 linhas). Teste ignorado (skipped).');
       test.skip();
       return;
-    }
+    }    
     
-    // 2. Validação de texto de lista vazia dentro da linha (<tr>)
     const textoPrimeiraLinha = await linhas.first().innerText();
     if (/Cadastrar primeiro|Nenhum|Sem registro|No data/i.test(textoPrimeiraLinha)) {
       console.log(`⚠️ Grade vazia detectada: "${textoPrimeiraLinha.trim().split('\n')[0]}". Teste ignorado (skipped).`);
       test.skip(); 
       return;
-    }
+    }    
     
-    // Se passou pelas validações, existem clientes reais para selecionar
     const indiceAleatorio = Math.floor(Math.random() * totalLinhas);
     const linhaSelecionada = linhas.nth(indiceAleatorio);    
 

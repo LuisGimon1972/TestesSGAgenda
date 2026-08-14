@@ -25,35 +25,30 @@ test.describe('Teste de Edição de Categorias', () => {
 
     await page.waitForTimeout(500);       
 
-    await expect(page.getByText(/Categorias/i).first()).toBeVisible({ timeout: 30000 });
-    // Aguarda a renderização do tbody sem quebrar caso não existam linhas
+    await expect(page.getByText(/Categorias/i).first()).toBeVisible({ timeout: 30000 });    
     await page.waitForSelector('tbody', { state: 'visible', timeout: 15000 }).catch(() => {});
   });
 
-  test('Deve selecionar aleatoriamente um categoria da lista e abrir edição.', async ({ page }) => {   
+  test('Deve selecionar aleatoriamente um categoria da lista e abrir edição.', async ({ page }) => {       
     
-    // Pausa para garantir o carregamento dos dados da API na tabela
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(1000);
 
     const linhas = page.locator('tbody tr');
     const totalLinhas = await linhas.count();
-
-    // 1. Validação de Grade Completamente Vazia (0 linhas)
+    
     if (totalLinhas === 0) {
       console.log('⚠️ A grade de categorias não possui registros (0 linhas). Teste ignorado (skipped).');
       test.skip();
       return;
-    }
+    }    
     
-    // 2. Validação de texto de lista vazia dentro da linha (<tr>)
     const textoPrimeiraLinha = await linhas.first().innerText();
     if (/Cadastrar primeiro|Nenhum|Sem registro|No data/i.test(textoPrimeiraLinha)) {
       console.log(`⚠️ Grade vazia detectada: "${textoPrimeiraLinha.trim().split('\n')[0]}". Teste ignorado (skipped).`);
       test.skip(); 
       return;
     }
-
-    // Se passou pelas validações, seleciona uma categoria da lista
+    
     const indiceAleatorio = Math.floor(Math.random() * totalLinhas);
     const linhaSelecionada = linhas.nth(indiceAleatorio);
     

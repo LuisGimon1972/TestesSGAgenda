@@ -24,7 +24,7 @@ test.describe('Teste de Edição de Atendentes', () => {
     await navegarPara(page, 'Profissionais');
 
     await expect(page.getByText(/Profissionais/i).first()).toBeVisible({ timeout: 30000 });
-    await page.waitForTimeout(2000);   
+    await page.waitForTimeout(1000);   
   });
 
   test('Deve selecionar aleatoriamente um atendente da lista e abrir edição.', async ({ page }) => {

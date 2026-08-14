@@ -39,22 +39,19 @@ test.describe('Teste de Edição de Serviços', () => {
     const linhas = page.locator('tbody tr');
     const totalLinhas = await linhas.count();
 
-    // 1. Validação de Grade Completamente Vazia (0 linhas)
     if (totalLinhas === 0) {
       console.log('⚠️ A grade de serviços não possui registros (0 linhas). Teste ignorado (skipped).');
       test.skip();
       return;
-    }
+    }    
     
-    // 2. Validação de texto de lista vazia dentro da linha (<tr>)
     const textoPrimeiraLinha = await linhas.first().innerText();
     if (/Cadastrar primeiro|Nenhum|Sem registro|No data/i.test(textoPrimeiraLinha)) {
       console.log(`⚠️ Grade vazia detectada: "${textoPrimeiraLinha.trim().split('\n')[0]}". Teste ignorado (skipped).`);
       test.skip(); 
       return;
-    }
+    }    
     
-    // Se passou pelas validações, existem serviços reais para selecionar
     const indiceAleatorio = Math.floor(Math.random() * totalLinhas);
     const linhaSelecionada = linhas.nth(indiceAleatorio);    
     
@@ -111,8 +108,7 @@ test.describe('Teste de Edição de Serviços', () => {
         if (texto) {        
           await campo.fill(texto); 
         }
-
-        // Correção do console.log: Removida a divisão por 100 em índices errados para evitar "NaN%"
+     
         if (nomeCampo.includes('Comissão')) {
           console.log(`✅ ${nomeCampo}: ${Number(texto) / 100}%`);
         } else if (nomeCampo) {
