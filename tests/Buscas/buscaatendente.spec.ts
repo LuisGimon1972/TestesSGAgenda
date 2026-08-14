@@ -107,7 +107,6 @@ test.describe('Atendentes - Busca', () => {
     const bodyText = await page.locator('body').innerText();
     expect(bodyText).toContain(nomeAtendenteExistente);
     console.log(`✅ Busca por atendente existente (${nomeAtendenteExistente}) validada com sucesso`);
-
    
     await limparBusca(page);
     await capturarRequisicoesApi(page); 

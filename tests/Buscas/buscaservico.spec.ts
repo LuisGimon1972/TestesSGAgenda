@@ -17,7 +17,7 @@ test.describe('Serviços - Busca', () => {
   }
 
   async function abrirServicos(page: Page) {
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
     await navegarPara(page, 'Catálogo', '');
 
     await expect(page.locator('body')).toHaveText(

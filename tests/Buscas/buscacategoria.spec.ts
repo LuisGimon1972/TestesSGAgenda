@@ -17,7 +17,7 @@ test.describe('Categorias - Busca', () => {
   }
 
   async function abrirCategorias(page: Page) {
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
     await navegarPara(page, 'Catálogo', 'Categorias');    
 
     await expect(page.locator('body')).toHaveText(
@@ -168,5 +168,4 @@ test.describe('Categorias - Busca', () => {
     console.log(`✅ Busca por categoria inexistente (${categoriaInexistente}) validada com sucesso`);
     console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);
   });
-
 });
