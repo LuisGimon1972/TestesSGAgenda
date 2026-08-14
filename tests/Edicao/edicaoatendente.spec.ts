@@ -102,9 +102,9 @@ test.describe('Teste de Edição de Atendentes', () => {
       }
     };
 
-    await preencherCampo(2, nomeAtendenteLimpo, 'Nome do Atendente Alterado');
-    await preencherCampo(3, '4500', 'Comissão Serviços Alterado');
-    await preencherCampo(4, '5600', 'Comissão Produtos Alterado');
+    await preencherCampo(2, nomeAtendenteLimpo, 'Novo Nome do Atendente');
+    await preencherCampo(3, '4500', 'Novo valor de Comissão de Serviços');
+    await preencherCampo(4, '5600', 'Novo valor de Comissão de Produtos');
 
     await page.waitForTimeout(2000);       
     

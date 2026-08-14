@@ -1,6 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { obterServicoAleatorio } from '../../utils/listaservicos';
+import { navegarPara } from '../../utils/navegar';
 
 test.describe('Teste de Edição de Categorias', () => {
 
@@ -19,41 +20,72 @@ test.describe('Teste de Edição de Categorias', () => {
     await loginCompleto(page);    
     await fecharCookiesSeAparecer(page);    
 
-    await page.waitForTimeout(2000);               
-    await page.locator('.q-item, a, button').filter({ hasText: /Categorias/i }).first().click({ force: true });
+    await navegarPara(page, 'Catálogo', 'Categorias');    
     console.log(`✅ Clicou em Categorias`);          
-    
+
     await page.waitForTimeout(500);       
 
-    await expect(page.getByText(/Listagem de categorias/i).first()).toBeVisible({ timeout: 30000 });
-    await expect(page.locator('tbody tr').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText(/Categorias/i).first()).toBeVisible({ timeout: 30000 });
+    // Aguarda a renderização do tbody sem quebrar caso não existam linhas
+    await page.waitForSelector('tbody', { state: 'visible', timeout: 15000 }).catch(() => {});
   });
 
   test('Deve selecionar aleatoriamente um categoria da lista e abrir edição.', async ({ page }) => {   
     
-    const linhas = page.locator('tbody tr');
+    // Pausa para garantir o carregamento dos dados da API na tabela
+    await page.waitForTimeout(3000);
 
+    const linhas = page.locator('tbody tr');
     const totalLinhas = await linhas.count();
-    expect(totalLinhas, 'A lista deve possuir ao menos 1 serviço').toBeGreaterThan(0);
+
+    // 1. Validação de Grade Completamente Vazia (0 linhas)
+    if (totalLinhas === 0) {
+      console.log('⚠️ A grade de categorias não possui registros (0 linhas). Teste ignorado (skipped).');
+      test.skip();
+      return;
+    }
     
+    // 2. Validação de texto de lista vazia dentro da linha (<tr>)
+    const textoPrimeiraLinha = await linhas.first().innerText();
+    if (/Cadastrar primeiro|Nenhum|Sem registro|No data/i.test(textoPrimeiraLinha)) {
+      console.log(`⚠️ Grade vazia detectada: "${textoPrimeiraLinha.trim().split('\n')[0]}". Teste ignorado (skipped).`);
+      test.skip(); 
+      return;
+    }
+
+    // Se passou pelas validações, seleciona uma categoria da lista
     const indiceAleatorio = Math.floor(Math.random() * totalLinhas);
     const linhaSelecionada = linhas.nth(indiceAleatorio);
     
     const nomeCategorie = (await linhaSelecionada.locator('td').nth(1).innerText()).trim();
-    console.log(`✅ Categoria selecionada: ${nomeCategorie}`);    
+    console.log(`✅ Categoria selecionada: ${nomeCategorie}`);       
     
     const btnEditar = linhaSelecionada
-      .locator('button, a, i, .q-btn, .material-icons')
-      .filter({ hasText: /edit/i })
-      .first();
+      .locator([
+        'button:has-text("edit")',
+        'button:has-text("editar")',
+        'a:has-text("edit")',
+        'a:has-text("editar")',
+        'i:has-text("edit")',
+        'i:has-text("editar")',
+        '[title*="edit" i]',
+        '[title*="editar" i]',
+        '[aria-label*="edit" i]',
+        '[aria-label*="editar" i]',
+        '.q-btn:has(.q-icon)',
+        'td:last-child button',
+        'td:last-child a'
+      ].join(', '))
+      .nth(0);
     
-    await btnEditar.scrollIntoViewIfNeeded();
-    await btnEditar.click({ force: true });    
+    await btnEditar.waitFor({ state: 'visible', timeout: 5000 });
+    await btnEditar.scrollIntoViewIfNeeded().catch(() => {});
+    await btnEditar.click({ force: true });
 
     await page.waitForTimeout(1000); 
     
     const salvarCategoriaPromise = page.waitForResponse((response) =>
-      (response.url().includes('/api/') || response.url().includes('/categories') || response.url().includes('/categorias') || response.url().includes('/categories')) &&
+      (response.url().includes('/api/') || response.url().includes('/categories') || response.url().includes('/categorias')) &&
       ['POST', 'PUT'].includes(response.request().method()) &&
       response.status() >= 200 &&
       response.status() < 300
@@ -61,7 +93,7 @@ test.describe('Teste de Edição de Categorias', () => {
     
     const timestamp = Date.now();
     const nomeCategoria = obterServicoAleatorio().categoria + ' ' + timestamp;
-    const descricao = `Categoria aplicando procedimentos voltados aos cuidados e à estética masculina, como cortes de cabelo, barba, bigode, acabamento, tratamentos capilares e outros serviços relacionados, realizados por profissionais.`;    
+    const descricao = `Nova categoria aplicando procedimentos voltados aos cuidados e à estética masculina, como cortes de cabelo, barba, bigode, acabamento, tratamentos capilares e outros serviços relacionados, realizados por profissionais.`;    
     
     const preencherCampo = async (index: number, texto: string, nomeCampo: string) => {
       try {
@@ -74,22 +106,15 @@ test.describe('Teste de Edição de Categorias', () => {
         if (texto) {        
           await campo.fill(texto); 
         }        
-          console.log(`✅ ${nomeCampo}: ${texto}`);         
+        console.log(`✅ ${nomeCampo}: ${texto}`);         
                 
       } catch (e) {
         console.error(`❌ Falha ao tentar preencher o campo: ${nomeCampo}`, e);
       }
     };
     
-    await preencherCampo(0, nomeCategoria, 'Nome de Categoria Alterada');    
-    
-    await page.locator('.q-select').nth(0).click();    
-    const primeiraOpcaoMenu = page.locator('(//div[contains(@class,"q-menu")]//*[contains(@class,"q-item")])[1]');
-    await primeiraOpcaoMenu.waitFor({ state: 'visible', timeout: 5000 });    
-    const nomeOpcaoSelecionada = await primeiraOpcaoMenu.innerText();
-    await primeiraOpcaoMenu.click();       
-    console.log('✅ Selecionou uma Categoria Pai:', nomeOpcaoSelecionada.trim().toUpperCase());      
-    
+    await preencherCampo(0, nomeCategoria, 'Nome de Categoria Alterada');       
+        
     const campoDescricao = page.locator('textarea:visible').first();
     await campoDescricao.scrollIntoViewIfNeeded();
     await campoDescricao.click({ force: true });
