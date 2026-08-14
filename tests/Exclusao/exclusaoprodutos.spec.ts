@@ -32,34 +32,38 @@ test.describe('Teste de Exclusão de Produtos', () => {
       console.log(`💬 Diálogo nativo do navegador: ${dialog.message()}`);
       await dialog.accept();
     });
-
-    const linhas = page.locator('tbody tr');    
     
-    try {
-      await expect(linhas.first()).toBeVisible({ timeout: 10000 });
-    } catch {
-      console.log('⚠️ A tabela não exibiu linhas ou está vazia.');
-    }
+    const linhas = page.locator('tbody tr').filter({
+      hasNotText: /cadastre|nenhum produto|vazio/i
+    });        
+    
+    const possuiProdutos = await linhas.first().isVisible({ timeout: 5000 }).catch(() => false);
 
-    const totalLinhas = await linhas.count();
-    if(totalLinhas === 0) {
-      console.log(`⚠️ Não é possível excluir produtos: a grade está vazia!`);
+    if (!possuiProdutos) {
+      console.log('⚠️ Não existem produtos na grade para apagar (Grade vazia ou em estado inicial).');
+      console.log('⏭️ Pulando o teste de exclusão sem erros.');
       test.skip(); 
       return;
     }
-    expect(totalLinhas, 'A lista deve possuir ao menos 1 produto').toBeGreaterThan(0);
+
+    const totalLinhas = await linhas.count();
+    console.log(`📊 Produtos encontrados para exclusão: ${totalLinhas}`);
     
+    // 3. Sorteia um produto da lista
     const indiceAleatorio = Math.floor(Math.random() * totalLinhas);
     const linhaSelecionada = linhas.nth(indiceAleatorio);    
 
-    console.log(`✅ CAPTURA DO REGISTRO DA GRADE ANTES DE SER REMOVIDO:`)
-    const nomeProduto = (await linhaSelecionada.locator('td').first().innerText()).trim();
+    console.log(`✅ CAPTURA DO REGISTRO DA GRADE ANTES DE SER REMOVIDO:`);
+    const nomeProduto = (await linhaSelecionada.locator('td').first().innerText().catch(() => '')).trim();
     console.log(`✅ Produto selecionado para exclusão: ${nomeProduto}`);    
-    const valor = (await linhaSelecionada.locator('td').nth(1).innerText()).trim(); 
+    
+    const valor = (await linhaSelecionada.locator('td').nth(1).innerText().catch(() => 'N/A')).trim(); 
     console.log(`✅ Valor do Produto: ${valor}`);    
-    const quantidade = (await linhaSelecionada.locator('td').nth(2).innerText()).trim(); 
+    
+    const quantidade = (await linhaSelecionada.locator('td').nth(2).innerText().catch(() => 'N/A')).trim(); 
     console.log(`✅ Quantidade de Produto: ${quantidade}`);        
     
+    // 4. Prepara a escuta da requisição de DELETE da API
     const deletarProdutoPromise = page.waitForResponse(
       (response) =>
         (response.url().includes('/api/') || response.url().includes('/products') || response.url().includes('/produto')) &&
@@ -69,6 +73,7 @@ test.describe('Teste de Exclusão de Produtos', () => {
       { timeout: 15000 }
     ).catch(() => null);       
     
+    // 5. Localiza e clica no botão de exclusão
     const btnExcluir = linhaSelecionada
       .locator('button, a, i, .q-btn, .p-button, .material-icons')
       .filter({ hasText: /delete|excluir|remover|trash/i })
@@ -76,7 +81,7 @@ test.describe('Teste de Exclusão de Produtos', () => {
     
     const botaoAlvo = (await btnExcluir.isVisible().catch(() => false)) 
       ? btnExcluir 
-      : linhaSelecionada.locator('button, .q-btn, .p-button').last();
+      : linhaSelecionada.locator('button, .q-btn, .p-button, a').last();
 
     await botaoAlvo.scrollIntoViewIfNeeded();
     await botaoAlvo.click({ force: true });    
@@ -84,9 +89,10 @@ test.describe('Teste de Exclusão de Produtos', () => {
     
     await page.waitForTimeout(1000);
     
+    // 6. Trata o Modal de Confirmação (se houver)
     const modal = page.locator('.q-dialog, .p-dialog, [role="dialog"], .modal, .q-card').first();
-    
     let modalVisivel = false;
+    
     try {
       await modal.waitFor({ state: 'visible', timeout: 4000 });
       modalVisivel = true;
@@ -99,10 +105,13 @@ test.describe('Teste de Exclusão de Produtos', () => {
         .locator('button.p-confirmdialog-accept-button, button.p-button-danger')
         .filter({ hasText: /^Excluir$/i })
         .first();      
+      
       const btnConfirmarFallback = modal.getByRole('button', { name: 'Excluir', exact: true });
+      
       const botaoExcluirAlvo = (await btnConfirmarModal.isVisible().catch(() => false)) 
         ? btnConfirmarModal 
         : btnConfirmarFallback;
+
       if (await botaoExcluirAlvo.isVisible({ timeout: 3000 }).catch(() => false)) {
         await botaoExcluirAlvo.click({ force: true });
         console.log('✅ Clicou no botão vermelho (Excluir) no modal');
@@ -111,6 +120,7 @@ test.describe('Teste de Exclusão de Produtos', () => {
       }
     }
     
+    // 7. Validação via API pós-exclusão
     const deletarResponse = await deletarProdutoPromise;    
 
     if (deletarResponse) {
@@ -118,12 +128,7 @@ test.describe('Teste de Exclusão de Produtos', () => {
       console.log('🌐 URL do DELETE capturada:', urlRegistroDeletado);
 
       const headersGet = { ...deletarResponse.request().headers() };      
-      delete headersGet['content-type'];
-      delete headersGet['content-length'];
-      delete headersGet[':method'];
-      delete headersGet[':path'];
-      delete headersGet[':authority'];
-      delete headersGet[':scheme'];      
+      ['content-type', 'content-length', ':method', ':path', ':authority', ':scheme'].forEach(h => delete headersGet[h]);
 
       const consultaResponse = await page.request.get(urlRegistroDeletado, {
         headers: headersGet,

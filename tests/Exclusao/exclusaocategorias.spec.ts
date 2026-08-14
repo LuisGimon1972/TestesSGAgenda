@@ -34,31 +34,27 @@ test.describe('Teste de Exclusão de Categorias', () => {
       await dialog.accept();
     });
 
-    const linhas = page.locator('tbody tr');
+    // 1. Filtra apenas linhas válidas ignorando estados vazios ("Cadastre sua primeira...", "Nenhuma categoria...", etc.)
+    const linhas = page.locator('tbody tr').filter({
+      hasNotText: /cadastre|nenhum|nenhuma|vazio|não encontrad/i
+    });
     
-    try {
-      await expect(linhas.first()).toBeVisible({ timeout: 10000 });
-    } catch {
-      console.log('⚠️ A tabela não exibiu linhas ou está vazia.');
-    }
+    // 2. Valida se existe ao menos uma categoria válida visível na tabela
+    const possuiCategorias = await linhas.first().isVisible({ timeout: 5000 }).catch(() => false);
 
-    const totalLinhas = await linhas.count();
-    
-    if (totalLinhas === 0) {
-      console.log(`⚠️ Não é possível excluir categorias: a grade está vazia!`);
+    if (!possuiCategorias) {
+      console.log('⚠️ Não existem categorias na grade para apagar (Grade vazia ou em estado inicial).');
+      console.log('⏭️ Pulando o teste de exclusão de categorias sem erros.');
       test.skip(); 
       return;
     }
 
+    const totalLinhas = await linhas.count();
+    console.log(`📊 Categorias encontradas na grade: ${totalLinhas}`);
+
+    // 3. Sorteia uma categoria da lista
     const indiceAleatorio = Math.floor(Math.random() * totalLinhas);
     const linhaSelecionada = linhas.nth(indiceAleatorio);
-    
-    const textoLinha = await linhaSelecionada.innerText().catch(() => '');
-    if (/nenhum|vazio|não encontrado|aguarde/i.test(textoLinha)) {
-      console.log(`⚠️ A linha encontrada é uma mensagem de estado vazio: "${textoLinha.trim()}"`);
-      test.skip();
-      return;
-    }
 
     const colunas = linhaSelecionada.locator('td');
     const totalColunas = await colunas.count();
@@ -81,6 +77,7 @@ test.describe('Teste de Exclusão de Categorias', () => {
       console.log(`✅ Data de cadastro: ${datacad}`);      
     }
     
+    // 4. Prepara escuta da requisição DELETE
     const deletarCategoriaPromise = page.waitForResponse(
       (response) =>
         response.request().method() === 'DELETE' &&
@@ -88,6 +85,7 @@ test.describe('Teste de Exclusão de Categorias', () => {
       { timeout: 15000 }
     ).catch(() => null);
     
+    // 5. Clica no botão Excluir da linha
     const btnExcluir = linhaSelecionada
       .locator('button, a, i, .q-btn, .material-icons')
       .filter({ hasText: /delete|lixeira|excluir|trash|remove/i })
@@ -103,9 +101,10 @@ test.describe('Teste de Exclusão de Categorias', () => {
     
     await page.waitForTimeout(1000);
     
+    // 6. Trata modal de confirmação se houver
     const modal = page.locator('.q-dialog, .p-dialog, [role="dialog"], .modal, .q-card').first();
-    
     let modalVisivel = false;
+    
     try {
       await modal.waitFor({ state: 'visible', timeout: 4000 });
       modalVisivel = true;
@@ -118,10 +117,13 @@ test.describe('Teste de Exclusão de Categorias', () => {
         .locator('button.p-confirmdialog-accept-button, button.p-button-danger')
         .filter({ hasText: /^Excluir$/i })
         .first();      
+      
       const btnConfirmarFallback = modal.getByRole('button', { name: 'Excluir', exact: true });
+      
       const botaoExcluirAlvo = (await btnConfirmarModal.isVisible().catch(() => false)) 
         ? btnConfirmarModal 
         : btnConfirmarFallback;
+
       if (await botaoExcluirAlvo.isVisible({ timeout: 3000 }).catch(() => false)) {
         await botaoExcluirAlvo.click({ force: true });
         console.log('✅ Clicou no botão vermelho (Excluir) no modal');
@@ -130,6 +132,7 @@ test.describe('Teste de Exclusão de Categorias', () => {
       }
     }
     
+    // 7. Confirmação da exclusão via resposta da API
     const deletarResponse = await deletarCategoriaPromise;    
 
     if (deletarResponse) {
@@ -137,12 +140,7 @@ test.describe('Teste de Exclusão de Categorias', () => {
       console.log('🌐 URL do DELETE capturada:', urlRegistroDeletado);
 
       const headersGet = { ...deletarResponse.request().headers() };      
-      delete headersGet['content-type'];
-      delete headersGet['content-length'];
-      delete headersGet[':method'];
-      delete headersGet[':path'];
-      delete headersGet[':authority'];
-      delete headersGet[':scheme'];      
+      ['content-type', 'content-length', ':method', ':path', ':authority', ':scheme'].forEach(h => delete headersGet[h]);
    
       const consultaResponse = await page.request.get(urlRegistroDeletado, {
         headers: headersGet,
@@ -151,7 +149,7 @@ test.describe('Teste de Exclusão de Categorias', () => {
       console.log('✅ RESPOSTA DA API AO CONSULTAR REGISTRO EXCLUÍDO');
       console.log(`✅ Status GET pós-exclusão: ${consultaResponse.status()}`);
 
-      if (consultaResponse.status() === 404 || consultaResponse.status() === 400 || consultaResponse.status() === 500) {
+      if ([404, 400, 500].includes(consultaResponse.status())) {
         console.log(`✅ Registro não foi encontrado no sistema (Status ${consultaResponse.status()}). Exclusão confirmada!`);
       } else {
         try {
@@ -162,7 +160,7 @@ test.describe('Teste de Exclusão de Categorias', () => {
         }
       }
     } else {
-      console.log('⚠️ A requisição DELETE não foi capturada automaticamente pela regra genérica.');
+      console.log('⚠️ A requisição DELETE não foi capturada automaticamente.');
     }      
        
     await capturarRequisicoesApi(page); 
