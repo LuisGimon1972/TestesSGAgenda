@@ -28,8 +28,7 @@ test.describe('Teste de Edição de Atendentes', () => {
   });
 
   test('Deve selecionar aleatoriamente um atendente da lista e abrir edição.', async ({ page }) => {
-    const linhas = page.locator('tbody tr');
-    //await expect(linhas.first()).toBeVisible({ timeout: 30000 });
+    const linhas = page.locator('tbody tr');   
 
     const totalLinhas = await linhas.count();
     expect(totalLinhas, 'A lista deve possuir ao menos 1 atendente').toBeGreaterThan(0);
