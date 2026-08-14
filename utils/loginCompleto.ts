@@ -1,5 +1,4 @@
 import { Page } from '@playwright/test';
-import { talVez } from '../utils/talvez';
 import { fecharPopupAtualizacao } from '../utils/novidade';
 
 export function formatarDataHora(date: Date): string {
@@ -33,27 +32,15 @@ export async function loginCompleto(page: Page) {
   console.log('✅ Login Preenchido');  
   await page.getByRole('button', { name: /entrar/i }).click();
   console.log('✅ Clicou em Entrar'); 
-
-/* const botao1 = page.locator('button:has-text("Acessar")').nth(0);
-  //const botao = page.locator('button:has-text("ENTRAR")').first();
-  await botao1.highlight();
-  await botao1.evaluate((el: any) => {
-    el.style.border = '5px solid red';
-    el.click();
-  });
-  console.log('✅ Clicou em Acessar Empresa');*/
-
-  await page.waitForTimeout(3000);
-  console.log('🌐 URL:', await page.url()); 
-
+  
+  console.log('🌐 URL:', page.url()); 
   
   await page.evaluate(() => {
     document.querySelectorAll('.q-dialog, .q-dialog__backdrop, .q-overlay').forEach((el: any) => {
       el.remove();
     });
-  });
+  }); 
   
-  await page.waitForTimeout(2000);
   await page.evaluate(() => {
     document.querySelectorAll('.q-dialog, .q-dialog__backdrop, .q-overlay').forEach((el: any) => {
       el.remove();
@@ -70,7 +57,5 @@ export async function loginCompleto(page: Page) {
     console.log('Popup fechado com sucesso.');
   }
   
-  await fecharPopupAtualizacao(page)   
-
- // await talVez(page);   
+  await fecharPopupAtualizacao(page)    
 }

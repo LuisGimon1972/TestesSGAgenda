@@ -8,11 +8,11 @@ test('Cadastro de Atendentes com Comissões', async ({ page }) => {
     test.setTimeout(90000);
     
     await loginCompleto(page);    
-    await page.waitForTimeout(2000);           
+    await page.waitForTimeout(1000);           
     
     await navegarPara(page, 'Profissionais');
     console.log(`✅ Clicou em Profissionais`);          
-    await page.waitForTimeout(2000);                 
+    await page.waitForTimeout(1000);                 
     
     const btnCadastrar = page.getByText(/Novo profissional/i).first();
     await btnCadastrar.waitFor();
@@ -41,9 +41,8 @@ test('Cadastro de Atendentes com Comissões', async ({ page }) => {
     const timestamp = Date.now();
     const nomeAtendente = obterNomePessoaAleatorio();
     const emailAtendente = `email_atendente.${timestamp}@sgbr.com`;
-    const senha = 'Teste@123456';
+    const senha = 'Teste@123456';    
     
-    // Função auxiliar para preenchimento limpo mantendo os mesmos índices do Cypress
     const preencherCampo = async (index: number, texto: string, nomeCampo: string) => {
         try {
             const campo = page.locator('input:visible').nth(index);
@@ -68,7 +67,7 @@ test('Cadastro de Atendentes com Comissões', async ({ page }) => {
     await preencherCampo(4, '3000', 'Comissão Serviços');
     await preencherCampo(5, '2000', 'Comissão Produtos');
 
-    await page.waitForTimeout(2000);       
+    await page.waitForTimeout(1000);       
     
     try {
       await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
@@ -140,6 +139,6 @@ test('Cadastro de Atendentes com Comissões', async ({ page }) => {
     }
     
     await capturarRequisicoesApi(page); 
-    await page.waitForTimeout(4000);    
+    await page.waitForTimeout(1000);    
     console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
 });

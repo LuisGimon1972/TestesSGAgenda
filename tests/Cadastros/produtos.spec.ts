@@ -9,13 +9,13 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
 
     await loginCompleto(page);        
 
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
     await navegarPara(page, 'Profissionais');
     await navegarPara(page, 'Catálogo', 'Produtos');    
     console.log(`✅ Clicou em Produtos`);          
     console.log(`✅ Apareceu Listagem de produtos`);      
 
-    await page.waitForTimeout(2000);             
+    await page.waitForTimeout(1000);             
     
     const btnCadastrar = page.getByText(/Novo produto/i).first();
     await btnCadastrar.waitFor();
@@ -38,7 +38,7 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
       }
     } catch (e) {}
 
-    await page.waitForTimeout(1000);   
+    await page.waitForTimeout(500);   
 
     console.log('📝 DADOS ENVIADOS PRA API');    
     const nomeProduto = `${obterProdutoAleatorio().nome} ${Date.now()}`;
@@ -153,6 +153,6 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
     }
 
     await capturarRequisicoesApi(page); 
-    await page.waitForTimeout(4000);    
+    await page.waitForTimeout(2000);    
     console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
 });

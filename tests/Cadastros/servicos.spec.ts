@@ -9,11 +9,11 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
 
     await loginCompleto(page);    
 
-    await page.waitForTimeout(2000);       
+    await page.waitForTimeout(1000);       
 
     const servico = obterServicoAleatorio();  
 
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
     await navegarPara(page, 'Catálogo', '');    
     console.log(`✅ Clicou em Serviços`);          
     console.log(`✅ Apareceu Listagem de serviços`);         
@@ -75,8 +75,7 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
       await campoValor.press('Control+A');
       await campoValor.press('Backspace');
       await campoValor.type(valor.toString(), { delay: 50 });
-
-      // O cálculo é feito na variável `valor`
+      
       const valorFormatado = (Number(valor) / 100).toFixed(2);
       console.log('✅ Valor:', valorFormatado);
     } catch (e) {
@@ -235,6 +234,6 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
     }
 
     await capturarRequisicoesApi(page); 
-    await page.waitForTimeout(4000);    
+    await page.waitForTimeout(2000);    
     console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
 });
