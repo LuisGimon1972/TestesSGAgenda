@@ -78,8 +78,7 @@ test.describe('Teste de Edição de Clientes', () => {
         'td:last-child a'
       ].join(', '))
       .nth(1);
-
-    // 2. Aguarda estar visível/pronto e clica
+    
     await btnEditar.waitFor({ state: 'visible', timeout: 5000 });
     await btnEditar.scrollIntoViewIfNeeded().catch(() => {});
     await btnEditar.click({ force: true });
