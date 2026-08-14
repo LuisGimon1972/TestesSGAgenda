@@ -768,5 +768,38 @@
     "fantasia": "Fantasia Heloísa",
     "documento": "55.668.675/0001-03",
     "slug": "site-heloísanascimento1786643423528"
+  },
+  {
+    "dataCriacao": "2026-08-13T19:53:14.147Z",
+    "pais": "Paraguai",
+    "nomeUsuario": "Mariana Alves Santos",
+    "emailUsuario": "mariana.1786650774551@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Mariana Alves Santos",
+    "fantasia": "Fantasia Mariana",
+    "documento": "80064404",
+    "slug": "site-marianaalves1786650774551"
+  },
+  {
+    "dataCriacao": "2026-08-13T20:18:11.991Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Sophia Lima Lopes",
+    "emailUsuario": "sophia.1786652272009@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Sophia Lima Lopes",
+    "fantasia": "Fantasia Sophia",
+    "documento": "77.652.593/0001-03",
+    "slug": "site-sophialima1786652272009"
+  },
+  {
+    "dataCriacao": "2026-08-13T20:18:41.622Z",
+    "pais": "Paraguai",
+    "nomeUsuario": "Alice Alves Carvalho",
+    "emailUsuario": "alice.1786652302143@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Alice Alves Carvalho",
+    "fantasia": "Fantasia Alice",
+    "documento": "80027498",
+    "slug": "site-alicealves1786652302143"
   }
 ]
