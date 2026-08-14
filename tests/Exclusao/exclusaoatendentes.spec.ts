@@ -3,7 +3,7 @@ import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
 import { navegarPara } from '../../utils/navegar';
 
-test.describe('Teste de Exclusão de Atendentes', () => {
+test.describe('Teste de Exclusão de Profissionais', () => {
 
   async function fecharCookiesSeAparecer(page: Page) {
     const bodyText = await page.locator('body').innerText().catch(() => '');

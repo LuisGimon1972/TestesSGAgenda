@@ -4,7 +4,7 @@ import { obterNomePessoaAleatorio } from '../../utils/nomescompletos';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
 import { navegarPara } from '../../utils/navegar';
 
-test.describe('Teste de Edição de Atendentes', () => {
+test.describe('Teste de Edição de Profissionais', () => {
 
   async function fecharCookiesSeAparecer(page: Page) {
     const bodyText = await page.locator('body').innerText().catch(() => '');

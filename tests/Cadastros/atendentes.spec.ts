@@ -4,7 +4,7 @@ import { capturarRequisicoesApi } from '../../utils/capturaApi';
 import { obterNomePessoaAleatorio } from '../../utils/nomescompletos';
 import { navegarPara } from '../../utils/navegar';
 
-test('Cadastro de Atendentes com Comissões', async ({ page }) => {
+test('Cadastro de Profissionais com Comissões', async ({ page }) => {
     test.setTimeout(90000);
     
     await loginCompleto(page);    
