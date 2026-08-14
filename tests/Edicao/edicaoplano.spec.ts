@@ -33,7 +33,7 @@ test.describe('Teste de Edição de Planos', () => {
   test('Deve selecionar aleatoriamente um serviço da lista e abrir edição.', async ({ page }) => {   
     
     
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(1000);
 
     const linhas = page.locator('tbody tr');
     const totalLinhas = await linhas.count();

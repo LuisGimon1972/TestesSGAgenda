@@ -26,15 +26,13 @@ test.describe('Teste de Edição de Serviços', () => {
     
     await page.waitForTimeout(500);       
 
-    await expect(page.getByText(/Serviços/i).first()).toBeVisible({ timeout: 30000 });
-    // Aguarda apenas o tbody genérico, não força o erro se a linha (tr) não existir
+    await expect(page.getByText(/Serviços/i).first()).toBeVisible({ timeout: 30000 });    
     await page.waitForSelector('tbody', { state: 'visible', timeout: 15000 }).catch(() => {});
   });
 
-  test('Deve selecionar aleatoriamente um serviço da lista e abrir edição.', async ({ page }) => {   
+  test('Deve selecionar aleatoriamente um serviço da lista e abrir edição.', async ({ page }) => {       
     
-    // Pequena pausa para garantir que os dados renderizaram na tabela
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(1000);
 
     const linhas = page.locator('tbody tr');
     const totalLinhas = await linhas.count();
