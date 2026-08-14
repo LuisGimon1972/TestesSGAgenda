@@ -1,6 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { obterProdutoAleatorio } from '../../utils/listaprodutos';
+import { navegarPara } from '../../utils/navegar';
 
 test.describe('Teste de Edição de Produtos', () => {
 
@@ -19,11 +20,10 @@ test.describe('Teste de Edição de Produtos', () => {
     await loginCompleto(page);    
     await fecharCookiesSeAparecer(page);    
 
-    await page.locator('.q-item, a, button').filter({ hasText: /Produtos/i }).first().click({ force: true });
-    console.log(`✅ Clicou em Produtos`);          
-    console.log(`✅ Apareceu Listagem de produtos`);      
+    await navegarPara(page, 'Profissionais');
+    await navegarPara(page, 'Catálogo', 'Produtos');    
 
-    await expect(page.getByText(/Listagem de produtos/i).first()).toBeVisible({ timeout: 30000 });
+    await expect(page.getByText(/Produtos/i).first()).toBeVisible({ timeout: 30000 });
     await expect(page.locator('tbody tr').first()).toBeVisible({ timeout: 15000 });
   });
 
