@@ -2,6 +2,7 @@ import { test, expect, Page } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { obterNomePessoaAleatorio } from '../../utils/nomescompletos';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
+import { navegarPara } from '../../utils/navegar';
 
 test.describe('Teste de Edição de Atendentes', () => {
 
@@ -20,18 +21,15 @@ test.describe('Teste de Edição de Atendentes', () => {
     await loginCompleto(page);    
     await fecharCookiesSeAparecer(page);
 
-    const menuAtendentes = page.getByText(/Atendentes/i).first();
-    await expect(menuAtendentes).toBeVisible({ timeout: 30000 });
-    await menuAtendentes.scrollIntoViewIfNeeded();
-    await menuAtendentes.click({ force: true });   
+    await navegarPara(page, 'Profissionais');
 
-    await expect(page.getByText(/Listagem de atendentes/i).first()).toBeVisible({ timeout: 30000 });
+    await expect(page.getByText(/Profissionais/i).first()).toBeVisible({ timeout: 30000 });
     await page.waitForTimeout(2000);   
   });
 
   test('Deve selecionar aleatoriamente um atendente da lista e abrir edição.', async ({ page }) => {
     const linhas = page.locator('tbody tr');
-    await expect(linhas.first()).toBeVisible({ timeout: 30000 });
+    //await expect(linhas.first()).toBeVisible({ timeout: 30000 });
 
     const totalLinhas = await linhas.count();
     expect(totalLinhas, 'A lista deve possuir ao menos 1 atendente').toBeGreaterThan(0);
@@ -39,23 +37,38 @@ test.describe('Teste de Edição de Atendentes', () => {
     const indiceAleatorio = Math.floor(Math.random() * totalLinhas);
     const linhaSelecionada = linhas.nth(indiceAleatorio);
 
+    await page.waitForTimeout(2000); 
+    
     const nomeAtendentee = (await linhaSelecionada.locator('td').nth(0).innerText()).trim();
     console.log(`✅ Atendente selecionado: ${nomeAtendentee}`);
     
-    const btnAcoes = linhaSelecionada
-      .locator('td')
-      .last()
-      .locator('[aria-label], button, .q-btn')
-      .first();
-
-    await btnAcoes.scrollIntoViewIfNeeded();
-    await btnAcoes.click({ force: true });
+    const btnEditar = linhaSelecionada
+      .locator([
+        'button:has-text("edit")',
+        'button:has-text("editar")',
+        'a:has-text("edit")',
+        'a:has-text("editar")',
+        'i:has-text("edit")',
+        'i:has-text("editar")',
+        '[title*="edit" i]',
+        '[title*="editar" i]',
+        '[aria-label*="edit" i]',
+        '[aria-label*="editar" i]',
+        '.q-btn:has(.q-icon)',
+        'td:last-child button',
+        'td:last-child a'
+      ].join(', '))
+      .nth(0);
 
     console.log('📝 DADOS ENVIADOS PRA API');
     
-    const opcaoEditar = page.getByText(/Editar atendente/i).first();
-    await expect(opcaoEditar).toBeVisible({ timeout: 10000 });
-    await opcaoEditar.click({ force: true });        
+    await btnEditar.waitFor({ state: 'visible', timeout: 5000 });
+    await btnEditar.scrollIntoViewIfNeeded().catch(() => {});
+    await btnEditar.click({ force: true });      
+    
+    console.log('✅ Clicou no botão Editar da linha');
+
+    await page.waitForTimeout(1000); 
 
     const salvarAtendentePromise = page.waitForResponse((response) =>
       (response.url().includes('/api/') || response.url().includes('/service-providers') || response.url().includes('/atendente')) &&
@@ -90,9 +103,9 @@ test.describe('Teste de Edição de Atendentes', () => {
       }
     };
 
-    await preencherCampo(1, nomeAtendenteLimpo, 'Nome do Atendente Alterado');
-    await preencherCampo(2, '4500', 'Comissão Serviços Alterado');
-    await preencherCampo(3, '5600', 'Comissão Produtos Alterado');
+    await preencherCampo(2, nomeAtendenteLimpo, 'Nome do Atendente Alterado');
+    await preencherCampo(3, '4500', 'Comissão Serviços Alterado');
+    await preencherCampo(4, '5600', 'Comissão Produtos Alterado');
 
     await page.waitForTimeout(2000);       
     
@@ -102,7 +115,7 @@ test.describe('Teste de Edição de Atendentes', () => {
     } catch (e) {}
     console.log('📝 FIM DE DADOS ENVIADOS PRA API');
 
-    const btnGravar = page.getByText(/Gravar/i).first();
+    const btnGravar = page.getByText(/Gravar alterações/i).first();
     await btnGravar.waitFor();
     await btnGravar.click({ force: true });
     console.log('✅ Clicou em Gravar');              

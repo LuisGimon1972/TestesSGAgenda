@@ -1,6 +1,7 @@
 import { test, expect, Page } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { obterNomePessoaAleatorio } from '../../utils/nomescompletos';
+import { navegarPara } from '../../utils/navegar';
 
 function gerarTelefoneAleatorio(): string {
   const ddd = '49';
@@ -38,11 +39,8 @@ test.describe('Teste de Edição de Clientes', () => {
   test.beforeEach(async ({ page }) => {
     await loginCompleto(page);    
     await fecharCookiesSeAparecer(page);    
-
-    const menuClientes = page.getByText(/Clientes/i).first();
-    await expect(menuClientes).toBeVisible({ timeout: 30000 });
-    await menuClientes.scrollIntoViewIfNeeded();
-    await menuClientes.click({ force: true });   
+    
+    await navegarPara(page, 'Clientes');
 
     await expect(page.getByText(/Clientes/i).first()).toBeVisible({ timeout: 30000 });
     await expect(page.locator('tbody tr').first()).toBeVisible({ timeout: 15000 });
