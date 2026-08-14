@@ -8,7 +8,7 @@ test('Cadastro de Planos E2E com Serviço Prestado', async ({ page }) => {
     test.setTimeout(900000);
 
     await loginCompleto(page);    
-    await page.waitForTimeout(2000);       
+    await page.waitForTimeout(1000);       
     
     await page.emulateMedia({ media: 'screen' });
     await page.evaluate(() => { document.body.style.zoom = '0.9'; });
@@ -16,7 +16,7 @@ test('Cadastro de Planos E2E com Serviço Prestado', async ({ page }) => {
         
     await navegarPara(page, 'Planos');
     console.log(`✅ Clicou em Planos`);          
-    await page.waitForTimeout(2000);                 
+    await page.waitForTimeout(1000);                 
     
     const btnCadastrar = page.getByText(/Novo plano/i).first();
     await btnCadastrar.waitFor();
@@ -90,7 +90,7 @@ test('Cadastro de Planos E2E com Serviço Prestado', async ({ page }) => {
       const btnAdicionar = page.locator('button, .q-btn, [role="button"]').filter({ hasText: /Adicionar serviços/i }).first();
       await btnAdicionar.click({ force: true });
       console.log('✅ Clicou em Adicionar Serviço');
-      await page.waitForTimeout(1500);
+      await page.waitForTimeout(1000);
      
       totalValidas = await page.evaluate(() => {
         const dialog = document.querySelector('.q-dialog:not([style*="display: none"]), [role="dialog"]');
@@ -244,6 +244,6 @@ test('Cadastro de Planos E2E com Serviço Prestado', async ({ page }) => {
     }
    
     await capturarRequisicoesApi(page); 
-    await page.waitForTimeout(4000);    
+    await page.waitForTimeout(2000);    
     console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
 });
