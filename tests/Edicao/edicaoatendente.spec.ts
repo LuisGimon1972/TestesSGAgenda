@@ -36,7 +36,7 @@ test.describe('Teste de Edição de Atendentes', () => {
     const indiceAleatorio = Math.floor(Math.random() * totalLinhas);
     const linhaSelecionada = linhas.nth(indiceAleatorio);
 
-    await page.waitForTimeout(2000); 
+    await page.waitForTimeout(1000); 
     
     const nomeAtendentee = (await linhaSelecionada.locator('td').nth(0).innerText()).trim();
     console.log(`✅ Atendente selecionado: ${nomeAtendentee}`);
