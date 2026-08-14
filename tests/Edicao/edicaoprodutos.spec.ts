@@ -23,35 +23,30 @@ test.describe('Teste de Edição de Produtos', () => {
     await navegarPara(page, 'Profissionais');
     await navegarPara(page, 'Catálogo', 'Produtos');    
 
-    await expect(page.getByText(/Produtos/i).first()).toBeVisible({ timeout: 30000 });
-    // Aguarda o tbody renderizar sem exigir que a linha (tr) exista obrigatoriamente
+    await expect(page.getByText(/Produtos/i).first()).toBeVisible({ timeout: 30000 });    
     await page.waitForSelector('tbody', { state: 'visible', timeout: 15000 }).catch(() => {});
   });
 
-  test('Deve selecionar aleatoriamente um produto da lista e abrir edição.', async ({ page }) => {   
+  test('Deve selecionar aleatoriamente um produto da lista e abrir edição.', async ({ page }) => {      
     
-    // Pequena pausa para garantir que a grade puxou os dados do servidor
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(1000);
 
     const linhas = page.locator('tbody tr');
     const totalLinhas = await linhas.count();
-
-    // 1. Validação de Grade Completamente Vazia (0 linhas)
+    
     if (totalLinhas === 0) {
       console.log('⚠️ A grade não possui registros (0 linhas). Teste ignorado (skipped).');
       test.skip();
       return;
-    }
+    }    
     
-    // 2. Validação do Placeholder de Lista Vazia renderizado numa linha (<tr>)
     const textoPrimeiraLinha = await linhas.first().innerText();
     if (/Cadastrar primeiro|Nenhum|Sem registro|No data/i.test(textoPrimeiraLinha)) {
       console.log(`⚠️ Grade vazia detectada: "${textoPrimeiraLinha.trim().split('\n')[0]}". Teste ignorado (skipped).`);
-      test.skip(); // Pula o teste e encerra a execução dele sem dar erro
+      test.skip(); 
       return;
-    }
-    
-    // Se passou pelas validações acima, temos produtos reais na lista.
+    }    
+
     const indiceAleatorio = Math.floor(Math.random() * totalLinhas);
     const linhaSelecionada = linhas.nth(indiceAleatorio);   
     
