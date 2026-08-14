@@ -20,7 +20,7 @@ test.describe('Teste de Exclusão de Categorias', () => {
     await loginCompleto(page);    
     await fecharCookiesSeAparecer(page);    
 
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
     await navegarPara(page, 'Catálogo', 'Categorias');    
     console.log(`✅ Clicou em Categorias`);          
     
@@ -52,8 +52,7 @@ test.describe('Teste de Exclusão de Categorias', () => {
 
     const indiceAleatorio = Math.floor(Math.random() * totalLinhas);
     const linhaSelecionada = linhas.nth(indiceAleatorio);
-
-    // Valida se a linha retornada é uma mensagem de "nenhum registro"
+    
     const textoLinha = await linhaSelecionada.innerText().catch(() => '');
     if (/nenhum|vazio|não encontrado|aguarde/i.test(textoLinha)) {
       console.log(`⚠️ A linha encontrada é uma mensagem de estado vazio: "${textoLinha.trim()}"`);

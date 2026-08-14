@@ -19,13 +19,13 @@ test.describe('Teste de Exclusão de Atendentes', () => {
   test.beforeEach(async ({ page }) => {
     await loginCompleto(page);    
     await fecharCookiesSeAparecer(page);
-    await page.waitForTimeout(2000);                 
+    await page.waitForTimeout(1000);                 
     await navegarPara(page, 'Profissionais');
     console.log(`✅ Clicou em Profissionais`);          
-    await page.waitForTimeout(2000);                 
+    await page.waitForTimeout(1000);                 
 
     await expect(page.getByText(/Profissionais/i).first()).toBeVisible({ timeout: 30000 });
-    await page.waitForTimeout(2000);   
+    await page.waitForTimeout(1000);   
   });
 
   test('Deve selecionar aleatoriamente um atendente, confirmar exclusão no modal e consultar via API.', async ({ page }) => {
@@ -143,7 +143,7 @@ test.describe('Teste de Exclusão de Atendentes', () => {
     }  
     
     await capturarRequisicoesApi(page); 
-    await page.waitForTimeout(4000);    
+    await page.waitForTimeout(2000);    
     console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);       
   });
 });

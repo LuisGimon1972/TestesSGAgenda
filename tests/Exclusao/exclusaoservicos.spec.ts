@@ -20,15 +20,14 @@ test.describe('Teste de Exclusão de Serviços', () => {
     await loginCompleto(page);    
     await fecharCookiesSeAparecer(page);    
 
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
     await navegarPara(page, 'Catálogo', '');    
     console.log(`✅ Clicou em Serviços`);          
     console.log(`✅ Apareceu Listagem de serviços`);         
     
     await page.waitForTimeout(500);       
 
-    await expect(page.getByText(/Serviços/i).first()).toBeVisible({ timeout: 30000 });
-    // Removida a verificação estrita do beforeEach para evitar quebra caso a tabela esteja vazia
+    await expect(page.getByText(/Serviços/i).first()).toBeVisible({ timeout: 30000 });    
   });
 
   test('Deve selecionar aleatoriamente um serviço, excluir e consultar via API.', async ({ page }) => {   

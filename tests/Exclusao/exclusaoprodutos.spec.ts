@@ -24,7 +24,7 @@ test.describe('Teste de Exclusão de Produtos', () => {
     await navegarPara(page, 'Catálogo', 'Produtos');    
     
     await expect(page.getByText(/Produtos/i).first()).toBeVisible({ timeout: 30000 });
-    await page.waitForTimeout(2000); 
+    await page.waitForTimeout(1000); 
   });
 
   test('Deve selecionar aleatoriamente um produto, confirmar exclusão no modal e consultar via API.', async ({ page }) => {   
@@ -34,8 +34,7 @@ test.describe('Teste de Exclusão de Produtos', () => {
     });
 
     const linhas = page.locator('tbody tr');    
-
-    // Tenta aguardar a tabela carregar linhas de forma segura
+    
     try {
       await expect(linhas.first()).toBeVisible({ timeout: 10000 });
     } catch {
