@@ -9,11 +9,11 @@ test('Cadastro de Categorias', async ({ page }) => {
     
     await loginCompleto(page);    
     
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
     await navegarPara(page, 'Catálogo', 'Categorias');    
     console.log(`✅ Clicou em Categorias`);          
     
-    await page.waitForTimeout(2000);                
+    await page.waitForTimeout(1000);                
     const btnCadastrar = page.getByText(/Nova categoria/i).first();
     await btnCadastrar.waitFor();
     await btnCadastrar.click({ force: true });      
@@ -72,7 +72,7 @@ try {
 
     console.log('📝 FIM DE DADOS ENVIADOS PRA API');
 
-    await page.waitForTimeout(2000);       
+    await page.waitForTimeout(1000);       
     
     try {
       await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
@@ -146,6 +146,6 @@ try {
       console.log('⚠️ Validação de texto concluída.');
     }   
     await capturarRequisicoesApi(page); 
-    await page.waitForTimeout(4000);    
+    await page.waitForTimeout(2000);    
     console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
 });

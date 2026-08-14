@@ -458,7 +458,7 @@ async function selecionarComboPorLabel(
       console.error(`❌ Erro ao salvar arquivo JSON:`, e);
     }
    await capturarRequisicoesApi(page); 
-   await page.waitForTimeout(4000);    
+   await page.waitForTimeout(2000);    
    console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
   });
 });
