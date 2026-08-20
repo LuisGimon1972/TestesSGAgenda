@@ -36,148 +36,111 @@ test.describe('Agendamentos - Cadastro', () => {
   async function abrirCadastroAgendamento(page: Page) {
     await page.waitForTimeout(1000);
     const btnCadastrar = page.getByText(/Novo agendamento/i).first();
-    await btnCadastrar.click({ force: true });   
+    await btnCadastrar.click({ force: true });
   }
 
-  async function selecionarServico(page: Page, tentativa = 0): Promise<void> {    
-    await expect(page.locator('body')).toHaveText(/Serviços/i, { timeout: 30000 });
+ async function selecionarServico(page: Page, tentativa = 0): Promise<void> {    
     await fecharCookiesSeAparecer(page);
     await page.waitForTimeout(1000);
+    
+    const cardsServicos = page.locator('.q-card, .q-item, [role="button"]')
+      .filter({ hasText: /\d+\s*min|₲|R\$|\$|Gs|Valor/i })
+      .filter({ hasNotText: /Dashboard|Agenda|Clientes|Atendentes|Produtos|Configura/i });
 
-    const resultadoClique = await page.evaluate((tent) => {
-      function limparTexto(texto: string | null) { return (texto || '').replace(/\s+/g, ' ').trim(); }
+    await cardsServicos.first().waitFor({ state: 'visible', timeout: 30000 });
+    const count = await cardsServicos.count();
+
+    if (count === 0) {
+      throw new Error('Nenhum card de serviço foi localizado na tela.');
+    }
+
+    const index = Math.min(tentativa, count - 1);
+    const cardAlvo = cardsServicos.nth(index);
+
+    const texto = await cardAlvo.innerText();
+    const servicoLimpo = texto.replace(/\s+/g, ' ').trim();
+    console.log(`✅ Serviço escolhido: ${servicoLimpo}`);
+
+    await cardAlvo.scrollIntoViewIfNeeded();
+    await cardAlvo.click({ force: true });
+    await page.waitForTimeout(1000);
+  }
+
+  async function selecionarProfissional(page: Page) {  
+    await fecharCookiesSeAparecer(page);
+    await page.waitForTimeout(1200);
+
+    const resultadoClique = await page.evaluate(() => {
+      function limparTexto(t: string | null) { return (t || '').replace(/\s+/g, ' ').trim(); }
       
-      const elementos = Array.from(document.querySelectorAll('*:not(script, style, link, meta, head, title)'));
-      const vistos = new Set();
-      const encontrados: HTMLElement[] = [];
+      const titulos = Array.from(document.querySelectorAll('*')).filter(el => {
+        const txt = limparTexto(el.textContent);
+        return /^(Atendente|Atendentes|Profissional|Profissionais|Profesional|Profesionales)$/i.test(txt);
+      });
 
-      elementos.forEach((el) => {
+      let topTitulo = 0;
+      if (titulos.length > 0) {
+        const rects = titulos.map(t => t.getBoundingClientRect()).filter(r => r.height > 0 && r.width > 0);
+        if (rects.length > 0) {
+          topTitulo = rects[rects.length - 1].top;
+        }
+      }
+
+      const candidatosAtendentes: HTMLElement[] = [];
+      const todosElementos = Array.from(document.querySelectorAll('.q-card, .q-item, [role="button"], div.cursor-pointer'));
+
+      todosElementos.forEach(el => {
         const elemento = el as HTMLElement;
         const style = window.getComputedStyle(elemento);
         if (style.display === 'none' || style.visibility === 'hidden') return;
 
         const texto = limparTexto(elemento.textContent);
-        if (!texto || texto.length > 220) return;
+        if (!texto || texto.length < 2 || texto.length > 150) return;
 
         const rect = elemento.getBoundingClientRect();
-        const temTamanhoPossivel = rect.width >= 20 && rect.width <= 700 && rect.height >= 10 && rect.height <= 420;
-        const contemPalavraServico = /Corte|Hidra|Barba|Cabe|Bigo|Cel|Infa|Seca/i.test(texto);
-        const contemValorServico = /(?:R\$|\$|₲|G|Gs\.?|G\$)\s*[\d.,]+|[\d.,]+\s*(?:R\$|\$|₲|G|Gs\.?|G\$)/i.test(texto);
-        const naoEhMenuOuBusca = !/Serviço|Buscar servi[çc]o|Buscar servicio|Exibir mais|Mostrar mais|Dashboard|Agenda|Clientes|Atendentes|Produtos|Configura[çc][õo]es|Termos de uso|Política de privacidade|cookies|Entendi/i.test(texto);
+        if (rect.width < 20 || rect.height < 15) return;
 
-        if (!temTamanhoPossivel || !naoEhMenuOuBusca || (!contemPalavraServico && !contemValorServico)) return;
+        // O card de atendente deve estar localizado ABAIXO do título "Atendente" na tela
+        if (topTitulo > 0 && rect.top < topTitulo - 5) return;
 
-        const clicavel = elemento.closest('.q-card, .q-item, button, [role="button"], [class*="card"], [class*="item"]') || elemento;
-        if (!vistos.has(clicavel)) {
-          vistos.add(clicavel);
-          encontrados.push(clicavel as HTMLElement);
-        }
+        // 🛑 FILTROS RÍGIDOS ANTI-SERVIÇO E ANTI-MENU
+        const temMinutosOuDuracao = /\d+\s*min/i.test(texto); // sem \b para capturar textos grudados como JUL20 min
+        const temPrecoOuValor = /(?:R\$|\$|₲|G|Gs\.?|G\$)\s*[\d.,]+|[\d.,]+\s*(?:R\$|\$|₲|G|Gs\.?|G\$)|Valor/i.test(texto);
+        const ehNomeDeServico = /CORTE|LAVADO|HIDRATA|BARBA|PEDI|SECADO|TATOO|PENTEADO|COLORA|MASSAGEM|PEELING|BOTOX|PROGRESSIVA|DAY SPA|REFLEXOLOGIA|ESFOLIA|PIGMENTA|RECONSTRU|ESCORA/i.test(texto);
+        const ehMenuOuSistema = /Dashboard|Agendamentos|Clientes|Profissionais|Catálogo|Planos|Comissões|Financeiro|Deus seja|Desconectado|Novo agendamento|Selecione|Serviços|Atendente|Termos|Política|Alterações|Desfazer|Criar agendamento/i.test(texto);
+
+        if (temMinutosOuDuracao || temPrecoOuValor || ehNomeDeServico || ehMenuOuSistema) return;
+
+        candidatosAtendentes.push(elemento);
       });
 
-      encontrados.sort((a, b) => {
-        const textoA = limparTexto(a.textContent);
-        const textoB = limparTexto(b.textContent);
-        const scoreA = (/Corte|Servi|Servi[çc]o|Servicio/i.test(textoA) ? 100 : 0) + (/(?:R\$|\$|₲|G|Gs\.?|G\$)\s*[\d.,]+/i.test(textoA) ? 80 : 0) - textoA.length;
-        const scoreB = (/Corte|Servi|Servi[çc]o|Servicio/i.test(textoB) ? 100 : 0) + (/(?:R\$|\$|₲|G|Gs\.?|G\$)\s*[\d.,]+/i.test(textoB) ? 80 : 0) - textoB.length;
-        return scoreB - scoreA;
-      });
+      if (candidatosAtendentes.length === 0) {
+        return { sucesso: false, texto: '' };
+      }
+      
+      const cardAtendente = candidatosAtendentes[0];
+      const clicavel = (cardAtendente.closest('.q-card, .q-item, button, [role="button"]') || cardAtendente) as HTMLElement;
 
-      if (encontrados.length === 0) return { sucesso: false, textoBody: limparTexto(document.body.textContent).substring(0, 1200) };
+      clicavel.scrollIntoView();
+      clicavel.click();
 
-      const card = encontrados[tent] || encontrados[0];
-      card.scrollIntoView();
-      card.click();
-      return { sucesso: true, textoClicado: limparTexto(card.textContent) };
-    }, tentativa);
+      return { sucesso: true, texto: limparTexto(cardAtendente.textContent) };
+    });
 
     if (!resultadoClique.sucesso) {
-      console.log(`⚠️ Texto da tela: ${resultadoClique.textoBody}`);
-      throw new Error('Nenhum card de serviço encontrado com Corte, Serviço ou Moeda.');
+      throw new Error('Nenhum atendente/profissional válido foi encontrado abaixo do título na tela.');
     }
 
-    const servicoLimpo = resultadoClique.textoClicado
-    ?.replace(/edit_square/i, '') 
-    ?.replace(/\s+/g, ' ')        
-    ?.trim();
+    const atendenteLimpo = resultadoClique.texto
+      ?.replace(/^person|person/gi, '') 
+      ?.replace(/\s+/g, ' ')            
+      ?.trim();
 
-    console.log(`✅ Serviço escolhido: ${servicoLimpo}`);
+    console.log(`✅ Profissional escolhido: ${atendenteLimpo}`);
     await page.waitForTimeout(1500);
-
-    const textoDepois = await page.locator('body').innerText();
-    if (/Atendente/i.test(textoDepois)) {
-      return;
-    }
-
-    if (tentativa + 1 < 5) {
-      console.log('⚠️ Serviço clicado não avançou. Tentando próximo card.');
-      await selecionarServico(page, tentativa + 1);
-    } else {
-      throw new Error(`Serviço foi clicado, mas a tela não avançou. Serviço: ${resultadoClique.textoClicado}`);
-    }
+    
+    await expect(page.locator('body')).toHaveText(/Selecione o dia|Escolha o dia|Horario|Horário|Data|\d{2}\/\d{2}|\d{2}:\d{2}/i, { timeout: 30000 });
   }
-
-  async function selecionarProfissional(page: Page) {  
-  await expect(page.locator('body')).toHaveText(/Atendente|Profesional|Profissional/i, { timeout: 30000 });
-  await fecharCookiesSeAparecer(page);
-  await page.waitForTimeout(1000);
-
-  const resultadoClique = await page.evaluate(() => {
-    function limparTexto(t: string | null) { return (t || '').replace(/\s+/g, ' ').trim(); }
-    const els = Array.from(document.body.querySelectorAll('*:not(script, style, link, meta)'));
-    
-    const tituloEl = els.find(el => /^(Atendente|Profesional|Profissional)$/i.test(limparTexto(el.textContent)));
-    const topTitulo = tituloEl ? tituloEl.getBoundingClientRect().top : 0;
-
-    const profEls = Array.from(document.body.querySelectorAll('.q-card, .q-item, div, button, [role="button"]')).filter(el => {
-      const style = window.getComputedStyle(el);
-      if (style.display === 'none' || style.visibility === 'hidden') return false;
-
-      const texto = limparTexto(el.textContent);
-      const rect = el.getBoundingClientRect();      
-      
-      const depoisDoTitulo = topTitulo > 0 ? rect.top >= (topTitulo - 5) : true;
-      const temTamanhoPossivel = rect.width >= 40 && rect.width <= 800 && rect.height >= 20 && rect.height <= 400;
-      
-      const ehNavegacaoOuMenu = /Volver|Voltar|Escolha|Servi[çc]o|Servicio|Dashboard|Agenda|Clientes|Atendentes|Produtos|Configura[çc][õo]es|Termos|Política|cookies|Entendi/i.test(texto);
-      const ehApenasTitulo = /^(Profesional|Profissional|Atendente|Servicios|Serviços)$/i.test(texto);      
-      const temTextoValido = texto.length >= 2;
-      return depoisDoTitulo && temTamanhoPossivel && !ehNavegacaoOuMenu && !ehApenasTitulo && temTextoValido;
-    });
-
-    if (profEls.length === 0) return { sucesso: false, textoClicado: '' };
-
-    const card = profEls[0];
-    const clicavel = (card.closest('.q-card, .q-item, button, [role="button"]') || card) as HTMLElement;
-    
-    clicavel.scrollIntoView();
-    clicavel.click();
-    
-    return { sucesso: true, textoClicado: limparTexto(card.textContent) };
-  });
-
-  if (!resultadoClique.sucesso) {
-    throw new Error('Nenhum card de profissional foi encontrado após selecionar o serviço.');
-  }
-
-  const profissionalLimpo = resultadoClique.textoClicado
-    ?.replace(/^person|person/gi, '') 
-    ?.replace(/\s+/g, ' ')            
-    ?.trim();
-    
-  console.log(`✅ Profissional escolhido: ${profissionalLimpo}`);
-  await page.waitForTimeout(1500);
-
-  const textoBody = await page.locator('body').innerText();    
-  if (/Atendente|Profesional/i.test(textoBody) && !/\d{2}\/\d{2}|Horario|Seleccione/i.test(textoBody)) {
-    console.log('⚠️ Ainda na etapa profissional. Tentando clicar no primeiro card novamente.');
-    await page.evaluate(() => {
-      const primeiroCard = document.querySelector('h3:has-text("Profesional") + div *, h3 + div *') as HTMLElement;
-      if (primeiroCard) primeiroCard.click();
-    });
-    await page.waitForTimeout(1500);
-  }  
-  await expect(page.locator('body')).toHaveText(/Selecione o dia|Escolha o dia|Horario|\d{2}\/\d{2}/i, { timeout: 30000 });
-}
 
   async function selecionarDataFuturaOuHoje(page: Page) {
     await page.waitForTimeout(2000);    
@@ -286,7 +249,6 @@ test.describe('Agendamentos - Cadastro', () => {
 }
 
 async function selecionarCliente(page: Page) {
-  // 1. Aguarda o contexto da tela carregar
   await expect(page.locator('body')).toHaveText(
     /Nome do cliente|Nombre del cliente|Cliente|Selecione o cliente/i, 
     { timeout: 30000 }
@@ -329,11 +291,9 @@ async function selecionarCliente(page: Page) {
       }
     });
 
-    await page.context().clearCookies();    
-    
+    await page.context().clearCookies();        
     await loginCompleto(page);
-    await fecharCookiesSeAparecer(page);    
-    
+    await fecharCookiesSeAparecer(page);        
     await abrirAgenda(page);
     await abrirCadastroAgendamento(page);
 
