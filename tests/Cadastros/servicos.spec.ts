@@ -45,7 +45,8 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
     const nomeServico = servico.nomeServico.toUpperCase();
     const comissao = '1390';    
     const valor = (servico.precoSugerido * 100).toFixed();    
-    const duracao = '1320';    
+    const intervalos = ['15', '30', '45', '60'];
+    const duracao = intervalos[Math.floor(Math.random() * intervalos.length)];
     const descricao = `Serviço realizado por profissional qualificado, utilizando técnicas adequadas para atender às preferências e necessidades de cada cliente. O atendimento inclui avaliação do estilo desejado, execução do corte e acabamento, proporcionando um visual renovado, bem cuidado e alinhado.`;
     
     try {
