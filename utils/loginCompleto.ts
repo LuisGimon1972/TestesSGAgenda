@@ -34,12 +34,14 @@ export async function loginCompleto(page: Page) {
   console.log('✅ Clicou em Entrar'); 
   
   console.log('🌐 URL:', page.url()); 
+
+  //Só para habilitar Empresa Barberia Universal
   
-  await page.getByText('luisgimonsgbr@gmail.com').click();
+/*  await page.getByText('luisgimonsgbr@gmail.com').click();
   
   await page.getByText('Trocar empresa').click();
   
-  await page.getByText('BARBERIA UNIVERSAL').click();
+  await page.getByText('BARBERIA UNIVERSAL').click();*/
   
   await page.evaluate(() => {
     document.querySelectorAll('.q-dialog, .q-dialog__backdrop, .q-overlay').forEach((el: any) => {
