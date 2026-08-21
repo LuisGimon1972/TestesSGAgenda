@@ -95,7 +95,8 @@ test.describe('Profissionais - Busca', () => {
 
   test('Deve buscar primeiro um atendente existente e depois um inexistente.', async ({ page }) => {
     await capturarRequisicoesApi(page); 
-    const nomeAtendenteExistente = await obterAtendenteExistenteDaGrade(page);
+    const nomeBruto = await obterAtendenteExistenteDaGrade(page);
+    const nomeAtendenteExistente = nomeBruto ? nomeBruto.slice(2).trim() : '';
 
     if (!nomeAtendenteExistente) {
       console.log('⚠️ Teste interrompido pois não havia atendentes na grade.');

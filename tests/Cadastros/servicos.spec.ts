@@ -171,6 +171,7 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
       await page.waitForTimeout(500);
     } catch (e) {}
 
+    await page.waitForTimeout(500);
     const btnGravar = page.getByText(/Criar serviço|Gravar|Salvar|Cadastrar|Registrar cliente/i).first();
     await btnGravar.waitFor({ state: 'visible', timeout: 10000 });
     await btnGravar.click({ force: true });
