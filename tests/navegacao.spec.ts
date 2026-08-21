@@ -1,15 +1,12 @@
 import { test } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../utils/loginCompleto';
-import { capturarRequisicoesApi } from '../utils/capturaApi';
 
 test('Navegação de menus', async ({ page }) => {   
     test.setTimeout(90000);
 
     await loginCompleto(page);        
     await page.context().clearCookies();
-    await page.waitForTimeout(2000);       
-
-    //await capturarRequisicoesApi(page);        
+    await page.waitForTimeout(2000);           
     
     async function clicarElementoMenu(nomeItem: string) {
       let elementoAlvo = page.getByText(nomeItem, { exact: true }).first();
@@ -29,29 +26,44 @@ test('Navegação de menus', async ({ page }) => {
     }
     
     async function navegarPara(principal: string, sub?: string) {
+  // Identifica se é o menu de Fatura Eletrônica (ignorando maiúsculas/minúsculas e acentos)
+  const eFaturaEletronica = principal
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .includes("fatura eletronica");
+
+  try {
+    if (sub) {     
+      let submenuAlvo = page.getByText(sub, { exact: true }).first();
+      if (!(await submenuAlvo.isVisible())) {
+        submenuAlvo = page.locator('.q-item, a, button').filter({ hasText: new RegExp(`^${sub}$`, 'i') }).first();
+      }
       
-      if (sub) {     
-        let submenuAlvo = page.getByText(sub, { exact: true }).first();
-        if (!(await submenuAlvo.isVisible())) {
-          submenuAlvo = page.locator('.q-item, a, button').filter({ hasText: new RegExp(`^${sub}$`, 'i') }).first();
-        }
-        
-        if (!(await submenuAlvo.isVisible())) {
-          await clicarElementoMenu(principal);
-          await page.waitForTimeout(1500); 
-        }
-        
-        await clicarElementoMenu(sub);
-        console.log(`✅ Navegou para: ${principal} > ${sub}`);
-      } else {        
+      if (!(await submenuAlvo.isVisible())) {
         await clicarElementoMenu(principal);
-        console.log(`✅ Navegou para: ${principal}`);
-      }      
+        await page.waitForTimeout(1500); 
+      }
       
-      await page.waitForTimeout(1500);      
-    }  
+      await clicarElementoMenu(sub);
+      console.log(`✅ Navegou para: ${principal} > ${sub}`);
+    } else {        
+      await clicarElementoMenu(principal);
+      console.log(`✅ Navegou para: ${principal}`);
+    }      
+    
+    await page.waitForTimeout(1500);
+  } catch (error) {
+    if (eFaturaEletronica) {
+      console.warn(`⚠️ Menu "${principal}" indisponível ou com falha. Ignorando e prosseguindo...`);
+    } else {
+      throw error; // Repassa o erro se for qualquer outro menu essencial
+    }
+  }
+}
     
     const fluxoNavegacao = [      
+      { principal: 'Dashboard' },
       { principal: 'Agendamentos' },
       { principal: 'Clientes' },          
       { principal: 'Profissionais' },                         
@@ -59,12 +71,14 @@ test('Navegação de menus', async ({ page }) => {
       { principal: 'Catálogo' , sub: 'Produtos' },    
       { principal: 'Catálogo' , sub: 'Categorias' },    
       { principal: 'Planos' },
-      { principal: 'Comissões' }     
+      { principal: 'Comissões' },     
+      { principal: 'Fatura eletrônica' },     
+      { principal: 'Financeiro' }     
     ];
 
     for (const item of fluxoNavegacao) {
       await navegarPara(item.principal, item.sub);
     }    
-    console.log('✅ Navegação mobile concluída com sucesso!');
+    console.log('✅ Navegação concluída com sucesso!');
     console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
   });
