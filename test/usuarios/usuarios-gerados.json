@@ -812,5 +812,27 @@
     "fantasia": "Fantasia Guilherme",
     "documento": "80003045",
     "slug": "site-guilhermesouza1787257362176"
+  },
+  {
+    "dataCriacao": "2026-08-24T20:42:42.469Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Daniela Alves Carvalho",
+    "emailUsuario": "daniela.1787604140702@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Daniela Alves Carvalho",
+    "fantasia": "Fantasia Daniela",
+    "documento": "23.110.083/0001-77",
+    "slug": "site-danielaalves1787604140702"
+  },
+  {
+    "dataCriacao": "2026-08-24T20:43:15.058Z",
+    "pais": "Paraguai",
+    "nomeUsuario": "Helena Costa Fernandes",
+    "emailUsuario": "helena.1787604174620@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Helena Costa Fernandes",
+    "fantasia": "Fantasia Helena",
+    "documento": "80067797",
+    "slug": "site-helenacosta1787604174620"
   }
 ]
