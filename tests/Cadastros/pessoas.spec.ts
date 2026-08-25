@@ -49,9 +49,7 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
   
   const nomeCliente = obterNomePessoaAleatorio();
   const telefone = gerarTelefoneAleatorio();
-  const documento = gerarCPFValido();
-  pessoa = documento.trim().length;
-  console.log(documento, pessoa)  
+  const documento = gerarCPFValido();    
   const email = `cliente_email.${Date.now()}@teste.com`;
   await page.waitForTimeout(1000);  
   
@@ -60,8 +58,7 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
   await inputsPrincipais.nth(1).fill(telefone);     
   await inputsPrincipais.nth(2).fill(documento);    
   const valorInput = await inputsPrincipais.nth(2).inputValue();
-  pessoa = valorInput.length;
-  console.log(valorInput)
+  pessoa = valorInput.length;  
   await inputsPrincipais.nth(3).fill(email);        
   await inputsPrincipais.nth(4).fill('05082003');   
   console.log('✅ Preencheu dados principais');
@@ -95,8 +92,7 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
         await checkbox.click({ force: true });
         console.log('✅ Marcou como Endereço Principal');      }      
       
-      await page.waitForTimeout(1500);   
-      console.log(pessoa)   
+      await page.waitForTimeout(1500);         
       if(pessoa===14)
       {
       await inputsModal.nth(2).fill(cepValido);      
