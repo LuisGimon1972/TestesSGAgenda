@@ -45,6 +45,8 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
     const valor = Math.floor(Math.random() * 1001) + 2000;   
     const quantidade = '10';
     const comissao = '2000';
+    const ncm = '22021000';
+    const gtin = '7891000100109'
         
     try {
       const campoNome = page.locator('input:visible').nth(0);
@@ -82,6 +84,60 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
     } catch (e) {
       console.log('⚠️ Falha ao preencher Comissão');
     }
+
+    await page.waitForTimeout(2000);      
+    await page.getByRole('tab', { name: /^Fiscal Beta$/i }).first().click();     
+  
+    const combobox = page.locator('role=combobox[name="Selecione uma opção"]').first();
+    await combobox.click(); 
+    await page.waitForTimeout(500);     
+    const primeiraOpcao = page.locator('[role="option"]')
+      .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
+      .first();
+    await primeiraOpcao.click();
+    console.log('✅ Selecionou a primeira opção do combobox com sucesso!');
+    await page.waitForTimeout(500);
+
+    const combobox2 = page.locator('role=combobox[name="10%"]').first();
+    await combobox2.click(); 
+    await page.waitForTimeout(500);     
+    const primeiraOpcao2 = page.locator('[role="option"]')
+      .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
+      .first();
+    await primeiraOpcao2.click();
+
+    console.log('✅ Selecionou a primeira opção do segundo combobox com sucesso!');
+    await page.waitForTimeout(500);
+
+    try {
+      const campoNcm = page.locator('input:visible').nth(0);
+      await campoNcm.click({ force: true });
+      await campoNcm.fill(ncm, { force: true });
+      console.log('✅ NCM:', ncm);
+    } catch (e) {
+      console.log('⚠️ Falha ao preencher NCM');
+    }
+
+    try {
+      const campoGtin = page.locator('input:visible').nth(1);
+      await campoGtin.click({ force: true });
+      await campoGtin.fill(gtin, { force: true });
+      console.log('✅ GTIN:', gtin);
+    } catch (e) {
+      console.log('⚠️ Falha ao preencher GTIN');
+    }    
+
+
+    const combobox3 = page.locator('role=combobox[name="Selecione uma opção"]').first();
+    await combobox3.click(); 
+    await page.waitForTimeout(500);         
+    const terceiraOpcao = page.locator('[role="option"]')
+      .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
+      .nth(4); 
+    await terceiraOpcao.click();
+    console.log('✅ Selecionou a terceira opção do combobox com sucesso!');
+    await page.waitForTimeout(500);
+    
 
     console.log('📝 FIM DE DADOS ENVIADOS');           
     
