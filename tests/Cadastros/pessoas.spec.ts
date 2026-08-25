@@ -25,9 +25,7 @@ function gerarTelefoneAleatorio(): string {
 }
 
 test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
-  test.setTimeout(120000);
-
-  let pessoa; 
+  test.setTimeout(120000);  
   
   await loginCompleto(page);  
   await navegarPara(page, 'Clientes');
@@ -58,7 +56,7 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
   await inputsPrincipais.nth(1).fill(telefone);     
   await inputsPrincipais.nth(2).fill(documento);    
   const valorInput = await inputsPrincipais.nth(2).inputValue();
-  pessoa = valorInput.length;  
+  const pessoa = valorInput.length;  
   await inputsPrincipais.nth(3).fill(email);        
   await inputsPrincipais.nth(4).fill('05082003');   
   console.log('✅ Preencheu dados principais');
