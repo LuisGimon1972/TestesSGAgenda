@@ -69,9 +69,14 @@ test.describe('Serviços - Busca', () => {
     const bodyText = (await page.locator('body').innerText().catch(() => '')).replace(/\s+/g, ' ').trim();
 
     const telaSemRegistros =
-      /nenhum servi[çc]o encontrado|nenhum registro encontrado|nenhum resultado|no hay registros|sin registros|no se encontraron|no encontrado/i.test(
+      /nenhum servi[çc]o encontrado|nenhum registro encontrado|nenhum resultado|no hay registros|sin registros|no se encontraron|no encontrado|cadastrar primeir/i.test(
         bodyText
       );
+
+    if (telaSemRegistros) {
+      console.log('⚠️ Nenhum serviço encontrado na grade (ou tela vazia). Teste interrompido sem erro.');
+      return null;
+    }
 
     const linhas = page.locator('tbody tr:visible');
     const count = await linhas.count();
@@ -83,16 +88,16 @@ test.describe('Serviços - Busca', () => {
       const colunas = linha.locator('td');
       const numColunas = await colunas.count();
       const texto = (await linha.innerText().catch(() => '')).replace(/\s+/g, ' ').trim();
-
-      const naoEhLinhaVazia = !/nenhum|no hay|sin registros|no encontrado/i.test(texto);
+      
+      const naoEhLinhaVazia = !/nenhum|no hay|sin registros|no encontrado|cadastrar primeir/i.test(texto);
 
       if (numColunas > 0 && texto.length > 0 && naoEhLinhaVazia) {
         linhasValidasIndex.push(i);
       }
     }
 
-    if (telaSemRegistros || linhasValidasIndex.length === 0) {
-      console.log('⚠️ Nenhum serviço encontrado na grade. Teste interrompido sem erro.');
+    if (linhasValidasIndex.length === 0) {
+      console.log('⚠️ Nenhum serviço válido encontrado na grade. Teste interrompido sem erro.');
       return null;
     }
 
@@ -138,7 +143,7 @@ test.describe('Serviços - Busca', () => {
   test('Deve buscar primeiro um serviço existente e depois um inexistente.', async ({ page }) => {
     await capturarRequisicoesApi(page); 
     const nomeServicoExistente = await obterServicoExistenteDaGrade(page);
-
+    
     if (!nomeServicoExistente) {
       console.log('⚠️ Busca de serviços não executada porque não existem serviços cadastrados.');
       return;
@@ -152,8 +157,7 @@ test.describe('Serviços - Busca', () => {
 
     await limparBusca(page);
     await capturarRequisicoesApi(page); 
-
-    // 3. Busca por serviço inexistente
+    
     const servicoInexistente = `SERVICO_INEXISTENTE_E2E_${Date.now()}`;
     await buscarServico(page, servicoInexistente);
 

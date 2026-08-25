@@ -48,13 +48,20 @@ test.describe('Clientes - Busca', () => {
   }
 
   async function obterClienteExistenteDaGrade(page: Page): Promise<string | null> {
-    const linhas = page.locator('tbody tr:visible');
-    const count = await linhas.count();
+    const bodyText = (await page.locator('body').innerText().catch(() => '')).replace(/\s+/g, ' ').trim();
 
-    if (count === 0) {
-      console.log('⚠️ Nenhum cliente encontrado na grade. Teste encerrado sem falha.');
+    const telaSemRegistros =
+      /nenhum cliente encontrado|nenhum registro encontrado|nenhum resultado|no hay registros|sin registros|no se encontraron|no encontrado|cadastrar primeir/i.test(
+        bodyText
+      );
+
+    if (telaSemRegistros) {
+      console.log('⚠️ Nenhum cliente encontrado na grade (ou tela vazia). Teste interrompido sem erro.');
       return null;
     }
+
+    const linhas = page.locator('tbody tr:visible');
+    const count = await linhas.count();
 
     const clientesValidos: string[] = [];
 
@@ -64,10 +71,17 @@ test.describe('Clientes - Busca', () => {
       const numColunas = await colunas.count();
 
       if (numColunas > 0) {
-        const textoLinha = (await linha.innerText()).trim();
-        if (textoLinha.length > 0) {
-          const nomeCliente = (await colunas.nth(0).innerText()).trim();
-          if (nomeCliente && !/drag_indicator/i.test(nomeCliente)) {
+        const textoLinha = (await linha.innerText().catch(() => '')).replace(/\s+/g, ' ').trim();
+        const naoEhLinhaVazia = !/nenhum|no hay|sin registros|no encontrado|cadastrar primeir/i.test(textoLinha);
+
+        if (textoLinha.length > 0 && naoEhLinhaVazia) {
+          const nomeCliente = (await colunas.nth(0).innerText().catch(() => '')).replace(/\s+/g, ' ').trim();
+          if (
+            nomeCliente && 
+            nomeCliente.length >= 2 && 
+            !/drag_indicator/i.test(nomeCliente) &&
+            !/cadastrar primeir/i.test(nomeCliente)
+          ) {
             clientesValidos.push(nomeCliente);
           }
         }
@@ -75,7 +89,7 @@ test.describe('Clientes - Busca', () => {
     }
 
     if (clientesValidos.length === 0) {
-      console.log('⚠️ Linhas encontradas, mas sem nome de cliente válido.');
+      console.log('⚠️ Nenhum cliente válido encontrado na grade. Teste interrompido sem erro.');
       return null;
     }
 
@@ -97,7 +111,7 @@ test.describe('Clientes - Busca', () => {
     const nomeClienteExistente = await obterClienteExistenteDaGrade(page);
 
     if (!nomeClienteExistente) {
-      console.log('⚠️ Teste interrompido pois não havia clientes na grade.');
+      console.log('⚠️ Busca de clientes não executada porque não existem clientes cadastrados.');
       return;
     }
     
@@ -107,7 +121,6 @@ test.describe('Clientes - Busca', () => {
     expect(bodyText).toContain(nomeClienteExistente);
     console.log(`✅ Busca por cliente existente (${nomeClienteExistente}) validada com sucesso`);
 
-   
     await limparBusca(page);
     await capturarRequisicoesApi(page); 
 

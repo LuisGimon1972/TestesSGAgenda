@@ -70,9 +70,14 @@ test.describe('Planos - Busca', () => {
     const bodyText = (await page.locator('body').innerText().catch(() => '')).replace(/\s+/g, ' ').trim();
 
     const telaSemRegistros =
-      /nenhum plano encontrado|nenhum registro encontrado|nenhum resultado|no hay registros|sin registros|no se encontraron|no encontrado/i.test(
+      /nenhum plano encontrado|nenhum registro encontrado|nenhum resultado|no hay registros|sin registros|no se encontraron|no encontrado|cadastrar primeir/i.test(
         bodyText
       );
+
+    if (telaSemRegistros) {
+      console.log('⚠️ Nenhum plano encontrado na grade (ou tela vazia). Teste interrompido sem erro.');
+      return null;
+    }
 
     const linhas = page.locator('tbody tr:visible');
     const count = await linhas.count();
@@ -84,16 +89,16 @@ test.describe('Planos - Busca', () => {
       const colunas = linha.locator('td');
       const numColunas = await colunas.count();
       const texto = (await linha.innerText().catch(() => '')).replace(/\s+/g, ' ').trim();
-
-      const naoEhLinhaVazia = !/nenhum|no hay|sin registros|no encontrado/i.test(texto);
+      
+      const naoEhLinhaVazia = !/nenhum|no hay|sin registros|no encontrado|cadastrar primeir/i.test(texto);
 
       if (numColunas > 0 && texto.length > 0 && naoEhLinhaVazia) {
         linhasValidasIndex.push(i);
       }
     }
 
-    if (telaSemRegistros || linhasValidasIndex.length === 0) {
-      console.log('⚠️ Nenhum plano encontrado na grade. Teste interrompido sem erro.');
+    if (linhasValidasIndex.length === 0) {
+      console.log('⚠️ Nenhum plano válido encontrado na grade. Teste interrompido sem erro.');
       return null;
     }
 
@@ -140,7 +145,7 @@ test.describe('Planos - Busca', () => {
     await capturarRequisicoesApi(page);
 
     const nomePlanoExistente = await obterPlanoExistenteDaGrade(page);
-
+    
     if (!nomePlanoExistente) {
       console.log('⚠️ Busca de planos não executada porque não existem planos cadastrados.');
       return;

@@ -69,9 +69,14 @@ test.describe('Categorias - Busca', () => {
     const bodyText = (await page.locator('body').innerText().catch(() => '')).replace(/\s+/g, ' ').trim();
 
     const telaSemRegistros =
-      /nenhuma categoria encontrada|nenhum registro encontrado|nenhum resultado|no hay registros|sin registros|no se encontraron|no encontrado/i.test(
+      /nenhuma categoria encontrada|nenhum registro encontrado|nenhum resultado|no hay registros|sin registros|no se encontraron|no encontrado|cadastrar primeira/i.test(
         bodyText
       );
+
+    if (telaSemRegistros) {
+      console.log('⚠️ Nenhuma categoria encontrada na grade (ou tela vazia). Teste interrompido sem erro.');
+      return null;
+    }
 
     const linhas = page.locator('tbody tr:visible');
     const count = await linhas.count();
@@ -83,16 +88,16 @@ test.describe('Categorias - Busca', () => {
       const colunas = linha.locator('td');
       const numColunas = await colunas.count();
       const texto = (await linha.innerText().catch(() => '')).replace(/\s+/g, ' ').trim();
-
-      const naoEhLinhaVazia = !/nenhum|no hay|sin registros|no encontrado/i.test(texto);
+      
+      const naoEhLinhaVazia = !/nenhum|no hay|sin registros|no encontrado|cadastrar primeira/i.test(texto);
 
       if (numColunas > 0 && texto.length > 0 && naoEhLinhaVazia) {
         linhasValidasIndex.push(i);
       }
     }
 
-    if (telaSemRegistros || linhasValidasIndex.length === 0) {
-      console.log('⚠️ Nenhuma categoria encontrada na grade. Teste interrompido sem erro.');
+    if (linhasValidasIndex.length === 0) {
+      console.log('⚠️ Nenhuma categoria válida encontrada na grade. Teste interrompido sem erro.');
       return null;
     }
 
@@ -121,7 +126,7 @@ test.describe('Categorias - Busca', () => {
       }) || textosColunas[0];
 
     if (!nomeCategoria) {
-      console.log('⚠️ Nenhum nome de categoria válido encontrado. Teste interrompido sem erro.');
+      console.log('⚠️ Nenhum nome de categoria válido extraído da coluna. Teste interrompido sem erro.');
       return null;
     }
 
@@ -136,13 +141,13 @@ test.describe('Categorias - Busca', () => {
   });
 
   test('Deve buscar primeiro uma categoria existente e depois uma inexistente.', async ({ page }) => {
-    await capturarRequisicoesApi(page);
+    await capturarRequisicoesApi(page);    
 
     const nomeCategoriaExistente = await obterCategoriaExistenteDaGrade(page);
-
+    
     if (!nomeCategoriaExistente) {
       console.log('⚠️ Busca de categorias não executada porque não existem categorias cadastradas.');
-      return;
+      return; 
     }
 
     await buscarCategoria(page, nomeCategoriaExistente);

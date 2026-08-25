@@ -1,4 +1,4 @@
-import { test, expect, Page, Locator } from '@playwright/test';
+import { test } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
 import { obterNomePessoaAleatorio } from '../../utils/nomescompletos';

@@ -71,9 +71,14 @@ test.describe('Produtos - Busca', () => {
     const bodyText = (await page.locator('body').innerText().catch(() => '')).replace(/\s+/g, ' ').trim();
 
     const telaSemRegistros =
-      /nenhum produto encontrado|nenhum registro encontrado|nenhum resultado|no hay registros|sin registros|no se encontraron|no encontrado/i.test(
+      /nenhum produto encontrado|nenhum registro encontrado|nenhum resultado|no hay registros|sin registros|no se encontraron|no encontrado|cadastrar primeir/i.test(
         bodyText
       );
+
+    if (telaSemRegistros) {
+      console.log('⚠️ Nenhum produto encontrado na grade (ou tela vazia). Teste interrompido sem erro.');
+      return null;
+    }
 
     const linhas = page.locator('tbody tr:visible');
     const count = await linhas.count();
@@ -85,16 +90,16 @@ test.describe('Produtos - Busca', () => {
       const colunas = linha.locator('td');
       const numColunas = await colunas.count();
       const texto = (await linha.innerText().catch(() => '')).replace(/\s+/g, ' ').trim();
-
-      const naoEhLinhaVazia = !/nenhum|no hay|sin registros|no encontrado/i.test(texto);
+      
+      const naoEhLinhaVazia = !/nenhum|no hay|sin registros|no encontrado|cadastrar primeir/i.test(texto);
 
       if (numColunas > 0 && texto.length > 0 && naoEhLinhaVazia) {
         linhasValidasIndex.push(i);
       }
     }
 
-    if (telaSemRegistros || linhasValidasIndex.length === 0) {
-      console.log('⚠️ Nenhum produto encontrado na grade. Teste interrompido sem erro.');
+    if (linhasValidasIndex.length === 0) {
+      console.log('⚠️ Nenhum produto válido encontrado na grade. Teste interrompido sem erro.');
       return null;
     }
 
@@ -116,7 +121,7 @@ test.describe('Produtos - Busca', () => {
       textosColunas.find((texto) => {
         return (
           texto.length >= 2 &&
-          !/^\d+$/.test(texto) && // Ignora colunas que são só números (ex: ID, Quantidade)
+          !/^\d+$/.test(texto) && 
           !/^\+?\d/.test(texto) &&
           !/R\$|BRL|₲|\$|PYG/i.test(texto) // Ignora colunas de preço
         );
@@ -140,7 +145,7 @@ test.describe('Produtos - Busca', () => {
   test('Deve buscar primeiro um produto existente e depois um inexistente.', async ({ page }) => {
     await capturarRequisicoesApi(page); 
     const nomeProdutoExistente = await obterProdutoExistenteDaGrade(page);
-
+    
     if (!nomeProdutoExistente) {
       console.log('⚠️ Busca de produtos não executada porque não existem produtos cadastrados.');
       return;
@@ -154,8 +159,7 @@ test.describe('Produtos - Busca', () => {
 
     await limparBusca(page);
     await capturarRequisicoesApi(page); 
-
-    // 3. Busca por produto inexistente
+    
     const produtoInexistente = `PRODUTO_INEXISTENTE_E2E_${Date.now()}`;
     await buscarProduto(page, produtoInexistente);
 
