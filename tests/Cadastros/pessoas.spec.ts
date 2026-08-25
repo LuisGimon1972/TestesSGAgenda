@@ -26,6 +26,8 @@ function gerarTelefoneAleatorio(): string {
 
 test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
   test.setTimeout(120000);
+
+  let pessoa; 
   
   await loginCompleto(page);  
   await navegarPara(page, 'Clientes');
@@ -48,6 +50,8 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
   const nomeCliente = obterNomePessoaAleatorio();
   const telefone = gerarTelefoneAleatorio();
   const documento = gerarCPFValido();
+  pessoa = documento.trim().length;
+  console.log(documento, pessoa)  
   const email = `cliente_email.${Date.now()}@teste.com`;
   await page.waitForTimeout(1000);  
   
@@ -55,6 +59,9 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
   await inputsPrincipais.nth(0).fill(nomeCliente);  
   await inputsPrincipais.nth(1).fill(telefone);     
   await inputsPrincipais.nth(2).fill(documento);    
+  const valorInput = await inputsPrincipais.nth(2).inputValue();
+  pessoa = valorInput.length;
+  console.log(valorInput)
   await inputsPrincipais.nth(3).fill(email);        
   await inputsPrincipais.nth(4).fill('05082003');   
   console.log('✅ Preencheu dados principais');
@@ -88,9 +95,23 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
         await checkbox.click({ force: true });
         console.log('✅ Marcou como Endereço Principal');      }      
       
-      await page.waitForTimeout(1500);      
+      await page.waitForTimeout(1500);   
+      console.log(pessoa)   
+      if(pessoa===14)
+      {
       await inputsModal.nth(2).fill(cepValido);      
       await inputsModal.nth(4).fill(numero);
+      }
+      else
+      {
+        await inputsModal.nth(3).fill('LA ASUNCIÓN');      
+        await inputsModal.nth(4).fill('001518');
+        await inputsModal.nth(5).fill('CALLE LA ESPERANZA');
+        await inputsModal.nth(6).fill(numero);
+        await inputsModal.nth(7).fill('EL JUNQUITO');
+        await inputsModal.nth(8).fill('EDIFICIO');
+
+      }
       
       console.log('✅ Preencheu endereço no modal');
       await page.waitForTimeout(1000);    

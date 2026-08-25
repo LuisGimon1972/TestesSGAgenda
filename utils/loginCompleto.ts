@@ -37,7 +37,7 @@ export async function loginCompleto(page: Page) {
 
   //Só para habilitar Empresa Barberia Universal
   
-/*  await page.getByText('luisgimonsgbr@gmail.com').click();
+  /*await page.getByText('luisgimonsgbr@gmail.com').click();
   
   await page.getByText('Trocar empresa').click();
   

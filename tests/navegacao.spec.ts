@@ -71,9 +71,9 @@ test('Navegação de menus', async ({ page }) => {
       { principal: 'Catálogo' , sub: 'Produtos' },    
       { principal: 'Catálogo' , sub: 'Categorias' },    
       { principal: 'Planos' },
+      { principal: 'Financeiro' },     
       { principal: 'Comissões' },     
-      { principal: 'Fatura eletrônica' },     
-      { principal: 'Financeiro' }     
+      { principal: 'Fatura eletrônica' }    
     ];
 
     for (const item of fluxoNavegacao) {
