@@ -8,9 +8,8 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
     test.setTimeout(70000);
 
     await loginCompleto(page);    
-
     await page.waitForTimeout(1000);       
-
+    
     const servico = obterServicoAleatorio();  
 
     await page.waitForTimeout(1000);
@@ -166,7 +165,6 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
 
     await page.waitForTimeout(1000);      
 
-    // Tratamento condicional para a aba Fiscal Beta (Apenas Paraguai)
     const abaFiscal = page.getByRole('tab', { name: /^Fiscal Beta$/i }).first();
 
     if (await abaFiscal.isVisible({ timeout: 3000 }).catch(() => false)) {

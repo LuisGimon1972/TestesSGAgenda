@@ -7,13 +7,11 @@ import { navegarPara } from '../../utils/navegar';
 test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
   test.setTimeout(90000);
 
-  // 1. Autenticação e Navegação
   await loginCompleto(page);
   await navegarPara(page, 'Profissionais');
   await navegarPara(page, 'Catálogo', 'Produtos');
   console.log('✅ Navegou para Listagem de produtos');
-
-  // 2. Abertura do Formulário e Preparação de Promessas
+  
   const btnCadastrar = page.getByText(/Novo produto/i).first();
   await btnCadastrar.click({ force: true });
   console.log('✅ Abriu Form de Produtos');
@@ -27,15 +25,13 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
       response.status() >= 200 &&
       response.status() < 300
   ).catch(() => null);
-
-  // Fechamento de Cookies se presente
+  
   const btnCookie = page.getByText(/Entendi|Aceitar|Fechar/i).first();
   if (await btnCookie.isVisible({ timeout: 3000 }).catch(() => false)) {
     await btnCookie.click({ force: true });
     console.log('✅ Fechou aviso de cookies');
   }
-
-  // 3. Preenchimento dos Dados Principais
+  
   console.log('📝 DADOS ENVIADOS PRA API');
   const nomeProduto = `${obterProdutoAleatorio().nome} ${Date.now()}`;
   const valor = Math.floor(Math.random() * 1001) + 2000;
@@ -60,15 +56,13 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
   await preencherCampo(inputs.nth(1), quantidade, 'Quantidade');
   await preencherCampo(inputs.nth(2), valor.toFixed(), 'Valor');
   await preencherCampo(inputs.nth(3), comissao, 'Comissão');
-
-  // 4. Fluxo Condicional para Aba Fiscal (Paraguai vs Brasil)
+  
   const abaFiscal = page.getByRole('tab', { name: /^Fiscal Beta$/i }).first();
 
   if (await abaFiscal.isVisible({ timeout: 3000 }).catch(() => false)) {
     console.log('✅ Aba Fiscal Beta encontrada (Empresa Paraguai)');
     await abaFiscal.click();
-
-    // Combobox 1
+    
     const combobox1 = page.locator('role=combobox[name="Selecione uma opção"]').first();
     await combobox1.click();
     await page
@@ -76,8 +70,7 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
       .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
       .first()
       .click();
-
-    // Combobox 2
+    
     const combobox2 = page.locator('role=combobox[name="10%"]').first();
     await combobox2.click();
     await page
@@ -85,13 +78,11 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
       .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
       .first()
       .click();
-
-    // NCM e GTIN
+    
     const inputsFiscais = page.locator('input:visible');
     await preencherCampo(inputsFiscais.nth(0), ncm, 'NCM');
     await preencherCampo(inputsFiscais.nth(1), gtin, 'GTIN');
-
-    // Combobox 3
+    
     const combobox3 = page.locator('role=combobox[name="Selecione uma opção"]').first();
     await combobox3.click();
     await page
@@ -106,14 +97,12 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
   }
 
   console.log('📝 FIM DE DADOS ENVIADOS');
-
-  // 5. Envios e Submissão
+  
   const btnGravar = page.getByText(/Criar produto/i).first();
   await btnGravar.waitFor();
   await btnGravar.click({ force: true });
   console.log('✅ Clicou em Gravar');
-
-  // 6. Processamento da Resposta HTTP & Consulta GET de Validação
+  
   const salvarResponse = await salvarProdutoPromise;
 
   if (salvarResponse) {
@@ -152,8 +141,7 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
       }
     }
   }
-
-  // 7. Validação Visual e Finalização
+  
   try {
     await expect(page.locator('body')).toHaveText(
       /produto|sucesso|salvo|cadastrado|Listagem de produtos/i,
