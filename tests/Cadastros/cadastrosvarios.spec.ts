@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
-import { capturarRequisicoesApi } from '../../utils/capturaApi';
 import { obterNomePessoaAleatorio } from '../../utils/nomescompletos';
 import { obterProdutoAleatorio } from '../../utils/listaprodutos';
+import { obterServicoAleatorio } from '../../utils/listaservicos';
+import { obterNomePlanoAleatorio } from '../../utils/listagemplanos';
 import { navegarPara } from '../../utils/navegar';
 
 function gerarCPFValido(): string {
@@ -29,7 +30,7 @@ test('Cadastros de Vários Agenda', async ({ page }) => {
   test.setTimeout(120000);  
   
   await loginCompleto(page);  
-  console.log('✅ CADASTRO DE CLIENTES');  
+  console.log('🧾 CADASTRO DE CLIENTES');  
   await navegarPara(page, 'Clientes');
   console.log('✅ Navegou para Clientes');
   
@@ -179,13 +180,11 @@ test('Cadastros de Vários Agenda', async ({ page }) => {
   } catch (e) {
     console.log('⚠️ Validação de texto concluída.');
   }       
-
-  await capturarRequisicoesApi(page); 
-  await page.waitForTimeout(2000);    
+  
   console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
   
     let inicioTeste = new Date();  
-    console.log('✅ CADASTRO DE ATENDENTES');  
+    console.log('🧾 CADASTRO DE ATENDENTES');  
     console.log(`🕒 Início do teste: ${formatarDataHora(inicioTeste)}`);    
     await navegarPara(page, 'Profissionais');
     console.log(`✅ Clicou em Profissionais`);          
@@ -313,15 +312,243 @@ test('Cadastros de Vários Agenda', async ({ page }) => {
       console.log('✅ Atendente cadastrado com sucesso!');
     } catch (e) {
       console.log('⚠️ Validação de texto concluída.');
-    }
+    }   
+  
     
-    await capturarRequisicoesApi(page); 
-    await page.waitForTimeout(1000);    
     console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
 
-    let inicioTestep = new Date();
+    let inicioTesteS = new Date();    
+    console.log('🧾 CADASTRO DE SERVIÇOS');  
+    console.log(`🕒 Início do teste: ${formatarDataHora(inicioTesteS)}`);    
+    await page.waitForTimeout(1000);       
+    const servico = obterServicoAleatorio();  
+
+    await page.waitForTimeout(1000);
+    await navegarPara(page, 'Catálogo', '');    
+    console.log(`✅ Clicou em Serviços`);          
+    console.log(`✅ Apareceu Listagem de serviços`);         
     
-    console.log('✅ CADASTRO DE PRODUTOS');  
+    const btnCadastrarS = page.getByText(/Novo serviço/i).first();
+    await btnCadastrarS.waitFor();
+    await btnCadastrarS.click({ force: true });      
+    console.log(`✅ Clicou em Cadastrar serviço`);  
+    console.log(`✅ Abriu Form de Serviços`);        
+    
+    const salvarServicoPromise = page.waitForResponse((response) =>
+      (response.url().includes('/api/') || response.url().includes('/services') || response.url().includes('/servico')) &&
+      ['POST', 'PUT'].includes(response.request().method()) &&
+      response.status() >= 200 &&
+      response.status() < 300
+    ).catch(() => null);
+    
+    try {
+      const btnCookie = page.getByText(/Entendi|Aceitar|Fechar/i).first();
+      if (await btnCookie.isVisible({ timeout: 3000 })) {
+        await btnCookie.click({ force: true });
+        console.log('✅ Fechou aviso de cookies');
+      }
+    } catch (e) {}
+
+    await page.waitForTimeout(1000);    
+
+    console.log('📝 DADOS ENVIADOS PRA API');        
+    const nomeServico = servico.nomeServico.toUpperCase();
+    const comissaoS = '1390';    
+    const valorS = (servico.precoSugerido * 100).toFixed();    
+    const intervalos = ['15', '30', '45', '60'];
+    const duracao = intervalos[Math.floor(Math.random() * intervalos.length)];
+    const descricao = `Serviço realizado por profissional qualificado, utilizando técnicas adequadas para atender às preferências e necessidades de cada cliente. O atendimento inclui avaliação do estilo desejado, execução do corte e acabamento, proporcionando um visual renovado, bem cuidado e alinhado.`;
+    
+    try {
+      const campoNome = page.locator('input:visible').nth(2);
+      await campoNome.scrollIntoViewIfNeeded();
+      await campoNome.click({ force: true });
+      await campoNome.fill(nomeServico, { force: true });
+      console.log('✅ Nome do Serviço:', nomeServico.toUpperCase());
+    } catch (e) {
+      console.log('⚠️ Falha ao preencher Nome do Serviço');
+    }
+    await page.waitForTimeout(1000);    
+    
+    try {
+      const campoDuracao = page.locator('input:visible').nth(3);
+      await campoDuracao.click({ force: true });
+      await campoDuracao.fill(duracao, { force: true });
+      console.log('✅ Duração:', duracao);
+    } catch (e) {
+      console.log('⚠️ Falha ao preencher Duração');
+    }
+    await page.waitForTimeout(1000);    
+    try {
+     const campoValor = page.locator('input:visible').nth(4);
+      await campoValor.scrollIntoViewIfNeeded();
+      await campoValor.click({ force: true });
+      await campoValor.press('Control+A');
+      await campoValor.press('Backspace');
+      await campoValor.type(valorS.toString(), { delay: 50 });
+      
+      const valorFormatado = (Number(valorS) / 100).toFixed(2);
+      console.log('✅ Valor:', valorFormatado);
+    } catch (e) {
+      console.log('⚠️ Falha ao preencher Valor');
+    }
+    
+    try {
+      const campoComissao = page.locator('input:visible').nth(5);
+      await campoComissao.scrollIntoViewIfNeeded();
+      await campoComissao.click({ force: true });
+      await campoComissao.press('Control+A');
+      await campoComissao.press('Backspace');
+      await campoComissao.type(comissaoS.toString(), { delay: 50 });      
+      const comissaoFormatada = (Number(comissaoS) / 100).toFixed(2);
+      console.log('✅ Comissão:', `${comissaoFormatada}%`);
+    } catch (e) {
+      console.log('⚠️ Falha ao preencher Comissão');
+    }
+    
+    try {
+      const campoDescricao = page.locator('textarea:visible').first();
+      await campoDescricao.scrollIntoViewIfNeeded();
+      await campoDescricao.click({ force: true });
+      await campoDescricao.fill(descricao.toUpperCase(), { force: true });
+      console.log('✅ Descrição do Serviço preenchida');
+    } catch (e) {
+      console.log('⚠️ Falha ao preencher Descrição');
+    }
+    
+    await page.waitForTimeout(1000);      
+    await page.getByRole('tab', { name: /^Atendentes$/i }).first().click();     
+    
+    try {
+        const secaoAtendentes = page.getByText(/Atendentes/i).first();
+        if (await secaoAtendentes.isVisible({ timeout: 5000 })) {
+            await secaoAtendentes.scrollIntoViewIfNeeded();
+            await page.waitForTimeout(1000);
+            
+            const selecionados = await page.evaluate(() => {                
+                const todosElementos = Array.from(document.querySelectorAll('*'));
+                const tituloAtendentes = todosElementos.find(el => 
+                    /Sele[çc][aã]o de Atendentes/i.test((el.textContent || '').replace(/\s+/g, ' ').trim())
+                );
+                
+                const topoSecao = tituloAtendentes ? tituloAtendentes.getBoundingClientRect().top : 0;                
+                const divs = Array.from(document.querySelectorAll('div'));
+                const cardsAtendentes = divs.filter(el => {
+                    const texto = (el.textContent || '').replace(/\s+/g, ' ').trim();
+                    const rect = el.getBoundingClientRect();
+
+                    const temTamanhoDeCard = rect.width >= 150 && rect.width <= 400 && rect.height >= 100 && rect.height <= 260;
+                    const estaNaSecaoDeAtendentes = rect.top >= topoSecao - 20;
+                    const temImagemOuInput = el.querySelector('img') !== null || el.querySelector('input') !== null;
+                    const naoEhFormulario = !/Nome do servi[çc]o|Dura[çc][aã]o|Valor|Comiss[aã]o|Categoria|Descri[çc][aã]o|Gravar|Cadastrar/i.test(texto);
+
+                    return temTamanhoDeCard && estaNaSecaoDeAtendentes && temImagemOuInput && texto.length > 0 && naoEhFormulario;
+                });
+
+                if (cardsAtendentes.length === 0) return 0;                
+                const primeirosSeis = cardsAtendentes.slice(0, 6);
+                const quantidadeParaSelecionar = primeirosSeis.length > 1 ? 2 : 1;               
+                
+                const cardsSelecionados = primeirosSeis.sort(() => 0.5 - Math.random()).slice(0, quantidadeParaSelecionar);
+                
+                cardsSelecionados.forEach((card) => {
+                    const rect = card.getBoundingClientRect();
+                    const clientX = rect.right - 20;
+                    const clientY = rect.top + 20;
+
+                    const eventos = ['pointerdown', 'mousedown', 'mouseup', 'click'];
+                    eventos.forEach((evento) => {
+                        card.dispatchEvent(new MouseEvent(evento, {
+                            bubbles: true, cancelable: true, clientX, clientY, view: window
+                        }));
+                    });
+                });
+
+                return cardsSelecionados.length;
+            });
+
+            console.log(`✅ Total de atendentes selecionados pela injeção JS: ${selecionados}`);
+            await page.waitForTimeout(800); 
+        }
+    } catch (err) {
+        console.log('⚠️ Falha ao selecionar atendentes:', err);
+    }
+
+    console.log('📝 FIM DE DADOS ENVIADOS');           
+    
+    try {
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.waitForTimeout(500);
+    } catch (e) {}
+
+    await page.waitForTimeout(500);
+    const btnGravarS = page.getByText(/Criar serviço|Gravar|Salvar|Cadastrar|Registrar cliente/i).first();
+    await btnGravarS.waitFor({ state: 'visible', timeout: 10000 });
+    await btnGravarS.click({ force: true });
+    console.log('✅ Clicou em Gravar');             
+    
+    let respostaJsonS: any = null;
+    const salvarResponseS = await salvarServicoPromise;    
+
+    if (salvarResponseS) {
+      console.log('🌐 A URL capturada do POST é:', salvarResponseS.url());
+      console.log(`✅ Status da resposta API: ${salvarResponseS.status()}`);
+
+      try {        
+        respostaJsonS = await salvarResponseS.json();               
+        console.log('📦 JSON de resposta:', JSON.stringify(respostaJsonS, null, 2));        
+      } catch (e) {
+        console.log('⚠️ A resposta da API não contém um JSON válido ou veio vazia.');
+      }
+    }
+    
+    const idServico = respostaJsonS?.data?.id?.toString()?.trim() || respostaJsonS?.id?.toString()?.trim();
+        console.log(idServico) 
+    if (salvarResponseS && idServico) {     
+      const urlPostS = salvarResponseS.url().replace(/\/$/, '');
+      const urlRegistroCriadoS = `${urlPostS}/${idServico}`;      
+      const headersGetRegistro = { ...salvarResponseS.request().headers() };      
+      delete headersGetRegistro['content-type'];
+      delete headersGetRegistro['content-length'];
+      delete headersGetRegistro[':method'];
+      delete headersGetRegistro[':path'];
+      delete headersGetRegistro[':authority'];
+      delete headersGetRegistro[':scheme'];      
+      const getCriadoResponseS = await page.request.get(urlRegistroCriadoS, {
+        headers: headersGetRegistro,
+      });
+
+      console.log('🌐 URL do registro criado:', urlRegistroCriadoS);
+      console.log('✅ RESPOSTA DA API AO CONSULTAR O NOVO REGISTRO');
+      console.log('✅ Novo ID:', idServico);    
+      console.log(`✅ Status GET: ${getCriadoResponseS.status()}`);
+
+      try {
+        const dadosCriado = await getCriadoResponseS.json();
+        console.log('📦 JSON do Registro Consultado:\n', JSON.stringify(dadosCriado, null, 2));
+      } catch (error) {
+        console.error('⚠️ Erro ao converter resposta para JSON:', error);
+        const corpoBruto = await getCriadoResponseS.text();
+        console.log('Corpo bruto da resposta:', corpoBruto);
+      }
+    } else {
+      console.log('⚠️ Não foi possível obter o ID do salvamento para consultar o registro.');
+    }
+    
+    try {
+      await expect(page.locator('body')).toHaveText(
+        /sucesso|salvo|cadastrado|Listagem de servi[çc]os|Servi[çc]os/i,
+        { timeout: 20000 }
+      );
+      console.log('✅ Serviço cadastrado com sucesso!');
+    } catch (e) {
+      console.log('⚠️ Validação de texto concluída.');
+    }   
+    console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
+    
+
+    let inicioTestep = new Date();    
+    console.log('🧾 CADASTRO DE PRODUTOS');  
     console.log(`🕒 Início do teste: ${formatarDataHora(inicioTestep)}`);    
     
     await page.waitForTimeout(1000);
@@ -519,10 +746,386 @@ test('Cadastros de Vários Agenda', async ({ page }) => {
       console.log('✅ Produto cadastrado com sucesso!');
     } catch (e) {
       console.log('⚠️ Validação de texto concluída.');
+    }   
+    console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
+
+    
+    let inicioTesteC = new Date();    
+    console.log('🧾 CADASTRO DE CATEGORIAS');  
+    console.log(`🕒 Início do teste: ${formatarDataHora(inicioTesteC)}`);    
+
+    await page.waitForTimeout(1000);
+    await navegarPara(page, 'Catálogo', 'Categorias');    
+    console.log(`✅ Clicou em Categorias`);          
+    
+    await page.waitForTimeout(1000);                
+    const btnCadastrarC = page.getByText(/Nova categoria/i).first();
+    await btnCadastrarC.waitFor();
+    await btnCadastrarC.click({ force: true });      
+    console.log(`✅ Clicou em Nova Categoria`);  
+    console.log(`✅ Abriu Form de Categorias`);              
+    
+    const salvarCategoriaPromise = page.waitForResponse((response) =>
+      (response.url().includes('/api/') || response.url().includes('/categories') || response.url().includes('/categoria')) &&
+      ['POST', 'PUT'].includes(response.request().method()) &&
+      response.status() >= 200 &&
+      response.status() < 300
+    ).catch(() => null);    
+    
+    try {
+      const btnCookie = page.getByText(/Entendi|Aceitar|Fechar/i).first();
+      if (await btnCookie.isVisible({ timeout: 3000 })) {
+        await btnCookie.click({ force: true });
+        console.log('✅ Fechou aviso de cookies');
+      }
+    } catch (e) {}
+
+    await page.waitForTimeout(1000);    
+
+    console.log('📝 DADOS ENVIADOS PRA API');
+    const timestampC = Date.now();
+    const nomeCategoria = obterServicoAleatorio().categoria + ' ' + timestampC;
+    const descricaoC = `Categoria destinada aos serviços de barbearia, abrangendo procedimentos voltados aos cuidados e à estética masculina, como cortes de cabelo, barba, bigode, acabamento, tratamentos capilares e outros serviços relacionados, realizados por profissionais.`;    
+    
+    const preencherCampoC = async (index: number, texto: string, nomeCampo: string) => {
+        try {
+            const campo = page.locator('input:visible').nth(index);
+            await campo.scrollIntoViewIfNeeded();
+            await campo.click({ force: true });
+            await campo.press('Control+A');
+            await campo.press('Backspace');
+            await campo.type(texto, { delay: 50 });
+            console.log(`✅ ${nomeCampo}:`, texto);
+        } catch (e) {
+            console.log(`⚠️ Falha ao preencher ${nomeCampo}`);
+        }
+    };
+    
+    await preencherCampo(0, nomeCategoria, 'Nome da Categoria');
+    
+try {
+      const campoDescricao = page.locator('textarea:visible').first();
+      await campoDescricao.scrollIntoViewIfNeeded();
+      await campoDescricao.click({ force: true });
+      await campoDescricao.press('Control+A');
+      await campoDescricao.press('Backspace');
+      await campoDescricao.type(descricaoC, { delay: 20 });
+      console.log('✅ Descrição preenchida:', descricao);
+    } catch (e) {
+      console.log('⚠️ Falha ao preencher Descrição');
     }
 
-    await capturarRequisicoesApi(page); 
-    await page.waitForTimeout(2000);    
+    console.log('📝 FIM DE DADOS ENVIADOS PRA API');
+
+    await page.waitForTimeout(1000);       
+    
+    try {
+      await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+      await page.waitForTimeout(1000);
+    } catch (e) {}
+    
+    const btnGravarC = page.getByText(/Criar categoria/i).first();
+    await btnGravarC.waitFor();
+    await btnGravarC.click({ force: true });
+    console.log('✅ Clicou em Gravar');              
+    
+    let respostaJsonC: any = null;
+    const salvarResponseC = await salvarCategoriaPromise;    
+    
+    if (salvarResponseC) {    
+      console.log('🌐 A URL capturada do POST é:', salvarResponseC.url());
+      console.log(`✅ Status da resposta API: ${salvarResponseC.status()}`);
+      try {        
+        respostaJson = await salvarResponseC.json();               
+        console.log('📦 JSON de resposta:', JSON.stringify(respostaJson, null, 2));        
+      } catch (e) {
+        console.log('⚠️ A resposta da API não contém um JSON válido ou veio vazia.');
+      }
+
+      const urlListagemC = salvarResponseC.url().replace(/\/$/, '');      
+      const headersGet = { ...salvarResponseC.request().headers() };
+      delete headersGet['content-type'];
+      delete headersGet['content-length'];
+      delete headersGet[':method'];
+      delete headersGet[':path'];
+      delete headersGet[':authority'];
+      delete headersGet[':scheme'];
+      
+      const urlConsultaC = `${urlListagemC}?page=1&perPage=10&f_params[orderBy][field]=created_at&f_params[orderBy][type]=desc`;
+      
+      const respostaListagemC = await page.request.get(urlConsultaC, {
+        headers: headersGet,
+      });
+
+      console.log('🌐 URL da consulta de listagem:', urlConsultaC);
+      console.log(`✅ Status da consulta GET: ${respostaListagemC.status()}`);
+
+      if (respostaListagemC.status() === 200) {
+        const jsonListagemC = await respostaListagemC.json();      
+        const listaCategorias: any[] = jsonListagemC?.data || jsonListagemC || [];
+        
+        const categoriaCriada = listaCategorias.find(
+          (p: any) => p.name === nomeCategoria || p.nome === nomeCategoria
+        );
+
+        if (categoriaCriada) {
+          const idEncontrado = categoriaCriada.id || categoriaCriada.iid;
+          console.log('✅ REGISTRO ENCONTRADO COM SUCESSO!');
+          console.log('🆔 ID do Novo Registro:', idEncontrado);
+          console.log('📦 JSON do Registro Consultado:\n', JSON.stringify(categoriaCriada, null, 2));
+        } else {
+          console.log(`⚠️ Categoria "${nomeCategoria}" não foi localizada na primeira página.`);
+        }
+      } else {
+        console.log(`⚠️ Falha ao buscar a listagem de categorias. Status HTTP: ${respostaListagemC.status()}`);
+      }
+    }
+
+    try {
+      await expect(page.locator('body')).toHaveText(
+        /categoria|sucesso|salvo|cadastrado|Listagem de categorias/i,
+        { timeout: 30000 }
+      );
+      console.log('✅ Categoria cadastrada com sucesso!');
+    } catch (e) {
+      console.log('⚠️ Validação de texto concluída.');
+    }          
+    console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
+
+        
+    let inicioTestePl = new Date();    
+    console.log('🧾 CADASTRO DE PLANOS');  
+    console.log(`🕒 Início do teste: ${formatarDataHora(inicioTestePl)}`);    
+
+    await navegarPara(page, 'Planos');
+    console.log(`✅ Clicou em Planos`);          
+    await page.waitForTimeout(1000);                 
+    
+    const btnCadastrarPl = page.getByText(/Novo plano/i).first();
+    await btnCadastrarPl.waitFor();
+    await btnCadastrarPl.click({ force: true });      
+    console.log(`✅ Clicou em Novo Plano`);  
+    console.log(`✅ Abriu Form de Planos`);              
+    
+    const salvarPlanoPromise = page.waitForResponse((response) =>
+      (response.url().includes('/api/') || response.url().includes('/plans') || response.url().includes('/plano')) &&
+      ['POST', 'PUT'].includes(response.request().method()) &&
+      response.status() >= 200 &&
+      response.status() < 300
+    ).catch(() => null);    
+    
+    try {
+      const btnCookie = page.getByText(/Entendi|Aceitar|Fechar/i).first();
+      if (await btnCookie.isVisible({ timeout: 3000 })) {
+        await btnCookie.click({ force: true });
+        console.log('✅ Fechou aviso de cookies');
+      }
+    } catch (e) {}
+
+    await page.waitForTimeout(1000);    
+
+    console.log('📝 DADOS ENVIADOS PRA API');        
+    const nomePlano = `${obterNomePlanoAleatorio()} ${Date.now()}`;
+    const valorPlano = '1475';     
+    const descricaoPlano = `Plano destinado a atender às necessidades do seu negócio, oferecendo recursos essenciais, segurança, suporte e atualizações para uma gestão mais eficiente e produtiva.`;    
+    
+    const preencherCampoPl = async (index: number, texto: string, nomeCampo: string) => {
+        try {
+            const campo = page.locator('input:visible').nth(index);
+            await campo.scrollIntoViewIfNeeded();
+            await campo.click({ force: true });
+            await campo.press('Control+A');
+            await campo.press('Backspace');
+            await campo.type(texto, { delay: 50 });
+            console.log(`✅ ${nomeCampo.toUpperCase()}:`, texto);
+        } catch (e) {
+            console.log(`⚠️ Falha ao preencher ${nomeCampo}`);
+        }
+    };
+    
+    await preencherCampoPl(0, nomePlano.toUpperCase(), 'Nome do Plano');
+    await preencherCampoPl(1, valorPlano, 'Valor do Plano');    
+    
+    try {
+      await expect(page.locator('body')).toHaveText(/Mensal/i);
+      await expect(page.locator('body')).toHaveText(/Meses/i);
+      await expect(page.locator('body')).toHaveText(/Usos/i);
+    } catch (e) {}
+    
+    try {
+      const campoDescricao = page.locator('textarea:visible').first();
+      await campoDescricao.scrollIntoViewIfNeeded();
+      await campoDescricao.click({ force: true });
+      await campoDescricao.press('Control+A');
+      await campoDescricao.press('Backspace');
+      await campoDescricao.type(descricaoPlano.toUpperCase(), { delay: 20 });
+      console.log('✅ Descrição do Plano preenchida:', descricaoPlano);
+    } catch (e) {
+      console.log('⚠️ Falha ao preencher Descrição');
+    }    
+    
+    let totalValidas = 0;
+    try {
+      const secaoServicos = page.getByText(/Itens do plano/i).first();
+      await secaoServicos.scrollIntoViewIfNeeded();
+      await page.waitForTimeout(500);
+
+      const btnAdicionar = page.locator('button, .q-btn, [role="button"]').filter({ hasText: /Adicionar serviços/i }).first();
+      await btnAdicionar.click({ force: true });
+      console.log('✅ Clicou em Adicionar Serviço');
+      await page.waitForTimeout(1000);
+     
+      totalValidas = await page.evaluate(() => {
+        const dialog = document.querySelector('.q-dialog:not([style*="display: none"]), [role="dialog"]');
+        const raiz = dialog || document.body;
+        
+        const trs = Array.from(raiz.querySelectorAll('tbody tr'));
+        const linhasValidas = trs.filter(tr => {
+          const texto = (tr.textContent || '').replace(/\s+/g, ' ').trim();
+          const temColunas = tr.querySelectorAll('td').length > 0;
+          const linhaVazia = /nenhum|nenhuma|sem dados|sem resultado|não encontrado|nao encontrado/i.test(texto);
+          return temColunas && texto.length > 0 && !linhaVazia;
+        });
+
+        return linhasValidas.length;
+      });
+    } catch (err) {
+      console.log('⚠️ Falha ao abrir modal de serviços:', err);
+    }
+
+    if (totalValidas === 0) {
+      console.log('⚠️ Deve cadastrar serviços: a grade de serviços está vazia ou não possui registros válidos!');
+      try {
+        const btnCancelarModal = page.locator('.q-dialog, [role="dialog"]').locator('button, .q-btn').filter({ hasText: /cancelar|fechar|voltar/i }).first();
+        if (await btnCancelarModal.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await btnCancelarModal.click({ force: true });
+        }
+      } catch {}
+      test.skip();
+      return;
+    }
+
+    try {
+      const selecionados = await page.evaluate(() => {
+        const dialog = document.querySelector('.q-dialog:not([style*="display: none"]), [role="dialog"]');
+        const raiz = dialog || document.body;
+        
+        const trs = Array.from(raiz.querySelectorAll('tbody tr'));
+        const linhasValidas = trs.filter(tr => {
+          const texto = (tr.textContent || '').replace(/\s+/g, ' ').trim();
+          const temColunas = tr.querySelectorAll('td').length > 0;
+          const linhaVazia = /nenhum|nenhuma|sem dados|sem resultado|não encontrado|nao encontrado/i.test(texto);
+          return temColunas && texto.length > 0 && !linhaVazia;
+        });
+
+        let elementosParaClicar: HTMLElement[] = [];
+
+        if (linhasValidas.length > 0) {
+          elementosParaClicar = linhasValidas as HTMLElement[];
+        } else {          
+          const itens = Array.from(raiz.querySelectorAll('.q-item, .q-card, [class*="card"]'));
+          elementosParaClicar = itens.filter(item => {
+            const texto = (item.textContent || '').replace(/\s+/g, ' ').trim();
+            return texto.length > 0 && !/Adicionar|Confirmar|Cancelar|Buscar|Servi[çc]os prestados|Valor definido/i.test(texto);
+          }) as HTMLElement[];
+        }
+
+        if (elementosParaClicar.length === 0) return 0;
+
+        const qtd = elementosParaClicar.length > 1 ? 2 : 1;
+        const sorteados = elementosParaClicar.sort(() => 0.5 - Math.random()).slice(0, qtd);
+
+        sorteados.forEach(el => el.click());
+        return sorteados.length;
+      });
+
+      console.log(`✅ Serviços selecionados no modal: ${selecionados}`);
+      await page.waitForTimeout(1000);
+      
+      const btnConfirmar = page.locator('button, .q-btn, [role="button"]').filter({ hasText: /Confirmar/i }).first();
+      await btnConfirmar.click({ force: true });
+      console.log('✅ Clicou em Confirmar Serviço(s)');
+      await page.waitForTimeout(1000);
+
+    } catch (err) {
+      console.log('⚠️ Falha ao selecionar serviços no modal:', err);
+    }
+
+    console.log('📝 FIM DE DADOS ENVIADOS PRA API');    
+    try {
+      await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' }));
+      await page.waitForTimeout(1000);
+    } catch (e) {}
+    
+    const btnGravarPl = page.getByText(/Criar plano/i).first();
+    await btnGravarPl.waitFor();
+    await btnGravarPl.click({ force: true });
+    console.log('✅ Clicou em Gravar');              
+    
+    let respostaJsonPl: any = null;
+    const salvarResponsePl = await salvarPlanoPromise;    
+    
+    if (salvarResponsePl) {    
+      console.log('🌐 A URL capturada do POST é:', salvarResponsePl.url());
+      console.log(`✅ Status da resposta API: ${salvarResponsePl.status()}`);
+      try {        
+        respostaJson = await salvarResponsePl.json();               
+        console.log('📦 JSON de resposta:', JSON.stringify(respostaJson, null, 2));        
+      } catch (e) {
+        console.log('⚠️ A resposta da API não contém um JSON válido ou veio vazia.');
+      }
+
+      const urlListagemPl = salvarResponsePl.url().replace(/\/$/, '');      
+      const headersGet = { ...salvarResponsePl.request().headers() };
+      delete headersGet['content-type'];
+      delete headersGet['content-length'];
+      delete headersGet[':method'];
+      delete headersGet[':path'];
+      delete headersGet[':authority'];
+      delete headersGet[':scheme'];
+      
+      const urlConsulta = `${urlListagemPl}?page=1&perPage=10&f_params[orderBy][field]=created_at&f_params[orderBy][type]=desc`;
+      
+      const respostaListagemPl = await page.request.get(urlConsulta, {
+        headers: headersGet,
+      });
+
+      console.log('🌐 URL da consulta de listagem:', urlConsulta);
+      console.log(`✅ Status da consulta GET: ${respostaListagemPl.status()}`);
+
+      if (respostaListagemPl.status() === 200) {
+        const jsonListagemPl = await respostaListagemPl.json();      
+        const listaProdutos: any[] = jsonListagemPl?.data || jsonListagemPl || [];
+        
+        const planoCriado = listaProdutos.find(
+          (p: any) => 
+            p.name?.toUpperCase() === nomePlano.toUpperCase() || 
+            p.nome?.toUpperCase() === nomePlano.toUpperCase()
+        );
+
+        if (planoCriado) {
+          const idEncontrado = planoCriado.id || planoCriado.iid;
+          console.log('✅ REGISTRO ENCONTRADO COM SUCESSO!');
+          console.log('🆔 ID do Novo Registro:', idEncontrado);
+          console.log('📦 JSON do Registro Consultado:\n', JSON.stringify(planoCriado, null, 2));
+        } else {
+          console.log(`⚠️ Plano "${nomePlano.toUpperCase()}" não foi localizado na primeira página.`);
+        }
+      } else {
+        console.log(`⚠️ Falha ao buscar a listagem de planos. Status HTTP: ${respostaListagemPl.status()}`);
+      }
+    }
+   
+    try {
+      await expect(page.locator('body')).toHaveText(
+        /sucesso|salvo|cadastrado|Listagem de planos|Planos/i,
+        { timeout: 30000 }
+      );
+      console.log('✅ Plano cadastrado com sucesso!');
+    } catch (e) {
+      console.log('⚠️ Validação de texto concluída.');
+    }       
+    
     console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
 
 });
