@@ -127,17 +127,15 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
       console.log('⚠️ Falha ao preencher GTIN');
     }    
 
-
     const combobox3 = page.locator('role=combobox[name="Selecione uma opção"]').first();
     await combobox3.click(); 
     await page.waitForTimeout(500);         
-    const terceiraOpcao = page.locator('[role="option"]')
+    const quartaOpcao = page.locator('[role="option"]')
       .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
       .nth(4); 
-    await terceiraOpcao.click();
-    console.log('✅ Selecionou a terceira opção do combobox com sucesso!');
-    await page.waitForTimeout(500);
-    
+    await quartaOpcao.click();
+    console.log('✅ Selecionou a quarta opção do combobox com sucesso!');
+    await page.waitForTimeout(500);    
 
     console.log('📝 FIM DE DADOS ENVIADOS');           
     
