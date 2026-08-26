@@ -101,13 +101,39 @@ test('Cadastros de Vários Agenda', async ({ page }) => {
       }
       else
       {
-        await inputsModal.nth(3).fill('LA ASUNCIÓN');      
-        await inputsModal.nth(4).fill('001518');
-        await inputsModal.nth(5).fill('CALLE LA ESPERANZA');
-        await inputsModal.nth(6).fill(numero);
-        await inputsModal.nth(7).fill('EL JUNQUITO');
-        await inputsModal.nth(8).fill('EDIFICIO');
+const container = page.locator('[role="dialog"]:visible'); // ou 'body' se não for modal
+        const cb1 = container.getByRole('combobox').nth(0);
+        await cb1.click();
+        await page.locator('[role="listbox"]:visible [role="option"]')
+          .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
+          .nth(1).click();
+        await page.locator('[role="listbox"]').first().waitFor({ state: 'hidden' });
 
+        await page.waitForTimeout(1000);    
+
+
+        const cb2 = container.getByRole('combobox').nth(1);
+        await cb2.waitFor({ state: 'visible' });
+        await cb2.click();
+        await page.locator('[role="listbox"]:visible [role="option"]')
+          .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
+          .nth(2).click();
+        await page.locator('[role="listbox"]').first().waitFor({ state: 'hidden' });
+
+        await page.waitForTimeout(1000);    
+
+        const cb3 = container.getByRole('combobox').nth(2);
+        await cb3.waitFor({ state: 'visible' });
+        await cb3.click();
+        await page.locator('[role="listbox"]:visible [role="option"]')
+          .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
+          .first().click();
+          
+        await inputsModal.nth(2).fill('001518');
+        await inputsModal.nth(3).fill('CALLE LA ESPERANZA');
+        await inputsModal.nth(4).fill(numero);
+        await inputsModal.nth(5).fill('PLANALTO');
+        await inputsModal.nth(6).fill('CASA');
       }
       
       console.log('✅ Preencheu endereço no modal');
