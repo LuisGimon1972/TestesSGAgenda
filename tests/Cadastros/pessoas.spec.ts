@@ -100,7 +100,6 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
       {
 
         const container = page.locator('[role="dialog"]:visible'); // ou 'body' se não for modal
-
         const cb1 = container.getByRole('combobox').nth(0);
         await cb1.click();
         await page.locator('[role="listbox"]:visible [role="option"]')
@@ -133,7 +132,6 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
         await inputsModal.nth(4).fill(numero);
         await inputsModal.nth(5).fill('EL JUNQUITO');
         await inputsModal.nth(6).fill('EDIFICIO');
-
       }
       
       console.log('✅ Preencheu endereço no modal');

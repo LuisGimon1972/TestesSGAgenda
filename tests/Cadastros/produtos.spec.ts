@@ -67,19 +67,21 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
     
     const combobox1 = page.locator('role=combobox[name="Selecione uma opção"]').first();
     await combobox1.click();
-    await page
+    const opcao0 = page
       .locator('[role="option"]')
       .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
-      .first()
-      .click();
-    
+      .first(); // <-- Ponto e vírgula adicionado aqui
+    const valorSelecionado0 = await opcao0.innerText();
+    console.log(`✅ Afetação do IVA selecionado: ${valorSelecionado0}`);
+    await opcao0.click();
+
     const combobox2 = page.locator('role=combobox[name="10%"]').first();
     await combobox2.click();
-    await page
-      .locator('[role="option"]')
-      .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
-      .first()
-      .click();
+    const opcao3 = page.getByRole('option', { name: '10%', exact: true }).first();
+    await opcao3.waitFor({ state: 'visible' });
+    const valorSelecionado3 = await opcao3.innerText();
+    console.log(`✅ IVA selecionado: ${valorSelecionado3}`);
+    await opcao3.click();
     
     const inputsFiscais = page.locator('input:visible');
     await preencherCampo(inputsFiscais.nth(0), ncm, 'NCM');
@@ -87,11 +89,13 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
     
     const combobox3 = page.locator('role=combobox[name="Selecione uma opção"]').first();
     await combobox3.click();
-    await page
+    const opcao2 = page
       .locator('[role="option"]')
       .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
       .nth(4)
-      .click();
+    const valorSelecionado2 = await opcao2.innerText();
+    console.log(`✅ Unidade de Medida selecionada: ${valorSelecionado2}`);
+    await opcao2.click();
 
     console.log('✅ Dados fiscais preenchidos com sucesso');
   } else {
