@@ -1179,8 +1179,6 @@ try {
       console.log('✅ Plano cadastrado com sucesso!');
     } catch (e) {
       console.log('⚠️ Validação de texto concluída.');
-    }       
-    
+    }           
     console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
-
 });
