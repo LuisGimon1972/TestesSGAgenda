@@ -474,6 +474,40 @@ test('Cadastros de Vários Agenda', async ({ page }) => {
         console.log('⚠️ Falha ao selecionar atendentes:', err);
     }
 
+    await page.waitForTimeout(2000);      
+    await page.getByRole('tab', { name: /^Fiscal Beta$/i }).first().click();     
+  
+    const comboboxS = page.locator('role=combobox[name="Selecione uma opção"]').first();
+    await comboboxS.click(); 
+    await page.waitForTimeout(500);     
+    const primeiraOpcaoS = page.locator('[role="option"]')
+      .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
+      .first();
+    await primeiraOpcaoS.click();
+    console.log('✅ Selecionou a primeira opção do combobox com sucesso!');
+    await page.waitForTimeout(500);
+
+    const combobox2S = page.locator('role=combobox[name="10%"]').first();
+    await combobox2S.click(); 
+    await page.waitForTimeout(500);     
+    const primeiraOpcao2S = page.locator('[role="option"]')
+      .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
+      .first();
+    await primeiraOpcao2S.click();
+
+    console.log('✅ Selecionou a primeira opção do segundo combobox com sucesso!');
+    await page.waitForTimeout(500);    
+
+    const combobox3S = page.locator('role=combobox[name="Selecione uma opção"]').first();
+    await combobox3S.click(); 
+    await page.waitForTimeout(500);         
+    const quartaOpcaoS = page.locator('[role="option"]')
+      .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
+      .nth(14); 
+    await quartaOpcaoS.click();
+    console.log('✅ Selecionou a décima quarta opção do combobox com sucesso!');
+    await page.waitForTimeout(500);    
+
     console.log('📝 FIM DE DADOS ENVIADOS');           
     
     try {
