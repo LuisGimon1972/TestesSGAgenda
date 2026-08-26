@@ -51,6 +51,8 @@ test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
     }
   };
 
+  await page.waitForTimeout(1500);
+
   const inputs = page.locator('input:visible');
   await preencherCampo(inputs.nth(0), nomeProduto, 'Nome do Produto');
   await preencherCampo(inputs.nth(1), quantidade, 'Quantidade');
