@@ -164,40 +164,49 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
         console.log('⚠️ Falha ao selecionar atendentes:', err);
     }
 
+    await page.waitForTimeout(1000);      
 
-    await page.waitForTimeout(2000);      
-    await page.getByRole('tab', { name: /^Fiscal Beta$/i }).first().click();     
-  
-    const combobox = page.locator('role=combobox[name="Selecione uma opção"]').first();
-    await combobox.click(); 
-    await page.waitForTimeout(500);     
-    const primeiraOpcao = page.locator('[role="option"]')
-      .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
-      .first();
-    await primeiraOpcao.click();
-    console.log('✅ Selecionou a primeira opção do combobox com sucesso!');
-    await page.waitForTimeout(500);
+    // Tratamento condicional para a aba Fiscal Beta (Apenas Paraguai)
+    const abaFiscal = page.getByRole('tab', { name: /^Fiscal Beta$/i }).first();
 
-    const combobox2 = page.locator('role=combobox[name="10%"]').first();
-    await combobox2.click(); 
-    await page.waitForTimeout(500);     
-    const primeiraOpcao2 = page.locator('[role="option"]')
-      .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
-      .first();
-    await primeiraOpcao2.click();
+    if (await abaFiscal.isVisible({ timeout: 3000 }).catch(() => false)) {
+      console.log('✅ Aba Fiscal Beta encontrada (Empresa Paraguai)');
+      await abaFiscal.click();
+      await page.waitForTimeout(500);
 
-    console.log('✅ Selecionou a primeira opção do segundo combobox com sucesso!');
-    await page.waitForTimeout(500);    
+      const combobox = page.locator('role=combobox[name="Selecione uma opção"]').first();
+      await combobox.click(); 
+      await page.waitForTimeout(500);     
+      const primeiraOpcao = page.locator('[role="option"]')
+        .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
+        .first();
+      await primeiraOpcao.click();
+      console.log('✅ Selecionou a primeira opção do combobox com sucesso!');
+      await page.waitForTimeout(500);
 
-    const combobox3 = page.locator('role=combobox[name="Selecione uma opção"]').first();
-    await combobox3.click(); 
-    await page.waitForTimeout(500);         
-    const quartaOpcao = page.locator('[role="option"]')
-      .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
-      .nth(14); 
-    await quartaOpcao.click();
-    console.log('✅ Selecionou a nona opção do combobox com sucesso!');
-    await page.waitForTimeout(500);    
+      const combobox2 = page.locator('role=combobox[name="10%"]').first();
+      await combobox2.click(); 
+      await page.waitForTimeout(500);     
+      const primeiraOpcao2 = page.locator('[role="option"]')
+        .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
+        .first();
+      await primeiraOpcao2.click();
+
+      console.log('✅ Selecionou a primeira opção do segundo combobox com sucesso!');
+      await page.waitForTimeout(500);    
+
+      const combobox3 = page.locator('role=combobox[name="Selecione uma opção"]').first();
+      await combobox3.click(); 
+      await page.waitForTimeout(500);         
+      const quartaOpcao = page.locator('[role="option"]')
+        .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
+        .nth(14); 
+      await quartaOpcao.click();
+      console.log('✅ Selecionou a opção do combobox com sucesso!');
+      await page.waitForTimeout(500);    
+    } else {
+      console.log('ℹ️ Aba Fiscal Beta não encontrada (Empresa Brasil), pulando etapas fiscais.');
+    }
 
     console.log('📝 FIM DE DADOS ENVIADOS');           
     
@@ -228,7 +237,8 @@ test('Cadastro de Serviços E2E com Atendentes Aleatórios', async ({ page }) =>
     }
     
     const idServico = respostaJson?.data?.id?.toString()?.trim() || respostaJson?.id?.toString()?.trim();
-        console.log(idServico) 
+    console.log(idServico);
+    
     if (salvarResponse && idServico) {     
       const urlPost = salvarResponse.url().replace(/\/$/, '');
       const urlRegistroCriado = `${urlPost}/${idServico}`;      

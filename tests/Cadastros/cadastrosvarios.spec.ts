@@ -474,39 +474,49 @@ test('Cadastros de Vários Agenda', async ({ page }) => {
         console.log('⚠️ Falha ao selecionar atendentes:', err);
     }
 
-    await page.waitForTimeout(2000);      
-    await page.getByRole('tab', { name: /^Fiscal Beta$/i }).first().click();     
-  
-    const comboboxS = page.locator('role=combobox[name="Selecione uma opção"]').first();
-    await comboboxS.click(); 
-    await page.waitForTimeout(500);     
-    const primeiraOpcaoS = page.locator('[role="option"]')
-      .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
-      .first();
-    await primeiraOpcaoS.click();
-    console.log('✅ Selecionou a primeira opção do combobox com sucesso!');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(1000);      
+    
+    // Verificação condicional para a Aba Fiscal Beta (Apenas empresas do Paraguai)
+    const abaFiscalS = page.getByRole('tab', { name: /^Fiscal Beta$/i }).first();
 
-    const combobox2S = page.locator('role=combobox[name="10%"]').first();
-    await combobox2S.click(); 
-    await page.waitForTimeout(500);     
-    const primeiraOpcao2S = page.locator('[role="option"]')
-      .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
-      .first();
-    await primeiraOpcao2S.click();
+    if (await abaFiscalS.isVisible({ timeout: 3000 }).catch(() => false)) {
+      console.log('✅ Aba Fiscal Beta encontrada (Empresa Paraguai)');
+      await abaFiscalS.click();
+      await page.waitForTimeout(500);
 
-    console.log('✅ Selecionou a primeira opção do segundo combobox com sucesso!');
-    await page.waitForTimeout(500);    
+      const comboboxS = page.locator('role=combobox[name="Selecione uma opção"]').first();
+      await comboboxS.click(); 
+      await page.waitForTimeout(500);     
+      const primeiraOpcaoS = page.locator('[role="option"]')
+        .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
+        .first();
+      await primeiraOpcaoS.click();
+      console.log('✅ Selecionou a primeira opção do combobox com sucesso!');
+      await page.waitForTimeout(500);
 
-    const combobox3S = page.locator('role=combobox[name="Selecione uma opção"]').first();
-    await combobox3S.click(); 
-    await page.waitForTimeout(500);         
-    const quartaOpcaoS = page.locator('[role="option"]')
-      .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
-      .nth(14); 
-    await quartaOpcaoS.click();
-    console.log('✅ Selecionou a décima quarta opção do combobox com sucesso!');
-    await page.waitForTimeout(500);    
+      const combobox2S = page.locator('role=combobox[name="10%"]').first();
+      await combobox2S.click(); 
+      await page.waitForTimeout(500);     
+      const primeiraOpcao2S = page.locator('[role="option"]')
+        .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
+        .first();
+      await primeiraOpcao2S.click();
+
+      console.log('✅ Selecionou a primeira opção do segundo combobox com sucesso!');
+      await page.waitForTimeout(500);    
+
+      const combobox3S = page.locator('role=combobox[name="Selecione uma opção"]').first();
+      await combobox3S.click(); 
+      await page.waitForTimeout(500);         
+      const quartaOpcaoS = page.locator('[role="option"]')
+        .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
+        .nth(14); 
+      await quartaOpcaoS.click();
+      console.log('✅ Selecionou a décima quarta opção do combobox com sucesso!');
+      await page.waitForTimeout(500);    
+    } else {
+      console.log('ℹ️ Aba Fiscal Beta não encontrada (Empresa Brasil), pulando etapas fiscais.');
+    }
 
     console.log('📝 FIM DE DADOS ENVIADOS');           
     
@@ -537,7 +547,8 @@ test('Cadastros de Vários Agenda', async ({ page }) => {
     }
     
     const idServico = respostaJsonS?.data?.id?.toString()?.trim() || respostaJsonS?.id?.toString()?.trim();
-        console.log(idServico) 
+    console.log(idServico);
+
     if (salvarResponseS && idServico) {     
       const urlPostS = salvarResponseS.url().replace(/\/$/, '');
       const urlRegistroCriadoS = `${urlPostS}/${idServico}`;      
@@ -578,7 +589,7 @@ test('Cadastros de Vários Agenda', async ({ page }) => {
     } catch (e) {
       console.log('⚠️ Validação de texto concluída.');
     }   
-    console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
+    console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);
     
 
     let inicioTestep = new Date();    
@@ -622,7 +633,7 @@ test('Cadastros de Vários Agenda', async ({ page }) => {
     const quantidade = '10';
     const comissao = '2000';
     const ncm = '22021000';
-    const gtin = '7891000100109'
+    const gtin = '7891000100109';
         
     try {
       const campoNome = page.locator('input:visible').nth(0);
@@ -662,56 +673,66 @@ test('Cadastros de Vários Agenda', async ({ page }) => {
     }
 
     await page.waitForTimeout(2000);      
-    await page.getByRole('tab', { name: /^Fiscal Beta$/i }).first().click();     
-  
-    const combobox = page.locator('role=combobox[name="Selecione uma opção"]').first();
-    await combobox.click(); 
-    await page.waitForTimeout(500);     
-    const primeiraOpcao = page.locator('[role="option"]')
-      .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
-      .first();
-    await primeiraOpcao.click();
-    console.log('✅ Selecionou a primeira opção do combobox com sucesso!');
-    await page.waitForTimeout(500);
 
-    const combobox2 = page.locator('role=combobox[name="10%"]').first();
-    await combobox2.click(); 
-    await page.waitForTimeout(500);     
-    const primeiraOpcao2 = page.locator('[role="option"]')
-      .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
-      .first();
-    await primeiraOpcao2.click();
+    // Verificação condicional para a Aba Fiscal Beta (Apenas empresas do Paraguai)
+    const abaFiscalP = page.getByRole('tab', { name: /^Fiscal Beta$/i }).first();
 
-    console.log('✅ Selecionou a primeira opção do segundo combobox com sucesso!');
-    await page.waitForTimeout(500);
+    if (await abaFiscalP.isVisible({ timeout: 3000 }).catch(() => false)) {
+      console.log('✅ Aba Fiscal Beta encontrada (Empresa Paraguai)');
+      await abaFiscalP.click();
+      await page.waitForTimeout(500);
 
-    try {
-      const campoNcm = page.locator('input:visible').nth(0);
-      await campoNcm.click({ force: true });
-      await campoNcm.fill(ncm, { force: true });
-      console.log('✅ NCM:', ncm);
-    } catch (e) {
-      console.log('⚠️ Falha ao preencher NCM');
+      const combobox = page.locator('role=combobox[name="Selecione uma opção"]').first();
+      await combobox.click(); 
+      await page.waitForTimeout(500);     
+      const primeiraOpcao = page.locator('[role="option"]')
+        .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
+        .first();
+      await primeiraOpcao.click();
+      console.log('✅ Selecionou a primeira opção do combobox com sucesso!');
+      await page.waitForTimeout(500);
+
+      const combobox2 = page.locator('role=combobox[name="10%"]').first();
+      await combobox2.click(); 
+      await page.waitForTimeout(500);     
+      const primeiraOpcao2 = page.locator('[role="option"]')
+        .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
+        .first();
+      await primeiraOpcao2.click();
+
+      console.log('✅ Selecionou a primeira opção do segundo combobox com sucesso!');
+      await page.waitForTimeout(500);
+
+      try {
+        const campoNcm = page.locator('input:visible').nth(0);
+        await campoNcm.click({ force: true });
+        await campoNcm.fill(ncm, { force: true });
+        console.log('✅ NCM:', ncm);
+      } catch (e) {
+        console.log('⚠️ Falha ao preencher NCM');
+      }
+
+      try {
+        const campoGtin = page.locator('input:visible').nth(1);
+        await campoGtin.click({ force: true });
+        await campoGtin.fill(gtin, { force: true });
+        console.log('✅ GTIN:', gtin);
+      } catch (e) {
+        console.log('⚠️ Falha ao preencher GTIN');
+      }    
+
+      const combobox3 = page.locator('role=combobox[name="Selecione uma opção"]').first();
+      await combobox3.click(); 
+      await page.waitForTimeout(500);         
+      const quartaOpcao = page.locator('[role="option"]')
+        .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
+        .nth(4); 
+      await quartaOpcao.click();
+      console.log('✅ Selecionou a quarta opção do combobox com sucesso!');
+      await page.waitForTimeout(500);    
+    } else {
+      console.log('ℹ️ Aba Fiscal Beta não encontrada (Empresa Brasil), pulando etapas fiscais.');
     }
-
-    try {
-      const campoGtin = page.locator('input:visible').nth(1);
-      await campoGtin.click({ force: true });
-      await campoGtin.fill(gtin, { force: true });
-      console.log('✅ GTIN:', gtin);
-    } catch (e) {
-      console.log('⚠️ Falha ao preencher GTIN');
-    }    
-
-    const combobox3 = page.locator('role=combobox[name="Selecione uma opção"]').first();
-    await combobox3.click(); 
-    await page.waitForTimeout(500);         
-    const quartaOpcao = page.locator('[role="option"]')
-      .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
-      .nth(4); 
-    await quartaOpcao.click();
-    console.log('✅ Selecionou a quarta opção do combobox com sucesso!');
-    await page.waitForTimeout(500);    
 
     console.log('📝 FIM DE DADOS ENVIADOS');           
     
@@ -781,7 +802,7 @@ test('Cadastros de Vários Agenda', async ({ page }) => {
     } catch (e) {
       console.log('⚠️ Validação de texto concluída.');
     }   
-    console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
+    console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);
 
     
     let inicioTesteC = new Date();    

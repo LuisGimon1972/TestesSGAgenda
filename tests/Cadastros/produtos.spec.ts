@@ -5,208 +5,165 @@ import { obterProdutoAleatorio } from '../../utils/listaprodutos';
 import { navegarPara } from '../../utils/navegar';
 
 test('Cadastro de Produtos E2E com Nome Aleatório', async ({ page }) => {
-    test.setTimeout(90000);
+  test.setTimeout(90000);
 
-    await loginCompleto(page);        
+  // 1. Autenticação e Navegação
+  await loginCompleto(page);
+  await navegarPara(page, 'Profissionais');
+  await navegarPara(page, 'Catálogo', 'Produtos');
+  console.log('✅ Navegou para Listagem de produtos');
 
-    await page.waitForTimeout(1000);
-    await navegarPara(page, 'Profissionais');
-    await navegarPara(page, 'Catálogo', 'Produtos');    
-    console.log(`✅ Clicou em Produtos`);          
-    console.log(`✅ Apareceu Listagem de produtos`);      
+  // 2. Abertura do Formulário e Preparação de Promessas
+  const btnCadastrar = page.getByText(/Novo produto/i).first();
+  await btnCadastrar.click({ force: true });
+  console.log('✅ Abriu Form de Produtos');
 
-    await page.waitForTimeout(1000);             
-    
-    const btnCadastrar = page.getByText(/Novo produto/i).first();
-    await btnCadastrar.waitFor();
-    await btnCadastrar.click({ force: true });      
-    console.log(`✅ Clicou em Cadastrar produto`);  
-    console.log(`✅ Abriu Form de Produtos`);          
-
-    const salvarProdutoPromise = page.waitForResponse((response) =>
-      (response.url().includes('/api/') || response.url().includes('/products') || response.url().includes('/produto')) &&
+  const salvarProdutoPromise = page.waitForResponse(
+    (response) =>
+      (response.url().includes('/api/') ||
+        response.url().includes('/products') ||
+        response.url().includes('/produto')) &&
       ['POST', 'PUT'].includes(response.request().method()) &&
       response.status() >= 200 &&
       response.status() < 300
-    ).catch(() => null);
-    
-    try {
-      const btnCookie = page.getByText(/Entendi|Aceitar|Fechar/i).first();
-      if (await btnCookie.isVisible({ timeout: 3000 })) {
-        await btnCookie.click({ force: true });
-        console.log('✅ Fechou aviso de cookies');
-      }
-    } catch (e) {}
+  ).catch(() => null);
 
-    await page.waitForTimeout(500);   
+  // Fechamento de Cookies se presente
+  const btnCookie = page.getByText(/Entendi|Aceitar|Fechar/i).first();
+  if (await btnCookie.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await btnCookie.click({ force: true });
+    console.log('✅ Fechou aviso de cookies');
+  }
 
-    console.log('📝 DADOS ENVIADOS PRA API');    
-    const nomeProduto = `${obterProdutoAleatorio().nome} ${Date.now()}`;
-    const valor = Math.floor(Math.random() * 1001) + 2000;   
-    const quantidade = '10';
-    const comissao = '2000';
-    const ncm = '22021000';
-    const gtin = '7891000100109'
-        
+  // 3. Preenchimento dos Dados Principais
+  console.log('📝 DADOS ENVIADOS PRA API');
+  const nomeProduto = `${obterProdutoAleatorio().nome} ${Date.now()}`;
+  const valor = Math.floor(Math.random() * 1001) + 2000;
+  const quantidade = '10';
+  const comissao = '2000';
+  const ncm = '22021000';
+  const gtin = '7891000100109';
+
+  const preencherCampo = async (locator: any, valorInput: string, label: string) => {
     try {
-      const campoNome = page.locator('input:visible').nth(0);
-      await campoNome.scrollIntoViewIfNeeded();
-      await campoNome.click({ force: true });
-      await campoNome.fill(nomeProduto, { force: true });
-      console.log('✅ Nome do Produto:', nomeProduto);
-    } catch (e) {
-      console.log('⚠️ Falha ao preencher Nome do Produto');
+      await locator.scrollIntoViewIfNeeded();
+      await locator.click({ force: true });
+      await locator.fill(valorInput, { force: true });
+      console.log(`✅ ${label}:`, valorInput);
+    } catch {
+      console.log(`⚠️ Falha ao preencher ${label}`);
     }
+  };
 
-    try {
-      const campoQuantidade = page.locator('input:visible').nth(1);
-      await campoQuantidade.click({ force: true });
-      await campoQuantidade.fill(quantidade, { force: true });
-      console.log('✅ Quantidade:', quantidade);
-    } catch (e) {
-      console.log('⚠️ Falha ao preencher Quantidade');
-    }
+  const inputs = page.locator('input:visible');
+  await preencherCampo(inputs.nth(0), nomeProduto, 'Nome do Produto');
+  await preencherCampo(inputs.nth(1), quantidade, 'Quantidade');
+  await preencherCampo(inputs.nth(2), valor.toFixed(), 'Valor');
+  await preencherCampo(inputs.nth(3), comissao, 'Comissão');
 
-    try {
-      const campoValor = page.locator('input:visible').nth(2);
-      await campoValor.click({ force: true });
-      await campoValor.fill(valor.toFixed(), { force: true });
-      console.log('✅ Valor:', valor);
-    } catch (e) {
-      console.log('⚠️ Falha ao preencher Valor');
-    }   
-    
-    try {
-      const campoComissao = page.locator('input:visible').nth(3);
-      await campoComissao.click({ force: true });
-      await campoComissao.fill(comissao, { force: true });
-      console.log('✅ Comissão:', Number(comissao)/100);
-    } catch (e) {
-      console.log('⚠️ Falha ao preencher Comissão');
-    }
+  // 4. Fluxo Condicional para Aba Fiscal (Paraguai vs Brasil)
+  const abaFiscal = page.getByRole('tab', { name: /^Fiscal Beta$/i }).first();
 
-    await page.waitForTimeout(2000);      
-    await page.getByRole('tab', { name: /^Fiscal Beta$/i }).first().click();     
-  
-    const combobox = page.locator('role=combobox[name="Selecione uma opção"]').first();
-    await combobox.click(); 
-    await page.waitForTimeout(500);     
-    const primeiraOpcao = page.locator('[role="option"]')
+  if (await abaFiscal.isVisible({ timeout: 3000 }).catch(() => false)) {
+    console.log('✅ Aba Fiscal Beta encontrada (Empresa Paraguai)');
+    await abaFiscal.click();
+
+    // Combobox 1
+    const combobox1 = page.locator('role=combobox[name="Selecione uma opção"]').first();
+    await combobox1.click();
+    await page
+      .locator('[role="option"]')
       .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
-      .first();
-    await primeiraOpcao.click();
-    console.log('✅ Selecionou a primeira opção do combobox com sucesso!');
-    await page.waitForTimeout(500);
+      .first()
+      .click();
 
+    // Combobox 2
     const combobox2 = page.locator('role=combobox[name="10%"]').first();
-    await combobox2.click(); 
-    await page.waitForTimeout(500);     
-    const primeiraOpcao2 = page.locator('[role="option"]')
+    await combobox2.click();
+    await page
+      .locator('[role="option"]')
       .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
-      .first();
-    await primeiraOpcao2.click();
+      .first()
+      .click();
 
-    console.log('✅ Selecionou a primeira opção do segundo combobox com sucesso!');
-    await page.waitForTimeout(500);
+    // NCM e GTIN
+    const inputsFiscais = page.locator('input:visible');
+    await preencherCampo(inputsFiscais.nth(0), ncm, 'NCM');
+    await preencherCampo(inputsFiscais.nth(1), gtin, 'GTIN');
 
-    try {
-      const campoNcm = page.locator('input:visible').nth(0);
-      await campoNcm.click({ force: true });
-      await campoNcm.fill(ncm, { force: true });
-      console.log('✅ NCM:', ncm);
-    } catch (e) {
-      console.log('⚠️ Falha ao preencher NCM');
-    }
-
-    try {
-      const campoGtin = page.locator('input:visible').nth(1);
-      await campoGtin.click({ force: true });
-      await campoGtin.fill(gtin, { force: true });
-      console.log('✅ GTIN:', gtin);
-    } catch (e) {
-      console.log('⚠️ Falha ao preencher GTIN');
-    }    
-
+    // Combobox 3
     const combobox3 = page.locator('role=combobox[name="Selecione uma opção"]').first();
-    await combobox3.click(); 
-    await page.waitForTimeout(500);         
-    const quartaOpcao = page.locator('[role="option"]')
+    await combobox3.click();
+    await page
+      .locator('[role="option"]')
       .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
-      .nth(4); 
-    await quartaOpcao.click();
-    console.log('✅ Selecionou a quarta opção do combobox com sucesso!');
-    await page.waitForTimeout(500);    
+      .nth(4)
+      .click();
 
-    console.log('📝 FIM DE DADOS ENVIADOS');           
-    
-    const btnGravar = page.getByText(/Criar produto/i).first();
-    await btnGravar.waitFor();
-    await btnGravar.click({ force: true });
-    console.log('✅ Clicou em Gravar');              
-    
-    let respostaJson: any = null;
-    const salvarResponse = await salvarProdutoPromise;    
-    
-    if (salvarResponse) {    
-      console.log('🌐 A URL capturada do POST é:', salvarResponse.url());
-      console.log(`✅ Status da resposta API: ${salvarResponse.status()}`);
-      try {        
-        respostaJson = await salvarResponse.json();               
-        console.log('📦 JSON de resposta:', JSON.stringify(respostaJson, null, 2));        
-      } catch (e) {
-        console.log('⚠️ A resposta da API não contém um JSON válido ou veio vazia.');
-      }
+    console.log('✅ Dados fiscais preenchidos com sucesso');
+  } else {
+    console.log('ℹ️ Aba Fiscal Beta não disponível nesta empresa (Brasil). Fluxo mantido.');
+  }
 
-      const urlListagem = salvarResponse.url().replace(/\/$/, '');      
-      const headersGet = { ...salvarResponse.request().headers() };
-      delete headersGet['content-type'];
-      delete headersGet['content-length'];
-      delete headersGet[':method'];
-      delete headersGet[':path'];
-      delete headersGet[':authority'];
-      delete headersGet[':scheme'];
-      
-      const urlConsulta = `${urlListagem}?page=1&perPage=10&f_params[orderBy][field]=created_at&f_params[orderBy][type]=desc`;
-      
-      const respostaListagem = await page.request.get(urlConsulta, {
-        headers: headersGet,
-      });
+  console.log('📝 FIM DE DADOS ENVIADOS');
 
-      console.log('🌐 URL da consulta de listagem:', urlConsulta);
-      console.log(`✅ Status da consulta GET: ${respostaListagem.status()}`);
+  // 5. Envios e Submissão
+  const btnGravar = page.getByText(/Criar produto/i).first();
+  await btnGravar.waitFor();
+  await btnGravar.click({ force: true });
+  console.log('✅ Clicou em Gravar');
 
-      if (respostaListagem.status() === 200) {
-        const jsonListagem = await respostaListagem.json();      
-        const listaProdutos: any[] = jsonListagem?.data || jsonListagem || [];
-        
-        const planoCriado = listaProdutos.find(
-          (p: any) => p.name === nomeProduto || p.nome === nomeProduto
-        );
+  // 6. Processamento da Resposta HTTP & Consulta GET de Validação
+  const salvarResponse = await salvarProdutoPromise;
 
-        if (planoCriado) {
-          const idEncontrado = planoCriado.id || planoCriado.iid;
-          console.log('✅ REGISTRO ENCONTRADO COM SUCESSO!');
-          console.log('🆔 ID do Novo Registro:', idEncontrado);
-          console.log('📦 JSON do Registro Consultado:\n', JSON.stringify(planoCriado, null, 2));
-        } else {
-          console.log(`⚠️ Plano "${nomeProduto}" não foi localizado na primeira página.`);
-        }
-      } else {
-        console.log(`⚠️ Falha ao buscar a listagem de planos. Status HTTP: ${respostaListagem.status()}`);
-      }
-    }
-    
+  if (salvarResponse) {
+    console.log('🌐 URL capturada POST:', salvarResponse.url());
+    console.log(`✅ Status API: ${salvarResponse.status()}`);
+
     try {
-      await expect(page.locator('body')).toHaveText(
-        /produto|sucesso|salvo|cadastrado|Listagem de produtos/i,
-        { timeout: 20000 }
-      );
-      console.log('✅ Produto cadastrado com sucesso!');
-    } catch (e) {
-      console.log('⚠️ Validação de texto concluída.');
+      const respostaJson = await salvarResponse.json();
+      console.log('📦 JSON de resposta:', JSON.stringify(respostaJson, null, 2));
+    } catch {
+      console.log('⚠️ Resposta da API não contém JSON válido.');
     }
 
-    await capturarRequisicoesApi(page); 
-    await page.waitForTimeout(2000);    
-    console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
+    const urlListagem = salvarResponse.url().replace(/\/$/, '');
+    const headersGet = { ...salvarResponse.request().headers() };
+    ['content-type', 'content-length', ':method', ':path', ':authority', ':scheme'].forEach(
+      (h) => delete headersGet[h]
+    );
+
+    const urlConsulta = `${urlListagem}?page=1&perPage=10&f_params[orderBy][field]=created_at&f_params[orderBy][type]=desc`;
+    const respostaListagem = await page.request.get(urlConsulta, { headers: headersGet });
+
+    if (respostaListagem.status() === 200) {
+      const jsonListagem = await respostaListagem.json();
+      const listaProdutos: any[] = jsonListagem?.data || jsonListagem || [];
+
+      const produtoCriado = listaProdutos.find(
+        (p: any) => p.name === nomeProduto || p.nome === nomeProduto
+      );
+
+      if (produtoCriado) {
+        console.log('✅ REGISTRO ENCONTRADO NA API!');
+        console.log('🆔 ID:', produtoCriado.id || produtoCriado.iid);
+      } else {
+        console.log(`⚠️ Produto "${nomeProduto}" não localizado na listagem inicial.`);
+      }
+    }
+  }
+
+  // 7. Validação Visual e Finalização
+  try {
+    await expect(page.locator('body')).toHaveText(
+      /produto|sucesso|salvo|cadastrado|Listagem de produtos/i,
+      { timeout: 20000 }
+    );
+    console.log('✅ Produto cadastrado com sucesso!');
+  } catch {
+    console.log('⚠️ Validação de texto em tela concluída.');
+  }
+
+  await capturarRequisicoesApi(page);
+  console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);
 });
