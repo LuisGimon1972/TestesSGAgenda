@@ -29,7 +29,7 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
 
   const razaoSocial = `Barbearia ${nomeUsuario}`;
   const fantasia = `Fantasia ${nomeUsuario.split(' ')[0]}`;
-  let slug = `site-${nomeUsuario.split(' ').slice(0, 2).join(' ')}`+timestamp;
+  let slug = `site-${nomeUsuario.split(' ').slice(0, 2).join('')}${timestamp}`.toLowerCase();
 
   function gerarCnpjValido(): string {
     const base = `${Math.floor(10000000 + Math.random() * 90000000)}0001`;

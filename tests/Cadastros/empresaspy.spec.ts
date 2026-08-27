@@ -21,7 +21,7 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
         await p.evaluate(() => sessionStorage.clear());
       } catch {}
     }
-  });
+  });  
 
   const timestamp = Date.now();
   const nomeUsuario = obterNomePessoaAleatorio();
@@ -35,7 +35,7 @@ test.describe('Cadastro completo - Usuário e empresa (preenchimento por objeto)
 
   const razaoSocial = `Barbearia ${nomeUsuario}`;
   const fantasia = `Fantasia ${nomeUsuario.split(' ')[0]}`;
-  let slug = `site-${nomeUsuario.split(' ').slice(0, 2).join(' ')}`+timestamp;  
+  let slug = `site-${nomeUsuario.split(' ').slice(0, 2).join('')}${timestamp}`.toLowerCase();
 
   async function fecharCookiesSeAparecer(page: Page) {
     const btnGlobal = page.getByText(/Entendi|Aceitar|Aceito|OK|Concordo/i).first();
@@ -371,6 +371,8 @@ async function selecionarComboPorLabel(
     await page.getByText(/Criar conta/i).first().waitFor({ state: 'visible', timeout: 30000 });
     await page.getByText(/Criar conta/i).first().click({ force: true });
     console.log('✅ Clicou em Criar conta');
+
+    await page.waitForTimeout(500);
 
     console.log(`✅ E-mail criado para cadastro: ${emailUsuario}`);
     await preencherInputVisivel(page, 0, nomeUsuario, 'Nome do Usuário');

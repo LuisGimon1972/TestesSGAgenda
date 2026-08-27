@@ -845,5 +845,38 @@
     "fantasia": "Fantasia Davi",
     "documento": "80089959",
     "slug": "site-davicarvalho1787662991427"
+  },
+  {
+    "dataCriacao": "2026-08-27T13:28:38.437Z",
+    "pais": "Paraguai",
+    "nomeUsuario": "Lívia Silva Pereira",
+    "emailUsuario": "livia.1787837295333@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Lívia Silva Pereira",
+    "fantasia": "Fantasia Lívia",
+    "documento": "80015817",
+    "slug": "site-líviasilva1787837295333"
+  },
+  {
+    "dataCriacao": "2026-08-27T13:30:40.460Z",
+    "pais": "Paraguai",
+    "nomeUsuario": "Lucas Machado Rodrigues",
+    "emailUsuario": "lucas.1787837419452@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Lucas Machado Rodrigues",
+    "fantasia": "Fantasia Lucas",
+    "documento": "80062475",
+    "slug": "site-lucasmachado1787837419452"
+  },
+  {
+    "dataCriacao": "2026-08-27T13:31:36.081Z",
+    "pais": "Brasil",
+    "nomeUsuario": "Washington Silva Pereira",
+    "emailUsuario": "washington.1787837469811@sgbr.com",
+    "senhaUsuario": "12345678",
+    "razaoSocial": "Barbearia Washington Silva Pereira",
+    "fantasia": "Fantasia Washington",
+    "documento": "31.180.512/0001-00",
+    "slug": "site-washingtonsilva1787837469811"
   }
 ]
