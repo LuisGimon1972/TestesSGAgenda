@@ -542,6 +542,8 @@ const container = page.locator('[role="dialog"]:visible'); // ou 'body' se não 
       console.log(`✅ IVA selecionado: ${valorSelecionado3}`);
       await opcao3.click();
 
+      await page.waitForTimeout(500);    
+
       const combobox3 = page.locator('role=combobox[name="Selecione uma opção"]').first();
       await combobox3.click();
       const opcao2 = page
