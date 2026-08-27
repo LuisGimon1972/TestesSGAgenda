@@ -524,36 +524,32 @@ const container = page.locator('[role="dialog"]:visible'); // ou 'body' se não 
       await abaFiscalS.click();
       await page.waitForTimeout(500);
 
-      const comboboxS = page.locator('role=combobox[name="Selecione uma opção"]').first();
-      await comboboxS.click(); 
-      await page.waitForTimeout(500);     
-      const primeiraOpcaoS = page.locator('[role="option"]')
+      const combobox1 = page.locator('role=combobox[name="Selecione uma opção"]').first();
+      await combobox1.click();
+      const opcao0 = page
+        .locator('[role="option"]')
         .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
-        .first();
-      await primeiraOpcaoS.click();
-      console.log('✅ Selecionou a primeira opção do combobox com sucesso!');
-      await page.waitForTimeout(500);
+        .first(); // <-- Ponto e vírgula adicionado aqui
+      const valorSelecionado0 = await opcao0.innerText();
+      console.log(`✅ Afetação do IVA selecionado: ${valorSelecionado0}`);
+      await opcao0.click();
 
-      const combobox2S = page.locator('role=combobox[name="10%"]').first();
-      await combobox2S.click(); 
-      await page.waitForTimeout(500);     
-      const primeiraOpcao2S = page.locator('[role="option"]')
+      const combobox2 = page.locator('role=combobox[name="10%"]').first();
+      await combobox2.click();
+      const opcao3 = page.getByRole('option', { name: '10%', exact: true }).first();
+      await opcao3.waitFor({ state: 'visible' });
+      const valorSelecionado3 = await opcao3.innerText();
+      console.log(`✅ IVA selecionado: ${valorSelecionado3}`);
+      await opcao3.click();
+
+      const combobox3 = page.locator('role=combobox[name="Selecione uma opção"]').first();
+      await combobox3.click();
+      const opcao2 = page
+        .locator('[role="option"]')
         .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
-        .first();
-      await primeiraOpcao2S.click();
-
-      console.log('✅ Selecionou a primeira opção do segundo combobox com sucesso!');
-      await page.waitForTimeout(500);    
-
-      const combobox3S = page.locator('role=combobox[name="Selecione uma opção"]').first();
-      await combobox3S.click(); 
-      await page.waitForTimeout(500);         
-      const quartaOpcaoS = page.locator('[role="option"]')
-        .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
-        .nth(14); 
-      await quartaOpcaoS.click();
-      console.log('✅ Selecionou a décima quarta opção do combobox com sucesso!');
-      await page.waitForTimeout(500);    
+        .nth(14)
+      const valorSelecionado2 = await opcao2.innerText();
+      console.log(`✅ Unidade de Medida selecionada: ${valorSelecionado2}`);
     } else {
       console.log('ℹ️ Aba Fiscal Beta não encontrada (Empresa Brasil), pulando etapas fiscais.');
     }
