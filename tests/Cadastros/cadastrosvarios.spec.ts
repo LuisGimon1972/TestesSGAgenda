@@ -115,7 +115,7 @@ test('Cadastros de Vários Agenda', async ({ page }) => {
       }
       else
       {
-const container = page.locator('[role="dialog"]:visible'); // ou 'body' se não for modal
+        const container = page.locator('[role="dialog"]:visible'); // ou 'body' se não for modal
         const cb1 = container.getByRole('combobox').nth(0);
         await cb1.click();
         await page.locator('[role="listbox"]:visible [role="option"]')
@@ -124,7 +124,6 @@ const container = page.locator('[role="dialog"]:visible'); // ou 'body' se não 
         await page.locator('[role="listbox"]').first().waitFor({ state: 'hidden' });
 
         await page.waitForTimeout(1000);    
-
 
         const cb2 = container.getByRole('combobox').nth(1);
         await cb2.waitFor({ state: 'visible' });
@@ -222,6 +221,7 @@ const container = page.locator('[role="dialog"]:visible'); // ou 'body' se não 
   }       
   
   console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
+
   
     let inicioTeste = new Date();  
     console.log('🧾 CADASTRO DE ATENDENTES');  
@@ -514,9 +514,8 @@ const container = page.locator('[role="dialog"]:visible'); // ou 'body' se não 
         console.log('⚠️ Falha ao selecionar atendentes:', err);
     }
 
-    await page.waitForTimeout(1000);      
+    await page.waitForTimeout(1000);          
     
-    // Verificação condicional para a Aba Fiscal Beta (Apenas empresas do Paraguai)
     const abaFiscalS = page.getByRole('tab', { name: /^Fiscal Beta$/i }).first();
 
     if (await abaFiscalS.isVisible({ timeout: 3000 }).catch(() => false)) {
@@ -529,7 +528,7 @@ const container = page.locator('[role="dialog"]:visible'); // ou 'body' se não 
       const opcao0 = page
         .locator('[role="option"]')
         .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
-        .first(); // <-- Ponto e vírgula adicionado aqui
+        .first(); 
       const valorSelecionado0 = await opcao0.innerText();
       console.log(`✅ Afetação do IVA selecionado: ${valorSelecionado0}`);
       await opcao0.click();
@@ -711,8 +710,7 @@ const container = page.locator('[role="dialog"]:visible'); // ou 'body' se não 
     }
 
     await page.waitForTimeout(2000);      
-
-    // Verificação condicional para a Aba Fiscal Beta (Apenas empresas do Paraguai)
+    
     const abaFiscalP = page.getByRole('tab', { name: /^Fiscal Beta$/i }).first();
 
     if (await abaFiscalP.isVisible({ timeout: 3000 }).catch(() => false)) {
@@ -927,7 +925,7 @@ try {
       console.log(`✅ Status da resposta API: ${salvarResponseC.status()}`);
       try {        
         respostaJson = await salvarResponseC.json();               
-        console.log('📦 JSON de resposta:', JSON.stringify(respostaJson, null, 2));        
+        console.log('📦 JSON de resposta:', JSON.stringify(respostaJsonC, null, 2));        
       } catch (e) {
         console.log('⚠️ A resposta da API não contém um JSON válido ou veio vazia.');
       }
