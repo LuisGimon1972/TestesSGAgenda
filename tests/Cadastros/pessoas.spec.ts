@@ -2,6 +2,7 @@ import { test } from '@playwright/test';
 import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
 import { obterNomePessoaAleatorio } from '../../utils/nomescompletos';
+import { empresasParaguai } from '../../utils/rucs-paraguai';
 import { navegarPara } from '../../utils/navegar';
 
 function gerarCPFValido(): string {
@@ -15,6 +16,11 @@ function gerarCPFValido(): string {
   n.push(d2 >= 10 ? 0 : d2);
 
   return n.join('');
+}
+
+function gerarRUC(): string {
+  const empresaAleatoria = empresasParaguai[Math.floor(Math.random() * empresasParaguai.length)];
+  return empresaAleatoria.ruc;
 }
 
 function gerarTelefoneAleatorio(): string {
@@ -47,7 +53,7 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
   
   const nomeCliente = obterNomePessoaAleatorio();
   const telefone = gerarTelefoneAleatorio();
-  const documento = gerarCPFValido();    
+  let documento = gerarCPFValido();    
   const email = `cliente_email.${Date.now()}@teste.com`;
   await page.waitForTimeout(1000);  
   
@@ -61,6 +67,14 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
   await inputsPrincipais.nth(4).fill('05082003');   
   console.log('✅ Preencheu dados principais');
   await page.waitForTimeout(2000);    
+
+  if(pessoa!=14){
+    documento = gerarRUC();
+    console.log('✅ Cliente Paraguaio');
+  }
+  else{
+   console.log('✅ Cliente Brasileiro');
+  }
   
   try {
     const btnAdicionar = page.getByText(/Adicionar/i).first();
