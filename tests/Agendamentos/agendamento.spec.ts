@@ -294,108 +294,113 @@ async function selecionarCliente(page: Page) {
     await page.context().clearCookies();        
     await loginCompleto(page);
     await fecharCookiesSeAparecer(page);        
-    await abrirAgenda(page);
-    await abrirCadastroAgendamento(page);
+    let agendar = 1
+    while (agendar <=4)
+    {
+        await abrirAgenda(page);
+        await abrirCadastroAgendamento(page);
 
-    const salvarAgendamentoPromise = page.waitForResponse((response) =>
-    response.url().includes('/schedules') &&
-    ['POST', 'PUT', 'PATCH'].includes(response.request().method()) &&
-    response.status() >= 200 &&
-    response.status() < 300,
-    { timeout: 15000 }
-    ).catch(() => null);
-    console.log('📝 DADOS ENVIADOS PRA API');
-    await selecionarServico(page);
-    await selecionarProfissional(page);
-    await selecionarDataFuturaOuHoje(page);
+        const salvarAgendamentoPromise = page.waitForResponse((response) =>
+        response.url().includes('/schedules') &&
+        ['POST', 'PUT', 'PATCH'].includes(response.request().method()) &&
+        response.status() >= 200 &&
+        response.status() < 300,
+        { timeout: 15000 }
+        ).catch(() => null);
+        console.log('📝 DADOS ENVIADOS PRA API');
+        await selecionarServico(page);
+        await selecionarProfissional(page);
+        await selecionarDataFuturaOuHoje(page);
 
-    if(dataselecta){
-    await page.waitForTimeout(3000);
-    await expect(page.locator('body')).toHaveText(/Hor[aá]rios dispon[ií]veis|Horarios disponibles/i, { timeout: 30000 });
+        if(dataselecta){
+        await page.waitForTimeout(3000);
+        await expect(page.locator('body')).toHaveText(/Hor[aá]rios dispon[ií]veis|Horarios disponibles/i, { timeout: 30000 });
 
-    await selecionarHorarioMaiorQueAgora(page, false);
-    await page.waitForTimeout(1000);
+        await selecionarHorarioMaiorQueAgora(page, false);
+        await page.waitForTimeout(1000);
 
-    await selecionarCliente(page);
+        await selecionarCliente(page);
 
-    const btnAgendar = page.locator('button:visible, .q-btn:visible, [role="button"]:visible')
-      .filter({ hasText: /Criar agendamento|To Schedule|Guardar/i }).first();
-    
-    await btnAgendar.scrollIntoViewIfNeeded();
-    await btnAgendar.click({ force: true });
-    console.log('✅ Clicou em Agendar');
-
-    const responseAgendamento = await salvarAgendamentoPromise;
-
-    if (responseAgendamento) {      
-      const payloadEnviado = responseAgendamento.request().postDataJSON();
-
-      console.log('🌐 URL do POST:', responseAgendamento.url());
-      console.log(`✅ Status da resposta API: ${responseAgendamento.status()}`);
-      console.log('✅ Payload enviado (POST):\n', JSON.stringify(payloadEnviado, null, 2));
-      
-      const urlBase = responseAgendamento.url().split('?')[0].replace(/\/$/, '');
-      const headersGet = { ...responseAgendamento.request().headers() };
-      delete headersGet['content-type'];
-      delete headersGet['content-length'];
-      delete headersGet[':method'];
-      delete headersGet[':path'];
-      delete headersGet[':authority'];
-      delete headersGet[':scheme'];
-
-      const dataAgendada = payloadEnviado?.date;
-      const urlConsulta = `${urlBase}?date=${dataAgendada}&page=1&perPage=50`;
-
-      const respostaGet = await page.request.get(urlConsulta, {
-        headers: headersGet,
-      });
-
-      console.log('🌐 URL da consulta de listagem:', urlConsulta);
-      console.log(`✅ Status da consulta GET: ${respostaGet.status()}`);
-
-      if (respostaGet.status() === 200) {
-        const jsonConsulta = await respostaGet.json();
-        const listaAgendamentos: any[] = jsonConsulta?.data || jsonConsulta || [];
+        const btnAgendar = page.locator('button:visible, .q-btn:visible, [role="button"]:visible')
+          .filter({ hasText: /Criar agendamento|To Schedule|Guardar/i }).first();
         
-        const agendamentoEncontrado = listaAgendamentos.find((ag: any) => {
-          const mesmaData = ag.date === payloadEnviado?.date;
-          
-          const horaObjeto = (ag.time || ag.start_time || '').substring(0, 5);
-          const horaPayload = (payloadEnviado?.time || '').substring(0, 5);
-          const mesmoHorario = horaObjeto === horaPayload;
-          
-          const mesmoClienteId = payloadEnviado?.customerId && ag.customerId === payloadEnviado?.customerId;
-          const mesmoClienteNome = 
-            ag.customerName?.trim().toUpperCase() === payloadEnviado?.customerName?.trim().toUpperCase() ||
-            ag.customer?.name?.trim().toUpperCase() === payloadEnviado?.customerName?.trim().toUpperCase();
+        await btnAgendar.scrollIntoViewIfNeeded();
+        await btnAgendar.click({ force: true });
+        console.log('✅ Clicou em Agendar');
 
-          return mesmaData && mesmoHorario && (mesmoClienteId || mesmoClienteNome);
-        });
+        const responseAgendamento = await salvarAgendamentoPromise;
 
-        if (agendamentoEncontrado) {
-          const idEncontrado = agendamentoEncontrado.id || agendamentoEncontrado.iid;
-          console.log('✅ REGISTRO ENCONTRADO COM SUCESSO!');
-          console.log('🆔 ID do Novo Agendamento:', idEncontrado);
-          console.log('📦 JSON do Registro Consultado:\n', JSON.stringify(agendamentoEncontrado, null, 2));
-        } else {
-          console.log(`⚠️ Agendamento do cliente "${payloadEnviado?.customerName}" às ${payloadEnviado?.time} não foi localizado na lista.`);
-          console.log('🔍 Exemplo do primeiro registro retornado pela API GET para comparação:\n', JSON.stringify(listaAgendamentos[0] || {}, null, 2));
+        if (responseAgendamento) {      
+          const payloadEnviado = responseAgendamento.request().postDataJSON();
+
+          console.log('🌐 URL do POST:', responseAgendamento.url());
+          console.log(`✅ Status da resposta API: ${responseAgendamento.status()}`);
+          console.log('✅ Payload enviado (POST):\n', JSON.stringify(payloadEnviado, null, 2));
+          
+          const urlBase = responseAgendamento.url().split('?')[0].replace(/\/$/, '');
+          const headersGet = { ...responseAgendamento.request().headers() };
+          delete headersGet['content-type'];
+          delete headersGet['content-length'];
+          delete headersGet[':method'];
+          delete headersGet[':path'];
+          delete headersGet[':authority'];
+          delete headersGet[':scheme'];
+
+          const dataAgendada = payloadEnviado?.date;
+          const urlConsulta = `${urlBase}?date=${dataAgendada}&page=1&perPage=50`;
+
+          const respostaGet = await page.request.get(urlConsulta, {
+            headers: headersGet,
+          });
+
+          console.log('🌐 URL da consulta de listagem:', urlConsulta);
+          console.log(`✅ Status da consulta GET: ${respostaGet.status()}`);
+
+          if (respostaGet.status() === 200) {
+            const jsonConsulta = await respostaGet.json();
+            const listaAgendamentos: any[] = jsonConsulta?.data || jsonConsulta || [];
+            
+            const agendamentoEncontrado = listaAgendamentos.find((ag: any) => {
+              const mesmaData = ag.date === payloadEnviado?.date;
+              
+              const horaObjeto = (ag.time || ag.start_time || '').substring(0, 5);
+              const horaPayload = (payloadEnviado?.time || '').substring(0, 5);
+              const mesmoHorario = horaObjeto === horaPayload;
+              
+              const mesmoClienteId = payloadEnviado?.customerId && ag.customerId === payloadEnviado?.customerId;
+              const mesmoClienteNome = 
+                ag.customerName?.trim().toUpperCase() === payloadEnviado?.customerName?.trim().toUpperCase() ||
+                ag.customer?.name?.trim().toUpperCase() === payloadEnviado?.customerName?.trim().toUpperCase();
+
+              return mesmaData && mesmoHorario && (mesmoClienteId || mesmoClienteNome);
+            });
+
+            if (agendamentoEncontrado) {
+              const idEncontrado = agendamentoEncontrado.id || agendamentoEncontrado.iid;
+              console.log('✅ REGISTRO ENCONTRADO COM SUCESSO!');
+              console.log('🆔 ID do Novo Agendamento:', idEncontrado);
+              console.log('📦 JSON do Registro Consultado:\n', JSON.stringify(agendamentoEncontrado, null, 2));
+            } else {
+              console.log(`⚠️ Agendamento do cliente "${payloadEnviado?.customerName}" às ${payloadEnviado?.time} não foi localizado na lista.`);
+              console.log('🔍 Exemplo do primeiro registro retornado pela API GET para comparação:\n', JSON.stringify(listaAgendamentos[0] || {}, null, 2));
+            }
+          } else {
+            console.log(`⚠️ Falha ao buscar a listagem de agendamentos. Status HTTP: ${respostaGet.status()}`);
+          }
+        } 
+        
+        await expect(page.locator('body')).toHaveText(
+          /agendamento|sucesso|salvo|criado|Listagem de agendamentos|guardado|creado/i, 
+          { timeout: 30000 }
+        );
+        console.log('✅ Agendamento criado com sucesso!');
+        //await capturarRequisicoesApi(page);    
+        console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
         }
-      } else {
-        console.log(`⚠️ Falha ao buscar a listagem de agendamentos. Status HTTP: ${respostaGet.status()}`);
-      }
-    } 
-     
-    await expect(page.locator('body')).toHaveText(
-      /agendamento|sucesso|salvo|criado|Listagem de agendamentos|guardado|creado/i, 
-      { timeout: 30000 }
-    );
-    console.log('✅ Agendamento criado com sucesso!');
-    await capturarRequisicoesApi(page);    
-    console.log(`🕒 Finalização do teste: ${formatarDataHora(new Date())}`);   
-    }
-    else{
-        console.log('⚠️ Deve cadastrar o horário do professional!');
+        else{
+            console.log('⚠️ Deve cadastrar o horário do professional!');
+        }
+        agendar++;
     }
   });  
 });
