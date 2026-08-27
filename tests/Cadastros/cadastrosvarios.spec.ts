@@ -305,7 +305,7 @@ test('Cadastros de Vários Agenda', async ({ page }) => {
 
       try {        
         respostaJson1 = await salvarResponse1.json();               
-        console.log('📦 JSON de resposta:', JSON.stringify(respostaJson, null, 2));        
+        console.log('📦 JSON de resposta:', JSON.stringify(respostaJson1, null, 2));        
       } catch (e) {
         console.log('⚠️ A resposta da API não contém um JSON válido ou veio vazia.');
       }
@@ -1158,7 +1158,7 @@ try {
       console.log(`✅ Status da resposta API: ${salvarResponsePl.status()}`);
       try {        
         respostaJson = await salvarResponsePl.json();               
-        console.log('📦 JSON de resposta:', JSON.stringify(respostaJson, null, 2));        
+        console.log('📦 JSON de resposta:', JSON.stringify(respostaJsonPl, null, 2));        
       } catch (e) {
         console.log('⚠️ A resposta da API não contém um JSON válido ou veio vazia.');
       }
