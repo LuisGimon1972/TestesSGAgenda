@@ -3,7 +3,7 @@ import { loginCompleto, formatarDataHora } from '../../utils/loginCompleto';
 import { capturarRequisicoesApi } from '../../utils/capturaApi';
 import { navegarPara } from '../../utils/navegar';
 
-test.describe('Agendamentos - Cadastro', () => {
+test.describe('Agendamentos - Faz o cadastro de 4 Agendamentos', () => {
   let dataSelecionadaEhHoje = false;
   let dataselecta = true;
   const telefone = gerarTelefoneAleatorio();
