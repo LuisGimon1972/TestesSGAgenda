@@ -4,6 +4,7 @@ import { obterNomePessoaAleatorio } from '../../utils/nomescompletos';
 import { obterProdutoAleatorio } from '../../utils/listaprodutos';
 import { obterServicoAleatorio } from '../../utils/listaservicos';
 import { obterNomePlanoAleatorio } from '../../utils/listagemplanos';
+import { empresasParaguai } from '../../utils/rucs-paraguai';
 import { navegarPara } from '../../utils/navegar';
 
 function gerarCPFValido(): string {
@@ -17,6 +18,11 @@ function gerarCPFValido(): string {
   n.push(d2 >= 10 ? 0 : d2);
 
   return n.join('');
+}
+
+function gerarRUC(): string {
+  const empresaAleatoria = empresasParaguai[Math.floor(Math.random() * empresasParaguai.length)];
+  return empresaAleatoria.ruc;
 }
 
 function gerarTelefoneAleatorio(): string {
@@ -50,7 +56,7 @@ test('Cadastros de Vários Agenda', async ({ page }) => {
   
   const nomeCliente = obterNomePessoaAleatorio();
   const telefone = gerarTelefoneAleatorio();
-  const documento = gerarCPFValido();    
+  let documento = gerarCPFValido();    
   const email = `cliente_email.${Date.now()}@teste.com`;
   await page.waitForTimeout(1000);  
   
@@ -65,6 +71,14 @@ test('Cadastros de Vários Agenda', async ({ page }) => {
   console.log('✅ Preencheu dados principais');
   await page.waitForTimeout(2000);    
   
+  if(pessoa!=14){
+    documento = gerarRUC();
+    console.log('✅ Cliente Paraguaio');
+  }
+  else{
+   console.log('✅ Cliente Brasileiro');
+  }
+
   try {
     const btnAdicionar = page.getByText(/Adicionar/i).first();
     if (await btnAdicionar.isVisible({ timeout: 3000 }).catch(() => false)) {
