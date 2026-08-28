@@ -25,35 +25,29 @@ function gerarRUC(): string {
 
 async function preverSexoPeloNome(nomeCompleto: string): Promise<string> {
   if (!nomeCompleto) return 'Masculino';
-
-  // 1. Isola e limpa o primeiro nome (remove acentos e converte para minúsculas)
+  
   const primeiroNome = nomeCompleto
     .trim()
     .split(' ')[0]
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase();
-
-  // 2. Lista de exceções e nomes femininos comuns que não terminam em "a"
+  
   const excecoesFemininas = [
     'beatriz', 'alice', 'raquel', 'ines', 'isabel', 'lauren', 
     'yasmin', 'carmen', 'flor', 'marly', 'sueli', 'ellen'
   ];
-
-  // 3. Lista de nomes masculinos comuns que terminam em "a"
+  
   const excecoesMasculinas = [
     'luca', 'lucas', 'joshua', 'george', 'sasa', 'akira'
   ];
 
   if (excecoesFemininas.includes(primeiroNome)) return 'Feminino';
   if (excecoesMasculinas.includes(primeiroNome)) return 'Masculino';
-
-  // 4. Regra geral em português: nomes terminados em "a" costumam ser femininos
+  
   if (primeiroNome.endsWith('a')) {
     return 'Feminino';
-  }
-
-  // 5. Demais casos (ex: João, Alexandre, Pedro) retornam Masculino
+  }  
   return 'Masculino';
 }
 
@@ -119,22 +113,15 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
   }
     
     const sexoIdentificado = await preverSexoPeloNome(nomeCliente);  
-    console.log(`⚧️ Sexo previsto: ${sexoIdentificado}`);    
-
-    // 1. Clicar para abrir o combobox de sexo
+    console.log(`⚧️ Sexo previsto: ${sexoIdentificado}`);        
     const comboboxSexCliente = page.locator('role=combobox[name="Selecione uma opção"]').first();
-    await comboboxSexCliente.click();
-
-    // 2. Localizar a opção dinamicamente com base no retorno da função ("Masculino" ou "Feminino")
+    await comboboxSexCliente.click();    
     const opcaoSexCliente = page
       .locator('[role="option"]:visible')
       .filter({ hasText: new RegExp(`^${sexoIdentificado}$`, 'i') })
-      .first();
-
-    // 3. Capturar o texto e clicar na opção encontrada
+      .first();    
     const valorSelecionadoSex = await opcaoSexCliente.innerText();
     console.log(`✅ Sexo selecionado: ${valorSelecionadoSex}`);
-
     await opcaoSexCliente.click();
     
     if(pessoa!=14){
