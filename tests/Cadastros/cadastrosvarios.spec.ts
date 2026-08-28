@@ -25,6 +25,46 @@ function gerarRUC(): string {
   return empresaAleatoria.ruc;
 }
 
+async function preverSexoPeloNome(nomeCompleto: string): Promise<string> {
+  if (!nomeCompleto) return 'Masculino';
+
+  // 1. Isola e limpa o primeiro nome (remove acentos e converte para minúsculas)
+  const primeiroNome = nomeCompleto
+    .trim()
+    .split(' ')[0]
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
+  // 2. Lista de exceções e nomes femininos comuns que não terminam em "a"
+  const excecoesFemininas = [
+    'beatriz', 'alice', 'raquel', 'ines', 'isabel', 'lauren', 
+    'yasmin', 'carmen', 'flor', 'marly', 'sueli', 'ellen'
+  ];
+
+  // 3. Lista de nomes masculinos comuns que terminam em "a"
+  const excecoesMasculinas = [
+    'luca', 'lucas', 'joshua', 'george', 'sasa', 'akira'
+  ];
+
+  if (excecoesFemininas.includes(primeiroNome)) return 'Feminino';
+  if (excecoesMasculinas.includes(primeiroNome)) return 'Masculino';
+
+  // 4. Regra geral em português: nomes terminados em "a" costumam ser femininos
+  if (primeiroNome.endsWith('a')) {
+    return 'Feminino';
+  }
+
+  // 5. Demais casos (ex: João, Alexandre, Pedro) retornam Masculino
+  return 'Masculino';
+}
+
+(async () => {
+  console.log(await preverSexoPeloNome('João Silva'));       // Masculino
+  console.log(await preverSexoPeloNome('Maria Antonieta'));  // Feminino
+  console.log(await preverSexoPeloNome('Darcy Ribeiro'));    // Indefinido/Unissex (dependendo da base)
+})();
+
 function gerarTelefoneAleatorio(): string {
   const ddd = '49';
   const primeiroDigito = '9';
@@ -78,16 +118,18 @@ test('Cadastros de Vários Agenda', async ({ page }) => {
   else{
    console.log('✅ Cliente Brasileiro');
   }
-
-  const comboboxSexCliente = page.locator('role=combobox[name="Selecione uma opção"]').first();
-  await comboboxSexCliente.click();
-  const opcaoSexCliente = page
-    .locator('[role="option"]:visible')
-    .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
-    .first();       
-  const valorSelecionadoSex = await opcaoSexCliente.innerText();
-  console.log(`✅ Sexo selecionado:  ${valorSelecionadoSex}`);
-  await opcaoSexCliente.click();
+   
+    const sexoIdentificado = await preverSexoPeloNome(nomeCliente);  
+    console.log(`⚧️ Sexo previsto: ${sexoIdentificado}`);
+    const comboboxSexCliente = page.locator('role=combobox[name="Selecione uma opção"]').first();
+    await comboboxSexCliente.click();    
+    const opcaoSexCliente = page
+      .locator('[role="option"]:visible')
+      .filter({ hasText: new RegExp(`^${sexoIdentificado}$`, 'i') })
+      .first();    
+    const valorSelecionadoSex = await opcaoSexCliente.innerText();
+    console.log(`✅ Sexo selecionado: ${valorSelecionadoSex}`);
+    await opcaoSexCliente.click();
   
   if(pessoa!=14){
   await page.waitForTimeout(1000);      
