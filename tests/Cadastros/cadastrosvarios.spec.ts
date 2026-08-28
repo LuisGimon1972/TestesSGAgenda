@@ -79,6 +79,29 @@ test('Cadastros de Vários Agenda', async ({ page }) => {
    console.log('✅ Cliente Brasileiro');
   }
 
+  const comboboxSexCliente = page.locator('role=combobox[name="Selecione uma opção"]').first();
+  await comboboxSexCliente.click();
+  const opcaoSexCliente = page
+    .locator('[role="option"]:visible')
+    .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
+    .first();       
+  const valorSelecionadoSex = await opcaoSexCliente.innerText();
+  console.log(`✅ Sexo selecionado:  ${valorSelecionadoSex}`);
+  await opcaoSexCliente.click();
+  
+  if(pessoa!=14){
+  await page.waitForTimeout(1000);      
+  const comboboxTipo = page.locator('role=combobox[name="Selecione uma opção"]').first()
+  await comboboxTipo.click();
+  const opcaoTipo = page
+    .locator('[role="option"]:visible') 
+    .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
+    .first();       
+  const valorSelecionadoTip = await opcaoTipo.innerText();
+  console.log(`✅ Tipo de cliente selecionado: ${valorSelecionadoTip}`);
+  await opcaoTipo.click();
+  }
+
   try {
     const btnAdicionar = page.getByText(/Adicionar/i).first();
     if (await btnAdicionar.isVisible({ timeout: 3000 }).catch(() => false)) {
