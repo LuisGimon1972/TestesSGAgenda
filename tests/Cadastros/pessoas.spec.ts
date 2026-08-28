@@ -75,39 +75,32 @@ test('Cadastro de Clientes com Endereço Principal', async ({ page }) => {
   else{
    console.log('✅ Cliente Brasileiro');
   }
-
-    // 1️⃣ Primeiro Combobox: Tipo de Cliente
-    const comboboxTipoCliente = page.locator('role=combobox[name="Selecione uma opção"]').first();
-    await comboboxTipoCliente.click();
-
-    const opcaoTipoCliente = page
+    
+    const comboboxSexCliente = page.locator('role=combobox[name="Selecione uma opção"]').first();
+    await comboboxSexCliente.click();
+    const opcaoSexCliente = page
       .locator('[role="option"]:visible')
       .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
-      .first(); 
-      
-    const valorSelecionadoTipo = await opcaoTipoCliente.innerText();
-    console.log(`✅ Tipo de cliente selecionado: ${valorSelecionadoTipo}`);
-    await opcaoTipoCliente.click();
-
-    // ---------------------------------------------------------
-
-    // 2️⃣ Segundo Combobox: Sexo
-    // Usamos .nth(1) para pegar o segundo combobox genérico na tela
-    const comboboxSexo = page.locator('role=combobox[name="Selecione uma opção"]').nth(1);
-    await comboboxSexo.click();
-
-    const opcaoSexo = page
-      .locator('[role="option"]:visible') // :visible garante que pegue a lista que acabou de abrir
-      .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
-      .first(); 
-      
-    const valorSelecionadoSexo = await opcaoSexo.innerText();
-    console.log(`✅ Sexo selecionado: ${valorSelecionadoSexo}`);
-    await opcaoSexo.click();
+      .first();       
+    const valorSelecionadoSex = await opcaoSexCliente.innerText();
+    console.log(`✅ Sexo selecionado:  ${valorSelecionadoSex}`);
+    await opcaoSexCliente.click();
     
+    if(pessoa!=14){
+    await page.waitForTimeout(1000);      
+    const comboboxTipo = page.locator('role=combobox[name="Selecione uma opção"]').first()
+    await comboboxTipo.click();
+    const opcaoTipo = page
+      .locator('[role="option"]:visible') 
+      .filter({ hasNotText: /Nenhum resultado|Sin resultados/i })
+      .first();       
+    const valorSelecionadoTip = await opcaoTipo.innerText();
+    console.log(`✅ Tipo de cliente selecionado: ${valorSelecionadoTip}`);
+    await opcaoTipo.click();
+    }
   
   try {
-    const btnAdicionar = page.getByText(/Adicionar/i).first();
+    const btnAdicionar = page.getByText(/Adicionar/i).nth(1);
     if (await btnAdicionar.isVisible({ timeout: 3000 }).catch(() => false)) {
       await btnAdicionar.click({ force: true });
       console.log('✅ Clicou em Adicionar Endereço');
