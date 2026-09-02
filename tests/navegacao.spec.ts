@@ -25,13 +25,12 @@ test('Navegação de menus', async ({ page }) => {
       }
     }
     
-    async function navegarPara(principal: string, sub?: string) {
-  // Identifica se é o menu de Fatura Eletrônica (ignorando maiúsculas/minúsculas e acentos)
-  const eFaturaEletronica = principal
+    async function navegarPara(principal: string, sub?: string) {  
+  const eVendas = principal
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .includes("fatura eletronica");
+    .includes("vendas");
 
   try {
     if (sub) {     
@@ -54,7 +53,7 @@ test('Navegação de menus', async ({ page }) => {
     
     await page.waitForTimeout(1500);
   } catch (error) {
-    if (eFaturaEletronica) {
+    if (eVendas) {
       console.warn(`⚠️ Menu "${principal}" indisponível ou com falha. Ignorando e prosseguindo...`);
     } else {
       throw error; // Repassa o erro se for qualquer outro menu essencial
@@ -71,9 +70,12 @@ test('Navegação de menus', async ({ page }) => {
       { principal: 'Catálogo' , sub: 'Produtos' },    
       { principal: 'Catálogo' , sub: 'Categorias' },    
       { principal: 'Planos' },
+      { principal: 'Vendas' , sub: 'Listagem' },    
+      { principal: 'Vendas' , sub: 'PDV' },    
+      { principal: 'Vendas' , sub: 'Fatura' },    
       { principal: 'Financeiro' },     
-      { principal: 'Comissões' },     
-      { principal: 'Fatura eletrônica' }    
+      { principal: 'Comissões' }     
+      
     ];
 
     for (const item of fluxoNavegacao) {
